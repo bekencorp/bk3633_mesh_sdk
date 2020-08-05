@@ -1,0 +1,79 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "alios-studio: Make",
+      "type": "shell",
+      "command": "aos",
+      "args": [
+        "make",
+        "bluetooth.light@bk3633devkit"
+      ],
+      "presentation": {
+        "focus": true
+      }
+    },
+    {
+      "label": "alios-studio: Upload",
+      "type": "shell",
+      "command": "aos",
+      "args": [
+        "upload",
+        "bluetooth.light@bk3633devkit"
+      ],
+      "presentation": {
+        "focus": true
+      }
+    },
+    {
+      "label": "alios-studio: Debug",
+      "type": "shell",
+      "command": "aos",
+      "args": [
+        "debug",
+        "bluetooth.light@bk3633devkit"
+      ],
+      "presentation": {
+        "focus": true
+      }
+    },
+    {
+      "label": "alios-studio: Serial Monitor",
+      "type": "shell",
+      "command": "aos",
+      "args": [
+        "monitor",
+        "",
+        ""
+      ],
+      "presentation": {
+        "focus": true
+      }
+    },
+    {
+      "label": "alios-studio: Clean",
+      "type": "shell",
+      "command": "aos",
+      "args": [
+        "make",
+        "clean"
+      ]
+    },
+    {
+      "label": "alios-studio: OTA",
+      "type": "shell",
+      "command": "aos",
+      "args": [
+        "ota",
+        "bluetooth.light@bk3633devkit",
+        "-d",
+        "",
+        "-p",
+        ""
+      ],
+      "presentation": {
+        "focus": true
+      }
+    }
+  ]
+}
