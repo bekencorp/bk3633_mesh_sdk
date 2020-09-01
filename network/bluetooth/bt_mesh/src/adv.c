@@ -45,10 +45,10 @@
 /* Pre-5.0 controllers enforce a minimum interval of 100ms
  * whereas 5.0+ controllers can go down to 20ms.
  */
-#define ADV_INT_DEFAULT  K_MSEC(100)
+#define ADV_INT_DEFAULT  K_MSEC(20)
 #define ADV_INT_FAST     K_MSEC(20)
 
-#define GENIE_DEFAULT_DURATION 120
+#define GENIE_DEFAULT_DURATION 90
 
 /* TinyCrypt PRNG consumes a lot of stack space, so we need to have
  * an increased call stack whenever it's used.
@@ -56,9 +56,9 @@
 #if ((defined(CONFIG_BT_TINYCRYPT_ECC)) && (!defined(BOARD_BK3633DEVKIT)))
 #define ADV_STACK_SIZE 768
 #else
-#define ADV_STACK_SIZE (512-256)
+#define ADV_STACK_SIZE 768//(512-256)
 #endif
-
+ 
 static K_FIFO_DEFINE(adv_queue);
 static struct k_thread adv_thread_data;
 static BT_STACK_NOINIT(adv_thread_stack, ADV_STACK_SIZE);
@@ -119,12 +119,9 @@ static inline void adv_send(struct net_buf *buf)
     adv_int_min = CONFIG_ADV_MIN_INTERVAL;
 #endif
 
-    adv_int = max(adv_int_min, BT_MESH_ADV(buf)->adv_int);
-#ifdef CONFIG_ALI_SIMPLE_MODLE
-    duration = GENIE_DEFAULT_DURATION;
-#else
+    adv_int = min(adv_int_min, BT_MESH_ADV(buf)->adv_int);
+
     duration = (BT_MESH_ADV(buf)->count + 1) * (adv_int + 10);
-#endif
 
     BT_DBG("type %u len %u: %s", BT_MESH_ADV(buf)->type,
            buf->len, bt_hex(buf->data, buf->len));
@@ -149,7 +146,7 @@ static inline void adv_send(struct net_buf *buf)
     }
 
     BT_DBG("Advertising started. Sleeping %u ms", duration);
-
+ 
     k_sleep(duration);
 
 exit:
@@ -162,7 +159,7 @@ exit:
 
     BT_DBG("Advertising stopped");
 }
-
+ 
 #ifdef CONFIG_BT_MESH_MULTIADV
 static inline int adv_send_multi(struct net_buf *buf)
 {
@@ -181,9 +178,9 @@ static inline int adv_send_multi(struct net_buf *buf)
     adv_int_min = CONFIG_ADV_MIN_INTERVAL;
 #endif
 
-    adv_int = max(adv_int_min, BT_MESH_ADV(buf)->adv_int);
+    adv_int = min(adv_int_min, BT_MESH_ADV(buf)->adv_int);
 #ifdef CONFIG_ALI_SIMPLE_MODLE
-        duration = GENIE_DEFAULT_DURATION;
+        duration = 40;//GENIE_DEFAULT_DURATION;
 #else
         duration = (BT_MESH_ADV(buf)->count + 1) * (adv_int + 10);
 #endif
@@ -325,7 +322,7 @@ static void adv_thread(void *p1, void *p2, void *p3)
         } else {
             buf = net_buf_get(&adv_queue, K_FOREVER);
         }
-
+        
         if (!buf) {
             continue;
         }
@@ -438,7 +435,7 @@ static void bt_mesh_scan_cb(const bt_mesh_addr_le_t *addr, s8_t rssi,
         }
 
         if (len > buf->len || buf->len < 1) {
-            BT_WARN("AD malformed");
+            // BT_WARN("AD malformed");
             return;
         }
 

@@ -19,17 +19,21 @@ $(NAME)_SOURCES := host/uuid.c \
                      host/l2cap.c \
                      host/att.c \
                      host/gatt.c \
-                     host/crypto.c \
                      host/keys.c \
                      host/rpa.c \
                      host/multi_adv.c
 
-$(NAME)_SOURCES += host/hci_ecc.c
 
 ifeq ($(hci_h4),1)
 $(NAME)_SOURCES += hci_driver/h4.c
 endif
 
+bt_host_tinycrypt ?= 1
+ifeq ($(bt_host_tinycrypt),1)
+GLOBAL_DEFINES += CONFIG_BT_TINYCRYPT_ECC
+$(NAME)_SOURCES += host/crypto.c \
+                   host/hci_ecc.c
+endif
 ifeq ($(COMPILER),)
 $(NAME)_CFLAGS      += -Wall
 else ifeq ($(COMPILER),gcc)

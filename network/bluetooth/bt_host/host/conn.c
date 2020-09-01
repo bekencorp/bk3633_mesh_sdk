@@ -63,6 +63,7 @@ NET_BUF_POOL_DEFINE(acl_tx_pool, CONFIG_BT_L2CAP_TX_BUF_COUNT,
 #endif
 
 extern struct net_buf_pool acl_tx_pool;
+static struct k_sem pkt_count_sem;
 
 /* How long until we cancel HCI_LE_Create_Connection */
 #define CONN_TIMEOUT K_SECONDS(3)
@@ -106,13 +107,17 @@ int8_t bt_conn_take_pkts(struct bt_conn *conn)
     if (bt_dev.le.pkts > 0) {
         bt_dev.le.pkts--;
         return 0;
+    } else {
+        k_sem_take(&pkt_count_sem, -1);
     }
-    return -1;
+    return 0;
 }
 
 int8_t bt_conn_give_pkts(struct bt_conn *conn)
 {
-    bt_dev.le.pkts++;
+    if (bt_dev.le.pkts++ == 0) {
+        k_sem_give(&pkt_count_sem);
+    }
     return 0;
 }
 
@@ -594,12 +599,7 @@ static u8_t send_frag(struct bt_conn *conn, struct net_buf *buf, u8_t flags,
 
     BT_DBG("%s, conn %p buf %p len %u flags 0x%02x", __func__, conn, buf, buf->len, flags);
 
-    if (bt_conn_take_pkts(conn) != 0) {
-        if (always_consume) {
-            net_buf_unref(buf);
-        }
-        return SEND_FRAG_NO_PKTS;
-    }
+    bt_conn_take_pkts(conn);
 
     notify_tx();
 
@@ -784,24 +784,9 @@ void bt_conn_notify_tx_done(struct bt_conn *conn)
 
     if (conn->tx == NULL) {
         goto exit;
-    }
-
-    while (conn->tx->len > conn_mtu(conn)) {
-        conn->tx_flag = SEND_BUF_CONT;
-        frag = create_frag(conn, conn->tx);
-        if (!frag) {
-            ret = SEND_FRAG_FAIL;
-            goto exit;
-        }
-
-        ret = send_frag(conn, frag, BT_ACL_CONT, true);
-        if (ret != SEND_FRAG_SUCCESS) {
-            goto exit;
-        }
-    }
+    } 
 
     conn->tx_flag = SEND_BUF_TAIL;
-    ret = send_frag(conn, conn->tx, BT_ACL_CONT, false);
 
 exit:
     if (ret == SEND_FRAG_FAIL) {
@@ -1483,6 +1468,8 @@ int bt_conn_init(void)
     for (i = 0; i < ARRAY_SIZE(conn_tx); i++) {
         sys_slist_prepend(&free_tx, &conn_tx[i].node);
     }
+
+    k_sem_init(&pkt_count_sem, 0, 1);
 
     bt_att_init();
 

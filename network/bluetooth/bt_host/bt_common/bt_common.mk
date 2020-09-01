@@ -13,6 +13,7 @@ $(NAME)_SOURCES := ./atomic_c.c \
                      ./queue.c \
                      ./tinycrypt/source/cmac_mode.c \
                      ./tinycrypt/source/aes_encrypt.c \
+                     ./tinycrypt/source/aes_decrypt.c \
                      ./tinycrypt/source/utils.c \
                      ./tinycrypt/source/sha256.c \
                      ./tinycrypt/source/hmac.c \

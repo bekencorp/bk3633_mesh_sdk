@@ -8,6 +8,7 @@
 #ifndef __NET_H
 #define __NET_H
 #include "mesh_config.h"
+#include "mesh/access.h"
 
 #define BT_MESH_NET_FLAG_KR       BIT(0)
 #define BT_MESH_NET_FLAG_IVU      BIT(1)

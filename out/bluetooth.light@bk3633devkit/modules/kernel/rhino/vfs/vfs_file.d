@@ -3,41 +3,44 @@ out/bluetooth.light@bk3633devkit/Modules/kernel/rhino/vfs/vfs_file.o: \
  kernel/rhino/vfs/include/vfs_err.h \
  network/bluetooth/bt_host/bt_common/include/errno.h \
  kernel/rhino/vfs/include/vfs_inode.h \
- c:\program\ files\ (x86)\gnu\ tools\ arm\ embedded\5.4\ 2016q3\lib\gcc\arm-none-eabi\5.4.1\include\stdbool.h \
- c:\program\ files\ (x86)\gnu\ tools\ arm\ embedded\5.4\ 2016q3\lib\gcc\arm-none-eabi\5.4.1\include\stdint.h \
- c:\program\ files\ (x86)\gnu\ tools\ arm\ embedded\5.4\ 2016q3\arm-none-eabi\include\stdint.h \
- c:\program\ files\ (x86)\gnu\ tools\ arm\ embedded\5.4\ 2016q3\arm-none-eabi\include\machine\_default_types.h \
- c:\program\ files\ (x86)\gnu\ tools\ arm\ embedded\5.4\ 2016q3\arm-none-eabi\include\sys\features.h \
- c:\program\ files\ (x86)\gnu\ tools\ arm\ embedded\5.4\ 2016q3\arm-none-eabi\include\_newlib_version.h \
- c:\program\ files\ (x86)\gnu\ tools\ arm\ embedded\5.4\ 2016q3\arm-none-eabi\include\sys\_intsup.h \
- c:\program\ files\ (x86)\gnu\ tools\ arm\ embedded\5.4\ 2016q3\arm-none-eabi\include\sys\_stdint.h \
- c:\program\ files\ (x86)\gnu\ tools\ arm\ embedded\5.4\ 2016q3\arm-none-eabi\include\sys\stat.h \
- c:\program\ files\ (x86)\gnu\ tools\ arm\ embedded\5.4\ 2016q3\arm-none-eabi\include\_ansi.h \
- c:\program\ files\ (x86)\gnu\ tools\ arm\ embedded\5.4\ 2016q3\arm-none-eabi\include\newlib.h \
- c:\program\ files\ (x86)\gnu\ tools\ arm\ embedded\5.4\ 2016q3\arm-none-eabi\include\sys\config.h \
- c:\program\ files\ (x86)\gnu\ tools\ arm\ embedded\5.4\ 2016q3\arm-none-eabi\include\machine\ieeefp.h \
- c:\program\ files\ (x86)\gnu\ tools\ arm\ embedded\5.4\ 2016q3\arm-none-eabi\include\time.h \
- c:\program\ files\ (x86)\gnu\ tools\ arm\ embedded\5.4\ 2016q3\arm-none-eabi\include\_ansi.h \
- c:\program\ files\ (x86)\gnu\ tools\ arm\ embedded\5.4\ 2016q3\arm-none-eabi\include\sys\cdefs.h \
- c:\program\ files\ (x86)\gnu\ tools\ arm\ embedded\5.4\ 2016q3\lib\gcc\arm-none-eabi\5.4.1\include\stddef.h \
- c:\program\ files\ (x86)\gnu\ tools\ arm\ embedded\5.4\ 2016q3\arm-none-eabi\include\sys\reent.h \
- c:\program\ files\ (x86)\gnu\ tools\ arm\ embedded\5.4\ 2016q3\arm-none-eabi\include\sys\_types.h \
- c:\program\ files\ (x86)\gnu\ tools\ arm\ embedded\5.4\ 2016q3\arm-none-eabi\include\machine\_types.h \
- c:\program\ files\ (x86)\gnu\ tools\ arm\ embedded\5.4\ 2016q3\arm-none-eabi\include\sys\lock.h \
- c:\program\ files\ (x86)\gnu\ tools\ arm\ embedded\5.4\ 2016q3\arm-none-eabi\include\machine\time.h \
- c:\program\ files\ (x86)\gnu\ tools\ arm\ embedded\5.4\ 2016q3\arm-none-eabi\include\sys\types.h \
- c:\program\ files\ (x86)\gnu\ tools\ arm\ embedded\5.4\ 2016q3\arm-none-eabi\include\machine\endian.h \
- c:\program\ files\ (x86)\gnu\ tools\ arm\ embedded\5.4\ 2016q3\arm-none-eabi\include\machine\_endian.h \
- c:\program\ files\ (x86)\gnu\ tools\ arm\ embedded\5.4\ 2016q3\arm-none-eabi\include\sys\select.h \
- c:\program\ files\ (x86)\gnu\ tools\ arm\ embedded\5.4\ 2016q3\arm-none-eabi\include\sys\_sigset.h \
- c:\program\ files\ (x86)\gnu\ tools\ arm\ embedded\5.4\ 2016q3\arm-none-eabi\include\sys\_timeval.h \
- c:\program\ files\ (x86)\gnu\ tools\ arm\ embedded\5.4\ 2016q3\arm-none-eabi\include\sys\timespec.h \
- c:\program\ files\ (x86)\gnu\ tools\ arm\ embedded\5.4\ 2016q3\arm-none-eabi\include\sys\_timespec.h \
- c:\program\ files\ (x86)\gnu\ tools\ arm\ embedded\5.4\ 2016q3\arm-none-eabi\include\machine\types.h \
- c:\program\ files\ (x86)\gnu\ tools\ arm\ embedded\5.4\ 2016q3\arm-none-eabi\include\sys\_locale.h \
+ d:\gcc\gcc-arm-none-eabi-9-2019-q4-major-win32\lib\gcc\arm-none-eabi\9.2.1\include\stdbool.h \
+ d:\gcc\gcc-arm-none-eabi-9-2019-q4-major-win32\lib\gcc\arm-none-eabi\9.2.1\include\stdint.h \
+ d:\gcc\gcc-arm-none-eabi-9-2019-q4-major-win32\arm-none-eabi\include\stdint.h \
+ d:\gcc\gcc-arm-none-eabi-9-2019-q4-major-win32\arm-none-eabi\include\machine\_default_types.h \
+ d:\gcc\gcc-arm-none-eabi-9-2019-q4-major-win32\arm-none-eabi\include\sys\features.h \
+ d:\gcc\gcc-arm-none-eabi-9-2019-q4-major-win32\arm-none-eabi\include\_newlib_version.h \
+ d:\gcc\gcc-arm-none-eabi-9-2019-q4-major-win32\arm-none-eabi\include\sys\_intsup.h \
+ d:\gcc\gcc-arm-none-eabi-9-2019-q4-major-win32\arm-none-eabi\include\sys\_stdint.h \
+ d:\gcc\gcc-arm-none-eabi-9-2019-q4-major-win32\arm-none-eabi\include\sys\stat.h \
+ d:\gcc\gcc-arm-none-eabi-9-2019-q4-major-win32\arm-none-eabi\include\_ansi.h \
+ d:\gcc\gcc-arm-none-eabi-9-2019-q4-major-win32\arm-none-eabi\include\newlib.h \
+ d:\gcc\gcc-arm-none-eabi-9-2019-q4-major-win32\arm-none-eabi\include\sys\config.h \
+ d:\gcc\gcc-arm-none-eabi-9-2019-q4-major-win32\arm-none-eabi\include\machine\ieeefp.h \
+ d:\gcc\gcc-arm-none-eabi-9-2019-q4-major-win32\arm-none-eabi\include\time.h \
+ d:\gcc\gcc-arm-none-eabi-9-2019-q4-major-win32\arm-none-eabi\include\_ansi.h \
+ d:\gcc\gcc-arm-none-eabi-9-2019-q4-major-win32\arm-none-eabi\include\sys\cdefs.h \
+ d:\gcc\gcc-arm-none-eabi-9-2019-q4-major-win32\lib\gcc\arm-none-eabi\9.2.1\include\stddef.h \
+ d:\gcc\gcc-arm-none-eabi-9-2019-q4-major-win32\arm-none-eabi\include\sys\reent.h \
+ d:\gcc\gcc-arm-none-eabi-9-2019-q4-major-win32\arm-none-eabi\include\sys\_types.h \
+ d:\gcc\gcc-arm-none-eabi-9-2019-q4-major-win32\arm-none-eabi\include\machine\_types.h \
+ d:\gcc\gcc-arm-none-eabi-9-2019-q4-major-win32\arm-none-eabi\include\sys\lock.h \
+ d:\gcc\gcc-arm-none-eabi-9-2019-q4-major-win32\arm-none-eabi\include\machine\time.h \
+ d:\gcc\gcc-arm-none-eabi-9-2019-q4-major-win32\arm-none-eabi\include\sys\types.h \
+ d:\gcc\gcc-arm-none-eabi-9-2019-q4-major-win32\arm-none-eabi\include\machine\endian.h \
+ d:\gcc\gcc-arm-none-eabi-9-2019-q4-major-win32\arm-none-eabi\include\machine\_endian.h \
+ d:\gcc\gcc-arm-none-eabi-9-2019-q4-major-win32\arm-none-eabi\include\sys\select.h \
+ d:\gcc\gcc-arm-none-eabi-9-2019-q4-major-win32\arm-none-eabi\include\sys\_sigset.h \
+ d:\gcc\gcc-arm-none-eabi-9-2019-q4-major-win32\arm-none-eabi\include\sys\_timeval.h \
+ d:\gcc\gcc-arm-none-eabi-9-2019-q4-major-win32\arm-none-eabi\include\sys\timespec.h \
+ d:\gcc\gcc-arm-none-eabi-9-2019-q4-major-win32\arm-none-eabi\include\sys\_timespec.h \
+ d:\gcc\gcc-arm-none-eabi-9-2019-q4-major-win32\arm-none-eabi\include\sys\_pthreadtypes.h \
+ d:\gcc\gcc-arm-none-eabi-9-2019-q4-major-win32\arm-none-eabi\include\sys\sched.h \
+ d:\gcc\gcc-arm-none-eabi-9-2019-q4-major-win32\arm-none-eabi\include\machine\types.h \
+ d:\gcc\gcc-arm-none-eabi-9-2019-q4-major-win32\arm-none-eabi\include\xlocale.h \
  kernel/rhino/core/include/k_api.h \
- c:\program\ files\ (x86)\gnu\ tools\ arm\ embedded\5.4\ 2016q3\arm-none-eabi\include\string.h \
- c:\program\ files\ (x86)\gnu\ tools\ arm\ embedded\5.4\ 2016q3\arm-none-eabi\include\sys\string.h \
+ d:\gcc\gcc-arm-none-eabi-9-2019-q4-major-win32\arm-none-eabi\include\string.h \
+ d:\gcc\gcc-arm-none-eabi-9-2019-q4-major-win32\arm-none-eabi\include\strings.h \
+ d:\gcc\gcc-arm-none-eabi-9-2019-q4-major-win32\arm-none-eabi\include\sys\string.h \
  board/bk3633devkit/./k_config.h \
  kernel/rhino/core/include/k_default_config.h \
  platform/arch/arm/armv5/./gcc/k_types.h \
@@ -62,14 +65,15 @@ out/bluetooth.light@bk3633devkit/Modules/kernel/rhino/vfs/vfs_file.o: \
  kernel/rhino/core/include/k_bitmap.h \
  kernel/rhino/debug/include/k_dftdbg_config.h \
  platform/mcu/bk3633/beken/driver/include/uart_pub.h \
- c:\program\ files\ (x86)\gnu\ tools\ arm\ embedded\5.4\ 2016q3\arm-none-eabi\include\stdio.h \
- c:\program\ files\ (x86)\gnu\ tools\ arm\ embedded\5.4\ 2016q3\lib\gcc\arm-none-eabi\5.4.1\include\stdarg.h \
- c:\program\ files\ (x86)\gnu\ tools\ arm\ embedded\5.4\ 2016q3\arm-none-eabi\include\sys\stdio.h \
+ d:\gcc\gcc-arm-none-eabi-9-2019-q4-major-win32\arm-none-eabi\include\stdio.h \
+ d:\gcc\gcc-arm-none-eabi-9-2019-q4-major-win32\lib\gcc\arm-none-eabi\9.2.1\include\stdarg.h \
+ d:\gcc\gcc-arm-none-eabi-9-2019-q4-major-win32\arm-none-eabi\include\sys\stdio.h \
  platform/mcu/bk3633/beken/modules/common/typedef.h \
  kernel/rhino/./hal/soc/soc.h kernel/rhino/./hal/soc/adc.h \
  kernel/rhino/./hal/soc/flash.h kernel/rhino/./hal/soc/gpio.h \
  kernel/rhino/./hal/soc/i2c.h kernel/rhino/./hal/soc/nand.h \
  kernel/rhino/./hal/soc/nor.h kernel/rhino/./hal/soc/pwm.h \
+ platform/mcu/bk3633/beken/driver/include/pwm_pub.h \
  kernel/rhino/./hal/soc/qspi.h kernel/rhino/./hal/soc/rng.h \
  kernel/rhino/./hal/soc/rtc.h kernel/rhino/./hal/soc/sd.h \
  kernel/rhino/./hal/soc/spi.h kernel/rhino/./hal/soc/timer.h \
@@ -77,8 +81,8 @@ out/bluetooth.light@bk3633devkit/Modules/kernel/rhino/vfs/vfs_file.o: \
  kernel/rhino/./hal/soc/interpt.h kernel/rhino/./hal/soc/dac.h \
  osal/./include/aos/errno.h kernel/rhino/vfs/include/vfs.h \
  osal/./include/aos/types.h \
- c:\program\ files\ (x86)\gnu\ tools\ arm\ embedded\5.4\ 2016q3\arm-none-eabi\include\unistd.h \
- c:\program\ files\ (x86)\gnu\ tools\ arm\ embedded\5.4\ 2016q3\arm-none-eabi\include\sys\unistd.h \
- c:\program\ files\ (x86)\gnu\ tools\ arm\ embedded\5.4\ 2016q3\arm-none-eabi\include\fcntl.h \
- c:\program\ files\ (x86)\gnu\ tools\ arm\ embedded\5.4\ 2016q3\arm-none-eabi\include\sys\fcntl.h \
- c:\program\ files\ (x86)\gnu\ tools\ arm\ embedded\5.4\ 2016q3\arm-none-eabi\include\sys\_default_fcntl.h
+ d:\gcc\gcc-arm-none-eabi-9-2019-q4-major-win32\arm-none-eabi\include\unistd.h \
+ d:\gcc\gcc-arm-none-eabi-9-2019-q4-major-win32\arm-none-eabi\include\sys\unistd.h \
+ d:\gcc\gcc-arm-none-eabi-9-2019-q4-major-win32\arm-none-eabi\include\fcntl.h \
+ d:\gcc\gcc-arm-none-eabi-9-2019-q4-major-win32\arm-none-eabi\include\sys\fcntl.h \
+ d:\gcc\gcc-arm-none-eabi-9-2019-q4-major-win32\arm-none-eabi\include\sys\_default_fcntl.h

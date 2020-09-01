@@ -16,7 +16,7 @@
 #endif
 
 #ifndef CONFIG_BT_MESH_SUBNET_COUNT
-#define CONFIG_BT_MESH_SUBNET_COUNT 2
+#define CONFIG_BT_MESH_SUBNET_COUNT 1
 #endif
 
 #ifndef CONFIG_BT_MESH_PROVISIONER_APP_KEY_COUNT
@@ -41,7 +41,7 @@
 
 /* enlarge adv buf pool 6->8 */
 #ifndef CONFIG_BT_MESH_ADV_BUF_COUNT
-#define CONFIG_BT_MESH_ADV_BUF_COUNT 8
+#define CONFIG_BT_MESH_ADV_BUF_COUNT 24
 #endif
 
 #ifndef CONFIG_BT_MESH_LABEL_COUNT
@@ -49,20 +49,20 @@
 #endif
 
 #ifndef CONFIG_BT_MESH_MSG_CACHE_SIZE
-#define CONFIG_BT_MESH_MSG_CACHE_SIZE 2
+#define CONFIG_BT_MESH_MSG_CACHE_SIZE 6
 #endif
 
 #ifndef CONFIG_BT_MESH_TX_SEG_MSG_COUNT
-#define CONFIG_BT_MESH_TX_SEG_MSG_COUNT 2
+#define CONFIG_BT_MESH_TX_SEG_MSG_COUNT 6
 #endif
 
 #ifndef CONFIG_BT_MESH_RX_SDU_MAX
-#define CONFIG_BT_MESH_RX_SDU_MAX 384
+#define CONFIG_BT_MESH_RX_SDU_MAX 120
 #endif
 
 /* reduce rx buf pool 2->1 */
 #ifndef CONFIG_BT_MESH_RX_SEG_MSG_COUNT
-#define CONFIG_BT_MESH_RX_SEG_MSG_COUNT 4
+#define CONFIG_BT_MESH_RX_SEG_MSG_COUNT 6
 #endif
 
 #ifndef CONFIG_BT_MESH_ADV_PRIO
@@ -187,7 +187,7 @@
  *  range 1 to 128
  */
 #ifndef CONFIG_BT_MAX_CONN
-#define CONFIG_BT_MAX_CONN 2
+#define CONFIG_BT_MAX_CONN 1
 #endif
 
 /**

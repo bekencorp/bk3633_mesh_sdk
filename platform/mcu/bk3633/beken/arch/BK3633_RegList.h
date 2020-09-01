@@ -4010,23 +4010,18 @@
 
 #define addTIMER0_Reg0x0                                        *((volatile unsigned long *) (0x00806500+0x0*4))
 
-#define REG_APB5_GPIOA_CFG                                      addTIMER0_Reg0x0
-
 
 
 //addTIMER0_Reg0x1
 
 #define addTIMER0_Reg0x1                                        *((volatile unsigned long *) (0x00806500+0x1*4))
 
-#define REG_APB5_GPIOA_DATA                                     addTIMER0_Reg0x1
 
 
 
 //addTIMER0_Reg0x2
 
 #define addTIMER0_Reg0x2                                        *((volatile unsigned long *) (0x00806500+0x2*4))
-
-#define REG_APB5_GPIOB_CFG                                      addTIMER0_Reg0x2
 
 
 
@@ -4081,8 +4076,6 @@
 #define clrf_TIMER0_Reg0x3_timer2_int                           addTIMER0_Reg0x3 &= ~0x200
 #define get_TIMER0_Reg0x3_timer2_int                            ((addTIMER0_Reg0x3 & 0x200) >> 9)
 
-#define REG_APB5_GPIOB_DATA                                     addTIMER0_Reg0x3
-
 
 
 //addTIMER0_Reg0x4
@@ -4102,7 +4095,6 @@
 #define clrf_TIMER0_Reg0x4_timerl_cnt_read                      addTIMER0_Reg0x4 &= ~0x1
 #define get_TIMER0_Reg0x4_timerl_cnt_read                       (addTIMER0_Reg0x4 & 0x1)
 
-#define REG_APB5_GPIOC_CFG                                      addTIMER0_Reg0x4
 
 
 
@@ -4110,19 +4102,7 @@
 
 #define addTIMER0_Reg0x5                                        *((volatile unsigned long *) (0x00806500+0x5*4))
 
-#define REG_APB5_GPIOC_DATA                                     addTIMER0_Reg0x5
 
-#define REG_APB5_GPIOD_CFG              (*((volatile unsigned long *)   0x00806518))
-#define REG_APB5_GPIOD_DATA             (*((volatile unsigned long *)   0x0080651C))
-#define REG_APB5_GPIOE_CFG              (*((volatile unsigned long *)   0x00806520))
-#define REG_APB5_GPIOE_DATA             (*((volatile unsigned long *)   0x00806524))
-
-#define REG_APB5_GPIO_WUATOD_TYPE       (*((volatile unsigned long *)   0x00806540))
-#define REG_APB5_GPIO_WUE_TYPE          (*((volatile unsigned long *)   0x00806544))
-#define REG_APB5_GPIO_WUATOD_ENABLE     (*((volatile unsigned long *)   0x00806548))
-#define REG_APB5_GPIO_WUE_ENABLE        (*((volatile unsigned long *)   0x0080654C))
-#define REG_APB5_GPIO_WUATOD_STAT       (*((volatile unsigned long *)   0x00806550))
-#define REG_APB5_GPIO_WUE_STAT          (*((volatile unsigned long *)   0x00806554))
 
 //************************************************************//
 //TIMER1
@@ -4361,7 +4341,7 @@
 
 #define addPWM0_Reg0x2                                          *((volatile unsigned long *) (0x00806100+0x2*4))
 
-#define REG_APB1_PWM0_VALUE_CFG                                 addPWM0_Reg0x2
+#define REG_APB1_PWM0_END_VALUE_CFG                                 addPWM0_Reg0x2
 
 
 
@@ -4370,7 +4350,7 @@
 
 #define addPWM0_Reg0x3                                          *((volatile unsigned long *) (0x00806100+0x3*4))
 
-#define REG_APB1_PWM0_CAP_OUT                                   addPWM0_Reg0x3
+#define REG_APB1_PWM0_DUTY_CYC_CFG                                   addPWM0_Reg0x3
 
 
 
@@ -4378,19 +4358,20 @@
 
 #define addPWM0_Reg0x4                                          *((volatile unsigned long *) (0x00806100+0x4*4))
 
-#define REG_APB1_PWM1_VALUE_CFG                                 addPWM0_Reg0x4
-
 
 
 //addPWM0_Reg0x5
 
 #define addPWM0_Reg0x5                                          *((volatile unsigned long *) (0x00806100+0x5*4))
 
+#define REG_APB1_PWM1_END_VALUE_CFG                                 addPWM0_Reg0x5
+
 
 //addPWM0_Reg0x6
 
 #define addPWM0_Reg0x6                                          *((volatile unsigned long *) (0x00806100+0x6*4))
 
+#define REG_APB1_PWM1_DUTY_CYC_CFG                                   addPWM0_Reg0x6
 
 
 
@@ -4403,6 +4384,8 @@
 
 #define addPWM0_Reg0x8                                          *((volatile unsigned long *) (0x00806100+0x8*4))
 
+#define REG_APB1_PWM2_END_VALUE_CFG                                 addPWM0_Reg0x8
+
 
 
 
@@ -4410,10 +4393,13 @@
 
 #define addPWM0_Reg0x9                                          *((volatile unsigned long *) (0x00806100+0x9*4))
 
+#define REG_APB1_PWM2_DUTY_CYC_CFG                                   addPWM0_Reg0x9
+
 
 //addPWM0_Reg0xa
 
 #define addPWM0_Reg0xa                                          *((volatile unsigned long *) (0x00806100+0xa*4))
+
 
 //addPWM0_Reg0xb
 
@@ -4425,9 +4411,6 @@
 #define setf_PWM0_Reg0xb_pwm0_update                            addPWM0_Reg0xb |= 0x1
 #define clrf_PWM0_Reg0xb_pwm0_update                            addPWM0_Reg0xb &= ~0x1
 #define get_PWM0_Reg0xb_pwm0_update                             (addPWM0_Reg0xb & 0x1)
-
-#define REG_APB1_PWM4_CAP_OUT                                   addPWM0_Reg0xb
-
 
 
 
@@ -4442,8 +4425,6 @@
 #define clrf_PWM0_Reg0xc_pwm1_update                            addPWM0_Reg0xc &= ~0x1
 #define get_PWM0_Reg0xc_pwm1_update                             (addPWM0_Reg0xc & 0x1)
 
-#define REG_APB1_PWM5_VALUE_CFG                                 addPWM0_Reg0xc
-
 
 
 //addPWM0_Reg0xd
@@ -4456,9 +4437,6 @@
 #define setf_PWM0_Reg0xd_pwm2_update                            addPWM0_Reg0xd |= 0x1
 #define clrf_PWM0_Reg0xd_pwm2_update                            addPWM0_Reg0xd &= ~0x1
 #define get_PWM0_Reg0xd_pwm2_update                             (addPWM0_Reg0xd & 0x1)
-
-#define REG_APB1_PWM5_CAP_OUT                                   addPWM0_Reg0xd
-
 
 
 //addPWM0_Reg0xe
@@ -4527,9 +4505,9 @@
 //************************************************************//
 //PWM1
 //************************************************************//
-#define BASEADDR_PWM1                                           0x00860B00
+#define BASEADDR_PWM1                                           0x00806B00
 //addPWM1_Reg0x0
-#define addPWM1_Reg0x0                                          *((volatile unsigned long *) (0x00860B00+0x0*4))
+#define addPWM1_Reg0x0                                          *((volatile unsigned long *) (0x00806B00+0x0*4))
 #define posPWM1_Reg0x0_pwm0_en                                  0
 #define bitPWM1_Reg0x0_pwm0_en                                  0x1
 #define set_PWM1_Reg0x0_pwm0_en(val)                            addPWM1_Reg0x0 = ((addPWM1_Reg0x0 & (~0x1)) | ((val) << 0))
@@ -4637,7 +4615,7 @@
 
 
 //addPWM1_Reg0x1
-#define addPWM1_Reg0x1                                          *((volatile unsigned long *) (0x00860B00+0x1*4))
+#define addPWM1_Reg0x1                                          *((volatile unsigned long *) (0x00806B00+0x1*4))
 #define posPWM1_Reg0x1_pwm0_int                                 0
 #define bitPWM1_Reg0x1_pwm0_int                                 0x1
 #define set_PWM1_Reg0x1_pwm0_int(val)                           addPWM1_Reg0x1 = ((addPWM1_Reg0x1 & (~0x1)) | ((val) << 0))
@@ -4661,34 +4639,59 @@
 
 
 //addPWM1_Reg0x2
-#define addPWM1_Reg0x2                                          *((volatile unsigned long *) (0x00860B00+0x2*4))
+#define addPWM1_Reg0x2                                          *((volatile unsigned long *) (0x00806B00+0x2*4))
+
+#define REG_APB1_PWM3_END_VALUE_CFG                             addPWM1_Reg0x2
+
 
 //addPWM1_Reg0x3
-#define addPWM1_Reg0x3                                          *((volatile unsigned long *) (0x00860B00+0x3*4))
+#define addPWM1_Reg0x3                                          *((volatile unsigned long *) (0x00806B00+0x3*4))
+
+#define REG_APB1_PWM3_DUTY_CYC_CFG                              addPWM1_Reg0x3
+
 
 //addPWM1_Reg0x4
-#define addPWM1_Reg0x4                                          *((volatile unsigned long *) (0x00860B00+0x4*4))
+#define addPWM1_Reg0x4                                          *((volatile unsigned long *) (0x00806B00+0x4*4))
+
+
 
 //addPWM1_Reg0x5
-#define addPWM1_Reg0x5                                          *((volatile unsigned long *) (0x00860B00+0x5*4))
+#define addPWM1_Reg0x5                                          *((volatile unsigned long *) (0x00806B00+0x5*4))
+
+#define REG_APB1_PWM4_END_VALUE_CFG                             addPWM1_Reg0x5
+
+
 
 //addPWM1_Reg0x6
-#define addPWM1_Reg0x6                                          *((volatile unsigned long *) (0x00860B00+0x6*4))
+#define addPWM1_Reg0x6                                          *((volatile unsigned long *) (0x00806B00+0x6*4))
+
+#define REG_APB1_PWM4_DUTY_CYC_CFG                              addPWM1_Reg0x6
+
+
 
 //addPWM1_Reg0x7
-#define addPWM1_Reg0x7                                          *((volatile unsigned long *) (0x00860B00+0x7*4))
+#define addPWM1_Reg0x7                                          *((volatile unsigned long *) (0x00806B00+0x7*4))
+
+
 
 //addPWM1_Reg0x8
-#define addPWM1_Reg0x8                                          *((volatile unsigned long *) (0x00860B00+0x8*4))
+#define addPWM1_Reg0x8                                          *((volatile unsigned long *) (0x00806B00+0x8*4))
+
+#define REG_APB1_PWM5_END_VALUE_CFG                             addPWM1_Reg0x8
+
 
 //addPWM1_Reg0x9
-#define addPWM1_Reg0x9                                          *((volatile unsigned long *) (0x00860B00+0x9*4))
+#define addPWM1_Reg0x9                                          *((volatile unsigned long *) (0x00806B00+0x9*4))
+
+#define REG_APB1_PWM5_DUTY_CYC_CFG                             addPWM1_Reg0x9
+
 
 //addPWM1_Reg0xa
-#define addPWM1_Reg0xa                                          *((volatile unsigned long *) (0x00860B00+0xa*4))
+#define addPWM1_Reg0xa                                          *((volatile unsigned long *) (0x00806B00+0xa*4))
+
 
 //addPWM1_Reg0xb
-#define addPWM1_Reg0xb                                          *((volatile unsigned long *) (0x00860B00+0xb*4))
+#define addPWM1_Reg0xb                                          *((volatile unsigned long *) (0x00806B00+0xb*4))
 #define posPWM1_Reg0xb_pwm0_update                              0
 #define bitPWM1_Reg0xb_pwm0_update                              0x1
 #define set_PWM1_Reg0xb_pwm0_update(val)                        addPWM1_Reg0xb = ((addPWM1_Reg0xb & (~0x1)) | ((val) << 0))
@@ -4698,7 +4701,7 @@
 
 
 //addPWM1_Reg0xc
-#define addPWM1_Reg0xc                                          *((volatile unsigned long *) (0x00860B00+0xc*4))
+#define addPWM1_Reg0xc                                          *((volatile unsigned long *) (0x00806B00+0xc*4))
 #define posPWM1_Reg0xc_pwm1_update                              0
 #define bitPWM1_Reg0xc_pwm1_update                              0x1
 #define set_PWM1_Reg0xc_pwm1_update(val)                        addPWM1_Reg0xc = ((addPWM1_Reg0xc & (~0x1)) | ((val) << 0))
@@ -4708,7 +4711,7 @@
 
 
 //addPWM1_Reg0xd
-#define addPWM1_Reg0xd                                          *((volatile unsigned long *) (0x00860B00+0xd*4))
+#define addPWM1_Reg0xd                                          *((volatile unsigned long *) (0x00806B00+0xd*4))
 #define posPWM1_Reg0xd_pwm2_update                              0
 #define bitPWM1_Reg0xd_pwm2_update                              0x1
 #define set_PWM1_Reg0xd_pwm2_update(val)                        addPWM1_Reg0xd = ((addPWM1_Reg0xd & (~0x1)) | ((val) << 0))
@@ -4718,7 +4721,7 @@
 
 
 //addPWM1_Reg0xe
-#define addPWM1_Reg0xe                                          *((volatile unsigned long *) (0x00860B00+0xe*4))
+#define addPWM1_Reg0xe                                          *((volatile unsigned long *) (0x00806B00+0xe*4))
 
 #define posPWM1_Reg0xe_pwms_index                               1
 #define bitPWM1_Reg0xe_pwms_index                               0xE
@@ -4733,7 +4736,7 @@
 #define get_PWM1_Reg0xe_pwms_cnt_read                           (addPWM1_Reg0xe & 0x1)
 
 //addPWM1_Reg0xf
-#define addPWM1_Reg0xf                                          *((volatile unsigned long *) (0x00860B00+0xf*4))
+#define addPWM1_Reg0xf                                          *((volatile unsigned long *) (0x00806B00+0xf*4))
 
 
 

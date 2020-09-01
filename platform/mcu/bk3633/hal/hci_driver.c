@@ -126,7 +126,7 @@ void ble_recv_prio_handler(void *arg)
 	        krhino_mm_free(recv_buf_info);
 		}
 
-        krhino_sem_take(&recv_prio_sem, CONFIG_BK_HCI_TASK_SEM_TIMEROUT);
+        krhino_sem_take(&recv_prio_sem, -1);
 	}
 }
 
@@ -188,7 +188,7 @@ void ble_recv_handler(void *arg)
         /* Give other threads a chance to run */
         //k_yield();
 
-        krhino_sem_take(&recv_sem, CONFIG_BK_HCI_TASK_SEM_TIMEROUT);
+        krhino_sem_take(&recv_sem, -1);
 	}
 }
 
@@ -217,7 +217,6 @@ static uint8_t hci_driver_recv(app_hci_buf_t *recv_buf)
 		{
 			///check wait receive queue over wait limit
 			if(wait_recv_prio_cnt >= CONFIG_BK_HCI_RECV_PRIO_WAIT_LIMIT) {
-				//printf("hci wait receive priority queue reach limit %d!\r\n", wait_recv_prio_cnt);
 				///skip oldest receive buffer
 				app_recv_buf_info_t *buf_info;
 				GLOBAL_INT_DISABLE();
@@ -252,10 +251,11 @@ static uint8_t hci_driver_recv(app_hci_buf_t *recv_buf)
 
 		///make receive buffer information
 		app_recv_buf_info_t *buf = krhino_mm_alloc(sizeof(app_recv_buf_info_t)+recv_buf->buf_len);
-
+        memset(buf, 0, sizeof(sizeof(app_recv_buf_info_t)+recv_buf->buf_len));
 		buf->nbuf    = NULL;
 		buf->type    = recv_buf->type;
 		buf->buf_len = recv_buf->buf_len;
+		// printf(" +++ buf_len %d ++++\n", buf->buf_len);
 		memcpy(buf->buf, recv_buf->buf, buf->buf_len);
 
 		///push information to receive wait queue
@@ -301,7 +301,7 @@ static int hci_driver_send(struct net_buf *buf)
             }
 
             hci_send->type = HCI_CMD_MSG_TYPE;
-            HCI_INFO("tx cmd:0x%x, len:%d\r\n", hci_send->cmd.opcode, hci_send->cmd.para_len);
+            HCI_INFO("tx cmd opcode:0x%x, len:%d\r\n", hci_send->cmd.opcode, hci_send->cmd.para_len);
             break;
 
         case BT_BUF_ACL_OUT:

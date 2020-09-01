@@ -401,7 +401,6 @@ static u8_t app_key_set(u16_t net_idx, u16_t app_idx, const u8_t val[16],
     struct bt_mesh_app_keys *keys;
     struct bt_mesh_app_key *key;
     struct bt_mesh_subnet *sub;
-    uint8_t buf[18];
 
     BT_DBG("net_idx 0x%04x app_idx %04x update %u val %s",
            net_idx, app_idx, update, bt_hex(val, 16));
@@ -541,10 +540,17 @@ static void app_key_add(struct bt_mesh_model *model,
         BT_ERR("Unable to send App Key Status response");
     }
 
-    genie_group_list_init();
+    genie_sub_list_init();
     genie_mesh_setup();
 
     genie_event(GENIE_EVT_SDK_APPKEY_ADD, &status);
+}
+
+void genie_appkey_register(u16_t net_idx, u16_t app_idx, const u8_t val[16], bool update)
+{
+    app_key_set(net_idx, app_idx, val, update);
+    genie_sub_list_init();
+    genie_mesh_setup();
 }
 
 static void app_key_update(struct bt_mesh_model *model,
@@ -2877,10 +2883,89 @@ static void heartbeat_pub_get(struct bt_mesh_model *model,
     hb_pub_send_status(model, ctx, STATUS_SUCCESS, NULL);
 }
 
+uint8_t genie_heartbeat_set(mesh_hb_para_t *p_para)
+{
+    /* All other address types but virtual are valid */
+    if (BT_MESH_ADDR_IS_VIRTUAL(p_para->dst)) {
+        return STATUS_INVALID_ADDRESS;
+    }
+
+    if (p_para->count > 0x11 && p_para->count != 0xff) {
+        return STATUS_CANNOT_SET;
+    }
+
+    if (p_para->period > 0x10) {
+        return STATUS_CANNOT_SET;
+    }
+
+    if (p_para->ttl > BT_MESH_TTL_MAX && p_para->ttl != BT_MESH_TTL_DEFAULT) {
+        BT_ERR("Invalid TTL value 0x%02x", p_para->ttl);
+        return STATUS_CANNOT_SET;
+    }
+
+    if (p_para->net_idx > 0xfff) {
+        BT_ERR("Invalid NetKeyIndex 0x%04x", p_para->net_idx);
+        return STATUS_CANNOT_SET;
+    }
+
+    if (!bt_mesh_subnet_get(p_para->net_idx)) {
+        return STATUS_INVALID_NETKEY;
+    }
+
+    cfg_srv.hb_pub.dst = p_para->dst;
+    cfg_srv.hb_pub.period = p_para->period;
+    cfg_srv.hb_pub.feat = p_para->feat;
+    cfg_srv.hb_pub.net_idx = p_para->net_idx;
+
+    if (p_para->dst == BT_MESH_ADDR_UNASSIGNED) {
+        hb_pub_disable(&cfg_srv);
+    } else {
+        /* 2^(n-1) */
+        cfg_srv.hb_pub.count = hb_pwr2(p_para->count, 1);
+        cfg_srv.hb_pub.ttl = p_para->ttl;
+
+        BT_DBG("period %u ms", hb_pwr2(p_para->period, 1) * 1000);
+
+        /* The first Heartbeat message shall be published as soon
+         * as possible after the Heartbeat Publication Period state
+         * has been configured for periodic publishing.
+         */
+        if (p_para->period && p_para->count) {
+            k_work_submit(&cfg_srv.hb_pub.timer.work);
+        } else {
+            k_delayed_work_cancel(&cfg_srv.hb_pub.timer);
+        }
+    }
+
+    return STATUS_SUCCESS;
+}
+
 static void heartbeat_pub_set(struct bt_mesh_model *model,
                   struct bt_mesh_msg_ctx *ctx,
                   struct net_buf_simple *buf)
 {
+#if 1
+    struct hb_pub_param *param = (void *)buf->data;
+    mesh_hb_para_t hb_para;
+    u8_t status;
+
+    BT_DBG("src 0x%04x", ctx->addr);
+
+    hb_para.dst = sys_le16_to_cpu(param->dst);
+    hb_para.count = param->count_log;
+    hb_para.period = param->period_log;
+    hb_para.ttl = param->ttl;
+    hb_para.feat = sys_le16_to_cpu(param->feat);
+    hb_para.net_idx = sys_le16_to_cpu(param->net_idx);
+
+    status = genie_heartbeat_set(&hb_para);
+
+    hb_pub_send_status(model, ctx, status, NULL);
+
+    if(hb_para.count == 0xFF) {
+        genie_event(GENIE_EVT_SDK_HB_SET, (void *)&hb_para);
+    }
+#else
     struct hb_pub_param *param = (void *)buf->data;
     struct bt_mesh_cfg_srv *cfg = model->user_data;
     u16_t dst, feat, idx;
@@ -2954,6 +3039,7 @@ static void heartbeat_pub_set(struct bt_mesh_model *model,
 
 failed:
     hb_pub_send_status(model, ctx, status, param);
+#endif
 }
 
 static void hb_sub_send_status(struct bt_mesh_model *model,

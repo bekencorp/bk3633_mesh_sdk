@@ -172,3 +172,22 @@ int bt_encrypt_be(const u8_t key[16], const u8_t plaintext[16],
 
 	return 0;
 }
+
+int bt_decrypt_be(const u8_t key[16], const u8_t enc_data[16],
+		  u8_t dec_data[16])
+{
+    struct tc_aes_key_sched_struct s;
+
+    if (tc_aes128_set_decrypt_key(&s, key) == TC_CRYPTO_FAIL) {
+        return -EINVAL;
+    }
+
+    if (tc_aes_decrypt(dec_data, enc_data, &s) == TC_CRYPTO_FAIL) {
+        return -EINVAL;
+    }
+
+    BT_DBG("dec_data %s", bt_hex(dec_data, 16));
+
+    return 0;
+}
+          

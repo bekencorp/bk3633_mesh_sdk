@@ -324,6 +324,21 @@ struct bt_mesh_model_pub {
 	struct k_delayed_work timer;
 };
 
+/** @def BT_MESH_MODEL_PUB_DEFINE
+ *
+ *  Define a model publication context.
+ *
+ *  @param _name Variable name given to the context.
+ *  @param _update Optional message update callback (may be NULL).
+ *  @param _msg_len Length of the publication message.
+ */
+#define BT_MESH_MODEL_PUB_DEFINE(_name, _update, _msg_len) \
+	NET_BUF_SIMPLE_DEFINE_STATIC(bt_mesh_pub_msg_##_name, _msg_len); \
+	static struct bt_mesh_model_pub _name = { \
+		.msg = &bt_mesh_pub_msg_##_name, \
+		.update = _update, \
+	}
+
 /** Abstraction that describes a Mesh Model instance */
 struct bt_mesh_model {
 	union {

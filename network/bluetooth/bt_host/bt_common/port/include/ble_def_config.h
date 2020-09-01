@@ -252,7 +252,7 @@
  *  range 1 to 128
  */
 #ifndef CONFIG_BT_MAX_CONN
-#define CONFIG_BT_MAX_CONN 2
+#define CONFIG_BT_MAX_CONN 1
 #endif
 
 /**

@@ -8,6 +8,8 @@
 #ifndef _MESH_MESH_H_
 #define _MESH_MESH_H_
 
+//#include "ble_mesh.h"
+
 #define MESH_BIT(n) (1UL << (n))
 #define MESH_BIT_MASK(n) (MESH_BIT(n) - 1)
 

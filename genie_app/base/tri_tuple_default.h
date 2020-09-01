@@ -10,7 +10,7 @@
 // 602 1565d0497400c999e984cffa4da4fdf9 78da07c11ca8
 #define DEFAULT_PID 602
 #define DEFAULT_SECRET "1565d0497400c999e984cffa4da4fdf9"
-#define DEFAULT_MAC "\x72\x62\x12\x4D\x23\xDC"  // 3AB7104D23DC
+#define DEFAULT_MAC "\x7a\x62\x12\x4D\x23\xDC"  // 3AB7104D23DC
 #endif
 
 #if 0

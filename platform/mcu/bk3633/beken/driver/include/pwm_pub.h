@@ -1,6 +1,8 @@
 #ifndef _PWM_PUB_H_
 #define _PWM_PUB_H_
 
+#include "typedef.h"
+
 #define PWM_FAILURE                (1)
 #define PWM_SUCCESS                (0)
 
@@ -16,10 +18,11 @@ enum
     CMD_PWM_IR_CLEAR,
     CMD_PWM_INIT_PARAM,
     CMD_PWM_CAP_GET,
+    CMD_PWM_DUTY_CYC_CHG,
     CMD_PWM_DEINIT_PARAM
 };
 
-enum
+typedef enum
 {
     PWM0     = 0,
     PWM1,
@@ -28,7 +31,7 @@ enum
     PWM4,
     PWM5,
     PWM_COUNT
-};
+} PWM_CHAN_E;
 
 typedef void (*PFUNC)(UINT8);
 
@@ -50,7 +53,7 @@ typedef void (*PFUNC)(UINT8);
 
 typedef struct
 {
-    UINT8 channel;
+    PWM_CHAN_E channel;
 
 
     /* cfg--PWM config

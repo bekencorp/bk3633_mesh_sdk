@@ -40,84 +40,17 @@ static SDD_OPERATIONS gpio_op =
     gpio_ctrl
 };
 
-volatile unsigned long * GPIO_CFG[] = 
-{
-    &REG_APB5_GPIOA_CFG,
-    &REG_APB5_GPIOB_CFG,
-    &REG_APB5_GPIOC_CFG,
-    &REG_APB5_GPIOD_CFG,
-    &REG_APB5_GPIOE_CFG
-};
-
-
-volatile unsigned long * GPIO_DATA[] = 
-{
-    &REG_APB5_GPIOA_DATA,
-    &REG_APB5_GPIOB_DATA,
-    &REG_APB5_GPIOC_DATA,
-    &REG_APB5_GPIOD_DATA,
-    &REG_APB5_GPIOE_DATA
-};
-
 static GPIO_INT_CALLBACK_T gpio_int_cb = NULL; 
 
 void gpio_config(uint8_t gpio, Dir_Type dir, Pull_Type pull)
 {
-#if 0
-    uint32_t  temp_cfg, temp_data;
-    uint8_t port = (gpio&0xf0)>>4;
-    uint8_t  pin = gpio&0xf;
-    temp_cfg = *(GPIO_CFG[port]);
-    temp_data = *(GPIO_DATA[port]);
- 
-    if(dir == OUTPUT)	
-    {
-        temp_cfg |= (1<<pin);
-        temp_cfg &= ~(1<<(pin+8));
-		
-        temp_data &= ~(1<<pin<<16);
-    }
-    else if(dir== INPUT)
-    {
-        temp_cfg |= 1<<pin;
-        temp_cfg |= (1<<(pin+8));
-        temp_data |= (1<<pin)<<16;
-    }
-	else if(dir == HIRESI)		
-	{
-		temp_cfg |= 1<<pin;
-        temp_cfg |= (1<<(pin+8));
-		temp_data  &= ~(1<<pin<<16);	
-	}
-    else
-    {
-        temp_cfg &= ~(1<<pin);
-        temp_cfg |= (1<<(pin+8));
-	  	temp_data  |= (1<<pin<<16);
-    }
 
-    switch(pull)
-    {
-    case PULL_HIGH:
-        temp_cfg |= (1<<pin<<16);
-        temp_cfg &= ~(1<<pin<<24);
-        break;
-    case PULL_LOW:
-        temp_cfg &= ~(1<<pin<<16);
-        temp_cfg |= (1<<pin<<24);
-        break;
-    case PULL_NONE:
-        temp_cfg &= ~(1<<pin<<16);
-        temp_cfg &= ~(1<<pin<<24);
-        break;
-    }
-    *(GPIO_CFG[port]) = temp_cfg;
-    *(GPIO_DATA[port]) = temp_data;
-#endif
-#if 1
     uint32_t  gpio_temp=0;
     uint8_t port = ((gpio&0xf0)>>4);
     uint8_t  pin = (gpio&0xf);
+    uint32_t* dest_reg;
+
+    REG_GPIOx_CFG(dest_reg, port, pin);
 
     switch(dir)
     {
@@ -152,20 +85,20 @@ void gpio_config(uint8_t gpio, Dir_Type dir, Pull_Type pull)
         gpio_temp &= ~(1<<GPIO_PULL_EN);
         break;
     }
-    *((volatile unsigned long *) (BASEADDR_GPIO+4*(port*8+pin)))=gpio_temp;
-#endif
+
+    *(volatile unsigned long *)dest_reg = gpio_temp;
+
 }
 
 void gpio_config_func(uint8_t gpio)
 {
-    uint32_t  temp_cfg;
+    uint32_t*  p_add;
     uint8_t port = (gpio&0xf0)>>4;
     uint8_t  pin = gpio&0xf;
-    temp_cfg = *(GPIO_CFG[port]);
 
-    temp_cfg &= ~(1<<pin);
+    REG_GPIOx_CFG(p_add, port, pin);
 
-    *(GPIO_CFG[port]) = temp_cfg;
+    setf_GPIO_2nd_Fun_Ena(p_add);
 }
 
 static void gpio_enable_second_function(UINT32 func_mode)
@@ -248,51 +181,34 @@ static void gpio_enable_second_function(UINT32 func_mode)
 
 uint8_t gpio_get_input(uint8_t gpio)
 {
-    uint32_t temp;
+
+    uint32_t*  p_add;
     uint8_t port = (gpio&0xf0)>>4;
     uint8_t  pin = gpio&0xf;
 
-    temp = *(GPIO_DATA[port]);
-    temp = ((temp >> 0x08)&0xff)>>pin;
+    REG_GPIOx_CFG(p_add, port, pin);
 	
-    return temp&0x01;
+    return get_GPIO_Input_Monitor(p_add);
 }
 
 void gpio_set(uint8_t gpio, uint8_t val)
 {
-#if 0
-    uint32_t temp;
-    uint8_t port = (gpio&0xf0)>>4;
-    uint8_t  pin = gpio&0xf;
-    
-    temp = *(GPIO_DATA[port]);
-    if(val)
-    {
-        temp |= 1<<pin;
-    }
-    else
-    {
-        temp &= ~(1<<pin);
-    }
 
-    *(GPIO_DATA[port]) = temp;
-#endif
-#if 1
-    uint32_t temp=0;
+    uint32_t*  p_add;
     uint8_t port = ((gpio&0xf0)>>4);
     uint8_t  pin = (gpio&0xf);
 
-    temp = *((volatile unsigned long *) (BASEADDR_GPIO+4*(port*8+pin)));
+    REG_GPIOx_CFG(p_add, port, pin);
+
     if(val)
     {
-        temp |= (1<<GPIO_OUTPUT_VA);
+        *p_add |= (1<<GPIO_OUTPUT_VA);
     }
     else
     {
-        temp &= ~(1<<GPIO_OUTPUT_VA);
+        *p_add &= ~(1<<GPIO_OUTPUT_VA);
     }
-    *((volatile unsigned long *) (BASEADDR_GPIO+4*(port*8+pin))) = temp;
-#endif
+
 }
 
 #if GPIO_DBG_MSG
@@ -414,63 +330,6 @@ void gpio_int_enable(UINT32 index, UINT32 mode, void (*p_Int_Handler)(unsigned c
     REG_APB5_GPIO_WUATOD_TYPE = (REG_APB5_GPIO_WUATOD_TYPE & (~(0x01 << idx))) | (mode << idx);
     REG_APB5_GPIO_WUATOD_ENABLE |= (0x01 << idx);
 }
-
-#if 0
-void gpio_test_init(void)
-{
-	gpio_config(GPIOC_0, FLOAT, PULL_HIGH);
-	gpio_config(GPIOC_0, FLOAT, PULL_HIGH);
-	gpio_config(GPIOC_0, FLOAT, PULL_HIGH);
-	gpio_config(GPIOC_0, FLOAT, PULL_HIGH);
-	gpio_config(GPIOC_0, FLOAT, PULL_HIGH);
-}
-
-void gpio_sleep(void)
-{
-	GPIO_CFG_BACKUP[0] = REG_APB5_GPIOA_CFG;
-	GPIO_CFG_BACKUP[1] = REG_APB5_GPIOB_CFG;
-	GPIO_CFG_BACKUP[2] = REG_APB5_GPIOC_CFG;
-	GPIO_CFG_BACKUP[3] = REG_APB5_GPIOD_CFG;
-	GPIO_CFG_BACKUP[4] = REG_APB5_GPIOE_CFG;
-	
-	GPIO_DATA_BACKUP[0] = REG_APB5_GPIOA_DATA;
-	GPIO_DATA_BACKUP[1] = REG_APB5_GPIOB_DATA;
-	GPIO_DATA_BACKUP[2] = REG_APB5_GPIOC_DATA;
-	GPIO_DATA_BACKUP[3] = REG_APB5_GPIOD_DATA;
-	GPIO_DATA_BACKUP[4] = REG_APB5_GPIOE_DATA;
-
-	
-	REG_APB5_GPIOA_CFG = 0x0000ffff;
-	REG_APB5_GPIOA_DATA = 0x0000ffff;
-	
-	REG_APB5_GPIOB_CFG = 0x0000ffff;
-	REG_APB5_GPIOB_DATA = 0x0000ffff;
-	
-	REG_APB5_GPIOC_CFG = 0x0000ffff;
-	REG_APB5_GPIOC_DATA = 0x0000ffff;
-	
-	REG_APB5_GPIOD_CFG = 0x0000ffff;
-	REG_APB5_GPIOD_DATA = 0x0000ffff;
-	
-	REG_APB5_GPIOE_CFG = 0x0000ffff;
-	REG_APB5_GPIOE_DATA = 0x0000ffff;
-}
-
-void gpio_wakeup(void)
-{
-	REG_APB5_GPIOA_CFG = GPIO_CFG_BACKUP[0];
-	REG_APB5_GPIOB_CFG = GPIO_CFG_BACKUP[1];
-	REG_APB5_GPIOC_CFG = GPIO_CFG_BACKUP[2];
-	REG_APB5_GPIOD_CFG = GPIO_CFG_BACKUP[3];
-	REG_APB5_GPIOE_CFG = GPIO_CFG_BACKUP[4];
-	
-	REG_APB5_GPIOA_DATA = GPIO_DATA_BACKUP[0];
-	REG_APB5_GPIOB_DATA = GPIO_DATA_BACKUP[1];	
-	REG_APB5_GPIOC_DATA = GPIO_DATA_BACKUP[2];
-	REG_APB5_GPIOD_DATA = GPIO_DATA_BACKUP[3];
-	REG_APB5_GPIOE_DATA = GPIO_DATA_BACKUP[4];
-}
-#endif
 
 UINT32 gpio_ctrl(UINT32 cmd, void *param)
 {

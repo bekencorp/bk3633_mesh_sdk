@@ -40,6 +40,16 @@
 #define GPIO_PULL_EN    5
 #define GPIO_2FUN_EN    6
 
+#define REG_GPIO_CFG_BASE                       BASEADDR_AON_GPIO
+#define REG_GPIOx_CFG(dest_reg, port,pin)       dest_reg = (REG_GPIO_CFG_BASE + (port)*0x08*0x04 + (pin)* 0x04)
+
+#define REG_APB5_GPIO_WUATOD_STAT               addAON_GPIO_Reg0x35
+#define REG_APB5_GPIO_WUATOD_ENABLE             addAON_GPIO_Reg0x33
+#define REG_APB5_GPIO_WUATOD_TYPE               addAON_GPIO_Reg0x30
+
+#define setf_GPIO_2nd_Fun_Ena(p)            ((*(volatile unsigned long *)p) |= (1<<GPIO_2FUN_EN))
+#define get_GPIO_Input_Monitor(p)           (((*(volatile unsigned long *)p) & 0x80) >> 7)
+
  typedef enum
 {
     INPUT,
@@ -55,41 +65,6 @@ typedef enum
     PULL_NONE
 }Pull_Type;
  
-#define GPIOA_0     0x00
-#define GPIOA_1     0x01
-#define GPIOA_2     0x02
-#define GPIOA_3     0x03
-#define GPIOA_4     0x04
-#define GPIOA_5     0x05
-#define GPIOA_6     0x06
-#define GPIOA_7     0x07
-
-#define GPIOB_0     0x10
-#define GPIOB_1     0x11
-#define GPIOB_2     0x12
-#define GPIOB_3     0x13
-#define GPIOB_4     0x14
-#define GPIOB_5     0x15
-#define GPIOB_6     0x16
-#define GPIOB_7     0x17
-
-#define GPIOC_0     0x20
-#define GPIOC_1     0x21
-#define GPIOC_2     0x22
-#define GPIOC_3     0x23
-#define GPIOC_4     0x24
-#define GPIOC_5     0x25
-#define GPIOC_6     0x26
-#define GPIOC_7     0x27
-
-#define GPIOD_0     0x30
-#define GPIOD_1     0x31
-#define GPIOD_2     0x32
-#define GPIOD_3     0x33
-#define GPIOD_4     0x34
-#define GPIOD_5     0x35
-#define GPIOD_6     0x36
-#define GPIOD_7     0x37
 
 #define	BlueLedPort		0x11
 #define	BlueLedOn()		REG_APB5_GPIOB_DATA |= 0x02

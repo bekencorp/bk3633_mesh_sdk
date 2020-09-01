@@ -20,7 +20,8 @@
 
 #define PWM_CHANNEL_NUMBER_MAX       		6
 
-#define REG_PWM_INTR                        addPWM0_Reg0x1
+#define REG_PWM0_INTR                        addPWM0_Reg0x1
+#define REG_PWM1_INTR                        addPWM1_Reg0x1
 
 #define APB1_PWM_BASE						BASEADDR_PWM0
 
@@ -71,7 +72,8 @@
 
 
 #define REG_PWM_INTR_ADDR                   (APB1_PWM_BASE + 0x01 * 4)
-#define REG_PWM_INTR_MASK                   0x07
+#define REG_PWM0_INTR_MASK                   0x07
+#define REG_PWM1_INTR_MASK                   0x38
 
 #define ICU_INT_ENABLE_SET(x)               do {                                    \
                 REG_AHB0_ICU_INT_ENABLE |=  (x);                                    \                                                               \

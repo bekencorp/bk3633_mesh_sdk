@@ -14,7 +14,7 @@ int32_t hal_pwm_init(pwm_dev_t *pwm)
     param.cfg.bits.en     = PWM_DISABLE;
     param.cfg.bits.int_en = PWM_INT_DIS;
     param.cfg.bits.mode   = PMODE_PWM;
-    param.p_Int_Handler   = 0;
+    param.p_Int_Handler   = pwm->p_Int_Handler;
 
     ///select base clock
     if(pwm->config.freq > 250)
@@ -57,6 +57,27 @@ int32_t hal_pwm_stop(pwm_dev_t *pwm)
 
     return ret;
 }
+
+/**
+ * change the para of pwm
+ *
+ * @param[in]  pwm  the PWM device
+ *
+ * @return  0 : on success, EIO : if an error occurred with any step
+ */
+int32_t hal_pwm_duty_cycle_chg(uint8_t channel, uint32_t end_value, uint32_t duty_cycle)
+{
+    pwm_param_t param;
+    uint32_t ret;
+
+    param.channel = channel;
+    param.end_value  = end_value;
+    param.duty_cycle = duty_cycle;
+    ret = sddev_control(PWM_DEV_NAME, CMD_PWM_DUTY_CYC_CHG, &param);
+
+    return ret;
+}
+
 
 int32_t hal_pwm_finalize(pwm_dev_t *pwm)
 {

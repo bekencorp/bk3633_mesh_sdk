@@ -233,13 +233,13 @@ const uint8_t rwip_coex_cfg[RWIP_COEX_CFG_MAX]={
 /// Heap definitions - use uint32 to ensure that memory blocks are 32bits aligned.
 
 /// Memory allocated for environment variables
-uint32_t KE_HEAP rwip_heap_env[RWIP_CALC_HEAP_LEN(RWIP_HEAP_ENV_SIZE)];
+//uint32_t KE_HEAP rwip_heap_env[RWIP_CALC_HEAP_LEN(RWIP_HEAP_ENV_SIZE)];
 #if (BLE_HOST_PRESENT)
 /// Memory allocated for Attribute database
 // uint32_t KE_HEAP rwip_heap_db[RWIP_CALC_HEAP_LEN(RWIP_HEAP_DB_SIZE)];
 #endif // (BLE_HOST_PRESENT)
 /// Memory allocated for kernel messages
-uint32_t  rwip_heap_msg[RWIP_CALC_HEAP_LEN(RWIP_HEAP_MSG_SIZE)];
+// uint32_t  rwip_heap_msg[RWIP_CALC_HEAP_LEN(RWIP_HEAP_MSG_SIZE)];
 /// Non Retention memory block
 // uint32_t KE_HEAP rwip_heap_non_ret[RWIP_CALC_HEAP_LEN(RWIP_HEAP_NON_RET_SIZE)];
 /// IP reset state variable
@@ -675,14 +675,17 @@ void rwip_init(uint32_t error)
     ke_init();
     // Initialize memory heap used by kernel.
     // Memory allocated for environment variables
-    ke_mem_init(KE_MEM_ENV,           (uint8_t*)rwip_heap_env,     RWIP_CALC_HEAP_LEN_IN_BYTES(RWIP_HEAP_ENV_SIZE));
+    // ke_mem_init(KE_MEM_ENV,           (uint8_t*)rwip_heap_env,     RWIP_CALC_HEAP_LEN_IN_BYTES(RWIP_HEAP_ENV_SIZE));
     #if (0) //(BLE_HOST_PRESENT)
     // Memory allocated for Attribute database
     ke_mem_init(KE_MEM_ATT_DB,        (uint8_t*)rwip_heap_db,      RWIP_CALC_HEAP_LEN_IN_BYTES(RWIP_HEAP_DB_SIZE));
     #endif // (BLE_HOST_PRESENT)
     // Memory allocated for kernel messages
-    ke_mem_init(KE_MEM_KE_MSG,        (uint8_t*)rwip_heap_msg,     RWIP_CALC_HEAP_LEN_IN_BYTES(RWIP_HEAP_MSG_SIZE));
-    ke_mem_init(KE_MEM_NON_RETENTION, (uint8_t *)(REG_EM_ET_BASE_ADDR + EM_BLE_END), RWIP_CALC_HEAP_LEN_IN_BYTES(16 * 1024 -  EM_BLE_END));
+    // ke_mem_init(KE_MEM_KE_MSG,        (uint8_t*)rwip_heap_msg,     RWIP_CALC_HEAP_LEN_IN_BYTES(RWIP_HEAP_MSG_SIZE));
+    ke_mem_init(KE_MEM_NON_RETENTION, (uint8_t *)(REG_EM_ET_BASE_ADDR + EM_BLE_END + 1), 16 * 1024 -  EM_BLE_END - 4);
+    UART_PRINTF("++++ EM_BLE_END 0x%x, len %d ++++, end 0x%x\n", 
+               EM_BLE_END, 16 * 1024 -  EM_BLE_END - 4,
+               REG_EM_ET_BASE_ADDR + (16 * 1024 -  4));
     // Non Retention memory block
     // ke_mem_init(KE_MEM_NON_RETENTION, (uint8_t*)rwip_heap_non_ret, RWIP_CALC_HEAP_LEN_IN_BYTES(RWIP_HEAP_NON_RET_SIZE));
 

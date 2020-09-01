@@ -324,7 +324,7 @@ unsigned int find_msb_set(u32_t data)
 
 unsigned int find_lsb_set(u32_t data)
 {
-    uint8_t count = 1;
+    uint32_t count = 1;
     uint32_t mask  = 0x00000001;
 
     if (!data) {

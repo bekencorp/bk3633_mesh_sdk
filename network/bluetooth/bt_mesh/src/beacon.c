@@ -164,7 +164,7 @@ void bt_mesh_beacon_create_with_flag(struct bt_mesh_subnet *sub,
 /* If the interval has passed or is within 5 seconds from now send a beacon */
 #define BEACON_THRESHOLD(sub) (K_SECONDS(10 * ((sub)->beacons_last + 1)) - \
                    K_SECONDS(5))
-
+ 
 static int secure_beacon_send(void)
 {
     static const struct bt_mesh_send_cb send_cb = {
@@ -459,7 +459,7 @@ void bt_mesh_beacon_recv(struct net_buf_simple *buf)
     type = net_buf_simple_pull_u8(buf);
     switch (type) {
         case BEACON_TYPE_UNPROVISIONED:
-            BT_DBG("Ignoring unprovisioned device beacon");
+            // BT_DBG("Ignoring unprovisioned device beacon");
             break;
         case BEACON_TYPE_SECURE:
             secure_beacon_recv(buf);

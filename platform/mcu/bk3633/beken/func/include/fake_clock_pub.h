@@ -4,7 +4,7 @@
 #include "include.h"
 #include "pwm_pub.h"
 
-#define FCLK_PWM_ID           PWM1 ///pwm timer
+#define FCLK_PWM_ID           PWM5 ///pwm timer
 
 #if (RHINO_CONFIG_TICKS_PER_SECOND >= 250)
 #define FCLK_SECOND           (16000000 / RHINO_CONFIG_TICKS_PER_SECOND)

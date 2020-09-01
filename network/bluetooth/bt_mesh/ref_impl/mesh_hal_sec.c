@@ -24,6 +24,12 @@ int bt_mesh_aes_encrypt(const uint8_t key[16], const uint8_t plaintext[16],
     return bt_encrypt_be(key, plaintext, enc_data);
 }
 
+int bt_mesh_aes_decrypt(const uint8_t key[16], const uint8_t enc_data[16],
+                        uint8_t dec_data[16])
+{
+    return bt_decrypt_be(key, enc_data, dec_data);
+}
+
 int bt_mesh_aes_cmac(const uint8_t key[16], struct bt_mesh_sg *sg,
                      size_t sg_len, uint8_t mac[16])
 {
@@ -62,7 +68,7 @@ int bt_mesh_dh_key_gen(const uint8_t remote_pk[64], bt_mesh_dh_key_cb_t cb)
 
 int bt_mesh_pub_key_gen(struct bt_mesh_pub_key_cb *cb)
 {
-    return bt_pub_key_gen(cb);
+    return bt_pub_key_gen((struct bt_pub_key_cb *)cb);
 }
 #else
 int bt_mesh_rand(void *buf, size_t len)

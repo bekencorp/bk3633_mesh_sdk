@@ -115,38 +115,43 @@ UINT32 icu_ctrl(UINT32 cmd, void *param)
     	break;
 
     case CMD_CLK_PWR_UP:
-    	dev = *(UINT8 *)param;
+    	dev = *(PWM_CHAN_E *)param;
+
     	switch(dev)
     	{
-    	case CLK_PWR_DEV_PWM0:
-    	case CLK_PWR_DEV_PWM1:
-    	case CLK_PWR_DEV_PWM2:
-    	case CLK_PWR_DEV_PWM3:
-    	case CLK_PWR_DEV_PWM4:
-    	case CLK_PWR_DEV_PWM5:
-        //printf("%s, CMD_CLK_PWR_UP %d\n", __func__, __LINE__);
-    		posi = SYS_PWM0_PWD_POS;//(dev-CLK_PWR_DEV_PWM0)*2;
-            reg  = REG_READ(REG_SYS_PWD);
-            reg &= ~(0x01UL << posi);
-            REG_WRITE(REG_SYS_PWD, reg);
-    		break;
-    	case CLK_PWR_DEV_UART:
-            reg  = REG_READ(ICU_UART_CLK_CON);
-            reg &= ~ICU_UART_CLK_PWD_MASK;
-            REG_WRITE(ICU_UART_CLK_CON, reg);
-    		break;
-    	case CLK_PWR_DEV_WDT:
-            reg  = REG_READ(ICU_WDT_CLK_CON);
-            reg &= ~ICU_WDT_CLK_PWD_MASK;
-            REG_WRITE(ICU_WDT_CLK_CON, reg);
-    		break;
-    	case CLK_PWR_DEV_I2S_PCM:
-            reg  = REG_READ(ICU_RNG_CLK_CON);
-            reg &= ~ICU_I2S_CLK_PWD_MASK;
-            REG_WRITE(ICU_RNG_CLK_CON, reg);
-    		break;
-    	default:
-    		break;
+            case CLK_PWR_DEV_PWM0:
+            case CLK_PWR_DEV_PWM1:
+            case CLK_PWR_DEV_PWM2:
+                posi = SYS_PWM0_PWD_POS;
+                reg  = REG_READ(REG_SYS_PWD);
+                reg &= ~(0x01UL << posi);
+                REG_WRITE(REG_SYS_PWD, reg);
+                break;
+            case CLK_PWR_DEV_PWM3:
+            case CLK_PWR_DEV_PWM4:
+            case CLK_PWR_DEV_PWM5:
+                posi = SYS_PWM1_PWD_POS;
+                reg  = REG_READ(REG_SYS_PWD);
+                reg &= ~(0x01UL << posi);
+                REG_WRITE(REG_SYS_PWD, reg);
+                break;
+            case CLK_PWR_DEV_UART:
+                reg  = REG_READ(ICU_UART_CLK_CON);
+                reg &= ~ICU_UART_CLK_PWD_MASK;
+                REG_WRITE(ICU_UART_CLK_CON, reg);
+                break;
+            case CLK_PWR_DEV_WDT:
+                reg  = REG_READ(ICU_WDT_CLK_CON);
+                reg &= ~ICU_WDT_CLK_PWD_MASK;
+                REG_WRITE(ICU_WDT_CLK_CON, reg);
+                break;
+            case CLK_PWR_DEV_I2S_PCM:
+                reg  = REG_READ(ICU_RNG_CLK_CON);
+                reg &= ~ICU_I2S_CLK_PWD_MASK;
+                REG_WRITE(ICU_RNG_CLK_CON, reg);
+                break;
+            default:
+                break;
     	}
         break;
 
@@ -154,39 +159,58 @@ UINT32 icu_ctrl(UINT32 cmd, void *param)
     	dev = *(UINT8 *)param;
     	switch(dev)
     	{
-    	case CLK_PWR_DEV_PWM0:
-    	case CLK_PWR_DEV_PWM1:
-    	case CLK_PWR_DEV_PWM2:
-    	case CLK_PWR_DEV_PWM3:
-    	case CLK_PWR_DEV_PWM4:
-    	case CLK_PWR_DEV_PWM5:
-    		posi = SYS_PWM0_PWD_POS;//(dev-CLK_PWR_DEV_PWM0)*2;
-            reg  = REG_READ(REG_SYS_PWD);
-            reg |= (0x01UL << posi);
-            REG_WRITE(REG_SYS_PWD, reg);
-    		break;
-    	case CLK_PWR_DEV_UART:
-            reg  = REG_READ(ICU_UART_CLK_CON);
-            reg |= ICU_UART_CLK_PWD_MASK;
-            REG_WRITE(ICU_UART_CLK_CON, reg);
-    		break;
-    	case CLK_PWR_DEV_WDT:
-            reg  = REG_READ(ICU_WDT_CLK_CON);
-            reg |= ICU_WDT_CLK_PWD_MASK;
-            REG_WRITE(ICU_WDT_CLK_CON, reg);
-    		break;
-    	case CLK_PWR_DEV_I2S_PCM:
-            reg  = REG_READ(ICU_RNG_CLK_CON);
-            reg |= ICU_I2S_CLK_PWD_MASK;
-            REG_WRITE(ICU_RNG_CLK_CON, reg);
-    		break;
-    	default:
-    		break;
+            case CLK_PWR_DEV_PWM0:
+            case CLK_PWR_DEV_PWM1:
+            case CLK_PWR_DEV_PWM2:
+                posi = SYS_PWM0_PWD_POS;
+                reg  = REG_READ(REG_SYS_PWD);
+                reg |= (0x01UL << posi);
+                REG_WRITE(REG_SYS_PWD, reg);
+                break;
+            case CLK_PWR_DEV_PWM3:
+            case CLK_PWR_DEV_PWM4:
+            case CLK_PWR_DEV_PWM5:
+                posi = SYS_PWM1_PWD_POS;
+                reg  = REG_READ(REG_SYS_PWD);
+                reg |= (0x01UL << posi);
+                REG_WRITE(REG_SYS_PWD, reg);
+                break;
+            case CLK_PWR_DEV_UART:
+                reg  = REG_READ(ICU_UART_CLK_CON);
+                reg |= ICU_UART_CLK_PWD_MASK;
+                REG_WRITE(ICU_UART_CLK_CON, reg);
+                break;
+            case CLK_PWR_DEV_WDT:
+                reg  = REG_READ(ICU_WDT_CLK_CON);
+                reg |= ICU_WDT_CLK_PWD_MASK;
+                REG_WRITE(ICU_WDT_CLK_CON, reg);
+                break;
+            case CLK_PWR_DEV_I2S_PCM:
+                reg  = REG_READ(ICU_RNG_CLK_CON);
+                reg |= ICU_I2S_CLK_PWD_MASK;
+                REG_WRITE(ICU_RNG_CLK_CON, reg);
+                break;
+            default:
+                break;
     	}
         break;
 
     case CMD_CONF_PWM_PCLK:
-    	posi = SYS_PWM0_SEL_POS; //1+(*(UINT8 *)param*2);
+        dev = *(PWM_CHAN_E *)param;
+        switch(dev)
+        {
+            case PWM0:
+            case PWM1:
+            case PWM2: 
+                posi = SYS_PWM0_SEL_POS;
+                break;
+            case PWM3:
+            case PWM4:
+            case PWM5: 
+                posi = SYS_PWM1_SEL_POS;
+                break;
+        }
+
         reg = REG_READ(REG_SYS_CLK_SEL);
         reg &= ~(0x03 << posi);
         reg |= (0x01 << posi);
@@ -194,7 +218,21 @@ UINT32 icu_ctrl(UINT32 cmd, void *param)
         break;
 
     case CMD_CONF_PWM_LPOCLK:
-    	posi = SYS_PWM0_SEL_POS;//1+(*(UINT8 *)param*2);
+        dev = *(PWM_CHAN_E *)param;
+        switch(dev)
+        {
+            case PWM0:
+            case PWM1:
+            case PWM2: 
+                posi = SYS_PWM0_SEL_POS;
+                break;
+            case PWM3:
+            case PWM4:
+            case PWM5: 
+                posi = SYS_PWM1_SEL_POS;
+                break;
+        }
+
         reg = REG_READ(REG_SYS_CLK_SEL);
         reg &= ~(0x03 << posi);
         REG_WRITE(REG_SYS_CLK_SEL, reg);

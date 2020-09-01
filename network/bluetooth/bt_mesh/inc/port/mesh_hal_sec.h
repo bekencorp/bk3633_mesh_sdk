@@ -56,6 +56,9 @@ int bt_mesh_rand(void *buf, size_t len);
 int bt_mesh_aes_encrypt(const uint8_t key[16], const uint8_t plaintext[16],
                         uint8_t enc_data[16]);
 
+int bt_mesh_aes_decrypt(const uint8_t key[16], const uint8_t enc_data[16],
+                        uint8_t dec_data[16]);
+
 /** @brief AES-CMAC
  *
  * Function used to do the AES-CMAC calculation.

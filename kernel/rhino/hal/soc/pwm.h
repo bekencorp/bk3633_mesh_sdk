@@ -5,6 +5,9 @@
 #ifndef HAL_PWM_H
 #define HAL_PWM_H
 
+#include <stdint.h>
+#include "pwm_pub.h"
+
 typedef struct {
     float    duty_cycle;  /* the pwm duty_cycle */
     uint32_t freq;        /* the pwm freq */
@@ -14,6 +17,7 @@ typedef struct {
     uint8_t      port;    /* pwm port */
     pwm_config_t config;  /* spi config */
     void        *priv;    /* priv data */
+    PFUNC p_Int_Handler;
 } pwm_dev_t;
 
 /**
@@ -48,11 +52,10 @@ int32_t hal_pwm_stop(pwm_dev_t *pwm);
  * change the para of pwm
  *
  * @param[in]  pwm  the PWM device
- * @param[in]  para the para of pwm
  *
  * @return  0 : on success, EIO : if an error occurred with any step
  */
-int32_t hal_pwm_para_chg(pwm_dev_t *pwm, pwm_config_t para);
+int32_t hal_pwm_duty_cycle_chg(uint8_t channel, uint32_t end_value, uint32_t duty_cycle);
 
 /**
  * De-initialises an PWM interface, Turns off an PWM hardware interface

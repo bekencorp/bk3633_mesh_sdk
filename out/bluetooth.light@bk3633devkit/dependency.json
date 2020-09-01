@@ -18,9 +18,6 @@
     ], 
     "board_bk3633": [], 
     "bt_common": [], 
-    "bt_dfu": [
-        "yloop"
-    ], 
     "bt_host": [
         "yloop", 
         "bluetooth.bt_host.bt_common"
@@ -39,8 +36,7 @@
         "yloop", 
         "cli", 
         "bluetooth.bt_host", 
-        "crc", 
-        "bluetooth.bt_dfu"
+        "crc"
     ], 
     "hal": [], 
     "hal_init": [], 

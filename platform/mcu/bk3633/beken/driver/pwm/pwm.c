@@ -55,7 +55,7 @@ static void pwm_gpio_configuration(UINT8 chan, UINT8 enable)
 
 	if(enable)
 	{
-    ret = sddev_control(GPIO_DEV_NAME, CMD_GPIO_ENABLE_SECOND, &param);
+        ret = sddev_control(GPIO_DEV_NAME, CMD_GPIO_ENABLE_SECOND, &param);
 	}
 	else
 	{
@@ -108,15 +108,83 @@ exit_icu:
     return;
 }
 
+void pwm_duty_cycle(pwm_param_t *pwm_param)
+{
+
+    switch(pwm_param->channel)
+    {
+        case PWM0:
+        {
+            REG_APB1_PWM0_END_VALUE_CFG = pwm_param->end_value;
+            REG_APB1_PWM0_DUTY_CYC_CFG = pwm_param->duty_cycle;
+                           
+        }break;
+        
+        case PWM1:
+        {
+            REG_APB1_PWM1_END_VALUE_CFG = pwm_param->end_value;
+            REG_APB1_PWM1_DUTY_CYC_CFG = pwm_param->duty_cycle;
+        
+        }break;
+        
+        case PWM2:
+        {
+            REG_APB1_PWM2_END_VALUE_CFG = pwm_param->end_value;
+            REG_APB1_PWM2_DUTY_CYC_CFG = pwm_param->duty_cycle;
+        
+        }break;
+
+        case PWM3:
+        {
+            REG_APB1_PWM3_END_VALUE_CFG = pwm_param->end_value;
+            REG_APB1_PWM3_DUTY_CYC_CFG = pwm_param->duty_cycle;
+                           
+        }break;
+        
+        case PWM4:
+        {
+            REG_APB1_PWM4_END_VALUE_CFG = pwm_param->end_value;
+            REG_APB1_PWM4_DUTY_CYC_CFG = pwm_param->duty_cycle;
+        
+        }break;
+        
+        case PWM5:
+        {
+            REG_APB1_PWM5_END_VALUE_CFG = pwm_param->end_value;
+            REG_APB1_PWM5_DUTY_CYC_CFG = pwm_param->duty_cycle;
+        
+        }break;
+        
+        default:break;       
+    }
+}
+
 static void init_pwm_param(pwm_param_t *pwm_param, UINT8 enable)
 {
     UINT32 value;
+    UINT32* pwm_reg;
+    UINT8 channel_offset, intc_group;
 
     if((pwm_param == NULL)
             || (pwm_param->channel >= PWM_COUNT)
             || (pwm_param->duty_cycle > pwm_param->end_value))
     {
         return;
+    }
+
+    if(pwm_param->channel >= PWM0 && pwm_param->channel <= PWM2)
+    {
+        pwm_reg = (UINT32*)BASEADDR_PWM0;
+        channel_offset = pwm_param->channel;
+        intc_group = IRQ_PWM0;
+        set_PWM0_Reg0x0_pre_div(pwm_param->pre_divid);
+    }
+    else if(pwm_param->channel >= PWM3 && pwm_param->channel <= PWM5)
+    {
+        pwm_reg = (UINT32*)BASEADDR_PWM1;
+        channel_offset = pwm_param->channel - PWM3;
+        intc_group = IRQ_PWM1;
+        set_PWM1_Reg0x0_pre_div(pwm_param->pre_divid);
     }
 
 	if(pwm_param->cfg.bits.mode != PMODE_TIMER)
@@ -126,66 +194,66 @@ static void init_pwm_param(pwm_param_t *pwm_param, UINT8 enable)
 	
     pwm_icu_configuration(pwm_param, enable);
 
-    addPWM0_Reg0x0 &= ~(0x7 << (5 * pwm_param->channel + posPWM0_Reg0x0_pwm0_mode));
-    addPWM0_Reg0x0 |= (pwm_param->cfg.bits.mode << (5 * pwm_param->channel + posPWM0_Reg0x0_pwm0_mode)); //set mode
-            
-    set_PWM0_Reg0x0_pre_div(pwm_param->pre_divid);
+    *pwm_reg &= ~(0x7 << (5 * channel_offset + posPWM0_Reg0x0_pwm0_mode));
+    *pwm_reg |= ((pwm_param->cfg.bits.mode & 0x7) << (5 * channel_offset + posPWM0_Reg0x0_pwm0_mode)); //set mode
 
-    addPWM0_Reg0x0 &= ~(0x3 << (2 * pwm_param->channel + posPWM0_Reg0x0_pwm0_cpedg_sel));
-    addPWM0_Reg0x0 |= (pwm_param->cpedg_sel << (2 * pwm_param->channel + posPWM0_Reg0x0_pwm0_cpedg_sel));//set cpedg_sel
+    *pwm_reg &= ~(0x3 << (2 * channel_offset + posPWM0_Reg0x0_pwm0_cpedg_sel));
+    *pwm_reg |= ((pwm_param->cpedg_sel & 0x3) << (2 * channel_offset + posPWM0_Reg0x0_pwm0_cpedg_sel));//set cpedg_sel
     
-    addPWM0_Reg0x0 &= ~(0x1 << (pwm_param->channel + posPWM0_Reg0x0_pwm0_ctnu_mod));
-    addPWM0_Reg0x0 |= (pwm_param->contiu_mode << (pwm_param->channel + posPWM0_Reg0x0_pwm0_ctnu_mod));
+    *pwm_reg &= ~(0x1 << (channel_offset + posPWM0_Reg0x0_pwm0_ctnu_mod));
+    *pwm_reg |= ((pwm_param->contiu_mode & 0x1) << (channel_offset + posPWM0_Reg0x0_pwm0_ctnu_mod));
 
-
-
-    switch(pwm_param->channel)
-    {
-        case 0:
-        {
-            set_AON_GPIO_Reg0x8_GPIO8_Config(0xc0);
-            addPWM0_Reg0x2 = pwm_param->end_value;
-            addPWM0_Reg0x3 = pwm_param->duty_cycle;
-                           
-        }break;
-        
-        case 1:
-        {
-            set_AON_GPIO_Reg0x9_GPIO9_Config(0xc0);
-            addPWM0_Reg0x5 = pwm_param->end_value;
-            addPWM0_Reg0x6 = pwm_param->duty_cycle;
-        
-        }break;
-        
-        case 2:
-        {
-            set_AON_GPIO_Reg0xa_GPIO10_Config(0xc0);
-            addPWM0_Reg0x8 = pwm_param->end_value;
-            addPWM0_Reg0x9 = pwm_param->duty_cycle;
-        
-        }break;
-        
-        default:break;       
-    }
+    pwm_duty_cycle(pwm_param);
 
     p_PWM_Int_Handler[pwm_param->channel] = pwm_param->p_Int_Handler;
 
-
-    addPWM0_Reg0x0 |= (pwm_param->cfg.bits.int_en << (5 * pwm_param->channel + posPWM0_Reg0x0_pwm0_int_en));
+    if(pwm_param->cfg.bits.int_en)
+    {
+        *pwm_reg |= (pwm_param->cfg.bits.int_en << (5 * channel_offset + posPWM0_Reg0x0_pwm0_int_en));
+    }
+    else
+    {
+        *pwm_reg &= ~(pwm_param->cfg.bits.int_en << (5 * channel_offset + posPWM0_Reg0x0_pwm0_int_en));
+    }
     
     if(pwm_param->cfg.bits.en)
     {
-        addPWM0_Reg0x0  |= (pwm_param->cfg.bits.en << (5 * pwm_param->channel + posPWM0_Reg0x0_pwm0_en));
+        *pwm_reg  |= (pwm_param->cfg.bits.en << (5 * channel_offset + posPWM0_Reg0x0_pwm0_en));
     }else
     {
-        addPWM0_Reg0x0  &= ~(pwm_param->cfg.bits.en << (5 * pwm_param->channel + posPWM0_Reg0x0_pwm0_en));
+        *pwm_reg  &= ~(pwm_param->cfg.bits.en << (5 * channel_offset + posPWM0_Reg0x0_pwm0_en));
     }
-    intc_enable(0);
+
+    intc_enable(intc_group);
 }
 
 static UINT16 pwm_capture_value_get(UINT8 ucChannel)
 {
-    return REG_READ(REG_APB_BK_PWMn_CAP_ADDR(ucChannel));
+    UINT32 cap_reg;
+
+    switch(ucChannel)
+    {
+        case PWM0:
+            cap_reg = REG_APB1_PWM0_CAP_OUT;
+            break;
+        case PWM1:
+            cap_reg = REG_APB1_PWM1_CAP_OUT;
+            break;
+        case PWM2:
+            cap_reg = REG_APB1_PWM2_CAP_OUT;
+            break;
+        case PWM3:
+            cap_reg = REG_APB1_PWM3_CAP_OUT;
+            break;
+        case PWM4:
+            cap_reg = REG_APB1_PWM4_CAP_OUT;
+            break;
+        case PWM5:
+            cap_reg = REG_APB1_PWM5_CAP_OUT;
+            break;
+    }
+
+    return REG_READ(cap_reg);
 }
 
 static void pwm_int_handler_clear(UINT8 ucChannel)
@@ -196,69 +264,10 @@ static void pwm_int_handler_clear(UINT8 ucChannel)
 void pwm_init(void)
 {
     intc_service_register(IRQ_PWM0, PRI_FIQ_PWM0, pwm_isr);
-    intc_service_register(IRQ_PWM1, PRI_IRQ_PWM1, pwm_isr);
+    intc_service_register(IRQ_PWM1, PRI_FIQ_PWM1, pwm_isr);
 
     sddev_register_dev(PWM_DEV_NAME, &pwm_op);
 }
-/* 
-void pwm_config(PWM_DRV_DESC *pwm_drv_desc)
-{
-    if(pwm_drv_desc == NULL)
-    {
-        return;
-    }
-    if (pwm_drv_desc->channel > PWM_CHANNEL_NUMBER_MAX)
-    {
-        return;
-    }
-    if (pwm_drv_desc->duty_cycle > pwm_drv_desc->end_value)
-    {
-        return;
-    }
-    
-    
-    //Config clk
-    ICU_PWM_CLK_PWM_X_PWD_CLEAR(pwm_drv_desc->channel);
-    if (pwm_drv_desc->mode & 0x10)
-    {
-        // select 16MHz
-        ICU_PWM_CLK_PWM_X_SEL_16MHZ(pwm_drv_desc->channel);
-    }
-    else
-    {
-        // select 32KHz
-        ICU_PWM_CLK_PWM_X_SEL_32KHZ(pwm_drv_desc->channel);
-    }
-    //Config duty_cycle and end value
-    REG_PWM_X_CNT(pwm_drv_desc->channel) = 
-        ((((unsigned long)pwm_drv_desc->duty_cycle << PWM_CNT_DUTY_CYCLE_POSI) & PWM_CNT_DUTY_CYCLE_MASK)
-       + (((unsigned long)pwm_drv_desc->end_value << PWM_CNT_END_VALUE_POSI) & PWM_CNT_END_VALUE_MASK));
-
-    REG_PWM_CTRL = (REG_PWM_CTRL & (~(0x0F << (0x04 *  pwm_drv_desc->channel))))
-             | ((pwm_drv_desc->mode & 0x0F) << (0x04 *  pwm_drv_desc->channel));
-
-    if (pwm_drv_desc->mode & 0x02)    // int enable
-    {
-        // install interrupt handler
-        p_PWM_Int_Handler[pwm_drv_desc->channel] = pwm_drv_desc->p_Int_Handler;
-        //ICU_INT_ENABLE_SET(ICU_INT_ENABLE_IRQ_PWM_X_MASK(pwm_drv_desc->channel));
-        REG_AHB0_ICU_INT_ENABLE |=  (ICU_INT_ENABLE_IRQ_PWM_X_MASK(pwm_drv_desc->channel)); 
-    }
-    else
-    {
-        p_PWM_Int_Handler[pwm_drv_desc->channel] = NULL;
-        ICU_INT_ENABLE_CLEAR(ICU_INT_ENABLE_IRQ_PWM_X_MASK(pwm_drv_desc->channel));
-    }
-    
-    // enable GPIO second function
-    if ((pwm_drv_desc->mode & 0x0C) != 0x04)
-    {
-        REG_APB5_GPIOB_CFG &= (~ GPIO_CONFIG_X_SECOND_FUNCTION_MASK(pwm_drv_desc->channel));
-    }
-
-    p_PWM_Int_Handler[pwm_drv_desc->channel] = pwm_drv_desc->p_Int_Handler;
-} */
-
 
 void pwm_exit(void)
 {
@@ -276,48 +285,49 @@ UINT32 pwm_ctrl(UINT32 cmd, void *param)
     switch(cmd)
     {
     case CMD_PWM_UNIT_ENABLE:
-        ucChannel = (*(UINT32 *)param);
-        if(ucChannel > 5)
-        {
-            ret = PWM_FAILURE;
-            break;
-        }
-        value = REG_READ(PWM_CTL);
-        value |= (1 << (ucChannel * 4));
-        REG_WRITE(PWM_CTL, value);
-        break;
     case CMD_PWM_UINT_DISABLE:
-        ucChannel = (*(UINT32 *)param);
-        if(ucChannel > 5)
-        {
-            ret = PWM_FAILURE;
-            break;
-        }
-        value = REG_READ(PWM_CTL);
-        value &= ~(3 << (ucChannel * 4));
-        REG_WRITE(PWM_CTL, value);
-        break;
     case CMD_PWM_IR_ENABLE:
-        ucChannel = (*(UINT32 *)param);
-        if(ucChannel > 5)
-        {
-            ret = PWM_FAILURE;
-            break;
-        }
-        value = REG_READ(PWM_CTL);
-        value |= (2 << (ucChannel * 4));
-        REG_WRITE(PWM_CTL, value);
-        break;
     case CMD_PWM_IR_DISABLE:
         ucChannel = (*(UINT32 *)param);
+        UINT32* pwm_reg;
+        UINT8 channel_offset;
+
         if(ucChannel > 5)
         {
             ret = PWM_FAILURE;
             break;
         }
-        value = REG_READ(PWM_CTL);
-        value &= ~(2 << (ucChannel * 4));
-        REG_WRITE(PWM_CTL, value);
+
+        if(ucChannel >= PWM0 && ucChannel <= PWM2)
+        {
+            pwm_reg = (UINT32*)BASEADDR_PWM0;
+            channel_offset = ucChannel;
+        }
+        else if(ucChannel >= PWM3 && ucChannel <= PWM5)
+        {
+            pwm_reg = (UINT32*)BASEADDR_PWM1;
+            channel_offset = ucChannel - PWM3;
+        }
+
+        value = REG_READ(pwm_reg);
+        if(cmd == CMD_PWM_UNIT_ENABLE)
+        {
+            value |= (1 << (5 * channel_offset + posPWM0_Reg0x0_pwm0_en));
+        }
+        else if(cmd == CMD_PWM_UINT_DISABLE)
+        {
+            value &= ~(1 << (5 * channel_offset + posPWM0_Reg0x0_pwm0_en));
+        }
+        else if(cmd == CMD_PWM_IR_ENABLE)
+        {
+            value |= (1 << (5 * channel_offset + posPWM0_Reg0x0_pwm0_int_en));
+        }
+        else if(cmd == CMD_PWM_IR_DISABLE)
+        {
+            value &= ~(1 << (5 * channel_offset + posPWM0_Reg0x0_pwm0_int_en));
+        }
+
+        REG_WRITE(pwm_reg, value);
         break;
     case CMD_PWM_IR_CLEAR:
         ucChannel = (*(UINT32 *)param);
@@ -341,6 +351,10 @@ UINT32 pwm_ctrl(UINT32 cmd, void *param)
         }
         p_capture->value = pwm_capture_value_get(p_capture->ucChannel);
         break;
+    case CMD_PWM_DUTY_CYC_CHG:
+        p_param = (pwm_param_t *)param;
+        pwm_duty_cycle(p_param);
+        break;
 	case CMD_PWM_DEINIT_PARAM:
         p_param = (pwm_param_t *)param;
         init_pwm_param(p_param, 0);
@@ -356,24 +370,34 @@ UINT32 pwm_ctrl(UINT32 cmd, void *param)
 void pwm_isr(void)
 {
     int i;
-    unsigned long ulIntStatus;
-    gpio_set(0x27, 1);
-    ulIntStatus = REG_PWM_INTR;
-    //PWM_PRT("+++ %s +++\n", __func__);
+    unsigned long ulIntStatus0, ulIntStatus1;
+    //gpio_set(0x27, 1);
+    ulIntStatus0 = REG_PWM0_INTR;
+    ulIntStatus1 = REG_PWM1_INTR;
+    //PWM_PRT("+++ %s ulIntStatus0 0x%x, ulIntStatus1 0x%x +++\n", __func__, ulIntStatus0, ulIntStatus1);
     for (i=PWM_CHANNEL_NUMBER_MAX; i>=0; i--)
     {
-        if (ulIntStatus & (0x01<<i))
+        if (ulIntStatus0 & (0x01<<i))
         {
             if (p_PWM_Int_Handler[i] != NULL)
             {
                 (void)p_PWM_Int_Handler[i]((unsigned char)i);
             }
         }
+
+        if (ulIntStatus1 & (0x01<<i))
+        {
+            if (p_PWM_Int_Handler[i+3] != NULL)
+            {
+                (void)p_PWM_Int_Handler[i+3]((unsigned char)i+3);
+            }
+        }
     }
     do
     {
-        REG_PWM_INTR = ulIntStatus;
-    } while (REG_PWM_INTR & ulIntStatus & REG_PWM_INTR_MASK);   // delays
-    gpio_set(0x27, 0);
+        REG_PWM0_INTR = ulIntStatus0;
+        REG_PWM1_INTR = ulIntStatus1;
+    } while ((REG_PWM0_INTR & ulIntStatus0 & REG_PWM0_INTR_MASK) || (REG_PWM1_INTR & ulIntStatus1 & REG_PWM1_INTR_MASK));   // delays
+    //gpio_set(0x27, 0);
 }
 

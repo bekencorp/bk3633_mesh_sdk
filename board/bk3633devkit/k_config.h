@@ -139,7 +139,7 @@
 
 /*must reserve enough stack size for timer cb will consume*/
 #ifndef RHINO_CONFIG_TIMER_TASK_STACK_SIZE
-#define RHINO_CONFIG_TIMER_TASK_STACK_SIZE   512
+#define RHINO_CONFIG_TIMER_TASK_STACK_SIZE   412
 #endif
 #ifndef RHINO_CONFIG_TIMER_RATE
 #define RHINO_CONFIG_TIMER_RATE              1

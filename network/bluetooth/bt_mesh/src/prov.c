@@ -22,8 +22,8 @@
 #include "common/log.h"
 
 #ifdef MESH_DEBUG_PROV
-#define ALI_PROV_TAG "\t[ALI_PROV]"
-#define PROV_D(f, ...) printf("\033[0;33m%d "ALI_PROV_TAG"[D] %s "f"\033[0m\n", (u32_t)aos_now_ms(), __func__, ##__VA_ARGS__)
+#define BEKEN_PROV_TAG "\t[BEKEN_PROV]"
+#define PROV_D(f, ...) printf("\033[0;33m%d "BEKEN_PROV_TAG"[D] %s "f"\033[0m\n", (u32_t)aos_now_ms(), __func__, ##__VA_ARGS__)
 #else
 #define PROV_D(f, ...)
 #endif
@@ -267,6 +267,14 @@ static void reset_link(void)
     /* Disable Attention Timer if it was set */
     if (link.conf_inputs[0]) {
         bt_mesh_attention(NULL, 0);
+    }
+}
+
+void bt_mesh_prov_reset_link(void)
+{
+    if (atomic_test_bit(link.flags, LINK_ACTIVE))
+    {
+        reset_link();
     }
 }
 

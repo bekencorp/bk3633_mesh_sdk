@@ -2,23 +2,24 @@ NAME := light
 
 $(NAME)_COMPONENTS  += genie_app bluetooth.bt_host bluetooth.bt_mesh yloop cli
 
-$(NAME)_INCLUDES += ../../../../network/bluetooth/bt_mesh/inc/ \
-					../../../../network/bluetooth/bt_mesh/inc/api \
-					../../../../network/bluetooth/bt_mesh/mesh_model \
-					../../../../network/bluetooth/bt_mesh/mesh_model/inc \
-					../../../../network/bluetooth/bt_mesh/vendor_model \
-					../../../../genie_app
-					
-$(NAME)_SOURCES  := light.c
+$(NAME)_INCLUDES += ../ \
+					../../../../genie_app \
+					../../../../genie_app/base \
+					../../../../genie_app/bluetooth/host \
+					../../../../genie_app/bluetooth/mesh \
+					../../../../genie_app/bluetooth/mesh/mesh_model
+
+$(NAME)_SOURCES  := light.c	\
+					light_board.c
 
 #ble = 1
 #bt_mesh = 1
 #en_bt_smp = 1
 
+bt_host_tinycrypt = 1
+
 # Host configurations
 GLOBAL_DEFINES += CONFIG_BLUETOOTH
-#GLOBAL_DEFINES += CONFIG_BT_SMP
-GLOBAL_DEFINES += CONFIG_BT_TINYCRYPT_ECC
 GLOBAL_DEFINES += CONFIG_BT_CONN
 #GLOBAL_DEFINES += CONFIG_BT_CENTRAL
 GLOBAL_DEFINES += CONFIG_BT_PERIPHERAL
@@ -36,8 +37,6 @@ GLOBAL_DEFINES += CONFIG_BT_MESH_RELAY
 #GLOBAL_DEFINES += CONFIG_BT_MESH_FRIEND
 #GLOBAL_DEFINES += CONFIG_BT_MESH_LOW_POWER
 #GLOBAL_DEFINES += CONFIG_BT_MESH_SHELL
-#GLOBAL_DEFINES += CONFIG_BT_MESH_BQB
-#GLOBAL_DEFINES += CONFIG_BT_MESH_IV_UPDATE_TEST
 
 # Mesh foundation model select
 GLOBAL_DEFINES += CONFIG_BT_MESH_CFG_SRV
@@ -49,7 +48,7 @@ GLOBAL_DEFINES += GENIE_DEBUG_COLOR
 GLOBAL_DEFINES += MESH_DEBUG_RX
 GLOBAL_DEFINES += MESH_DEBUG_TX
 GLOBAL_DEFINES += MESH_DEBUG_PROV
-
+GLOBAL_DEFINES += GENIE_OLD_AUTH
 #GLOBAL_DEFINES += CONFIG_INIT_STACKS
 #GLOBAL_DEFINES += CONFIG_PRINTK
 
@@ -58,12 +57,22 @@ GLOBAL_INCLUDES += ../
 MESH_MODEL_GEN_ONOFF_SRV = 1
 #MESH_MODEL_DIABLE_TRANS = 1
 MESH_MODEL_LIGHTNESS_SRV = 1
+MESH_MODEL_GEN_ONPOWERUP_SRV = 1
 MESH_MODEL_CTL_SRV = 1
 MESH_MODEL_VENDOR_SRV = 1
 MESH_MODEL_HSL_SRV = 1
 ALI_SIMPLE_MODLE = 1
 
 
+GLOBAL_DEFINES += CONFIG_BT_DEVICE_NAME=\"TUYA_light\"
 
+GLOBAL_DEFINES += PROJECT_SW_VERSION=0x00010104
+GLOBAL_DEFINES += PROJECT_SECRET_KEY=\"00112233445566770011223344556677\"
 
+# Feature configurations
+GLOBAL_DEFINES += GENIE_OLD_AUTH
+GLOBAL_DEFINES += CONIFG_OLD_FLASH_PARA
+#GLOBAL_DEFINES += GENIE_ULTRA_PROV
 
+genie_ota = 1
+#genie_vendor_timer = 1

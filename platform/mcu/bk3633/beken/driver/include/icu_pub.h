@@ -40,6 +40,10 @@ enum
 #define SYS_PWM0_SEL_POS                             posSYS_Reg0x4_pwm0_sel
 #define SYS_PWM0_INT_EN_POS                          posSYS_Reg0x10_int_pwm0_en
 
+#define SYS_PWM1_PWD_POS                             posSYS_Reg0x3_pwm1_pwd
+#define SYS_PWM1_SEL_POS                             posSYS_Reg0x4_pwm1_sel
+#define SYS_PWM1_INT_EN_POS                          posSYS_Reg0x10_int_pwm1_en
+
 /* CMD_ICU_CLKGATING_DISABLE CMD_ICU_CLKGATING_ENABLE */
 #define CLKGATE_PWM_BIT                      (1 << 9)
 #define CLKGATE_XVR_BIT                      (1 << 8)

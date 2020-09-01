@@ -159,6 +159,8 @@ void ble_util_buf_rx_free(uint16_t buf);
  */
 uint16_t ble_util_buf_acl_tx_alloc(void);
 
+uint16_t ble_util_buf_acl_tx_size(void);
+
 
 /**
  ****************************************************************************************

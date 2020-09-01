@@ -5,6 +5,8 @@
 #ifndef HAL_GPIO_H
 #define HAL_GPIO_H
 
+#include <stdint.h>
+
 /*
  * Pin configuration
  */

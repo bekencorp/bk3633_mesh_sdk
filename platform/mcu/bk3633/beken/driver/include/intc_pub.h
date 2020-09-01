@@ -28,11 +28,11 @@
 #if 2
 #define PRI_FIQ_BLE                      (31)
 #define PRI_FIQ_PWM0                     (30)
+#define PRI_FIQ_PWM1                     (29)
 
 #define PRI_IRQ_RTC                      (11)
 
 #define PRI_IRQ_GPIO                     (12)
-#define PRI_IRQ_ADC                      (29)
 #define PRI_IRQ_I2S_PCM                  (28)
 #define PRI_IRQ_SPI                      (13)
 

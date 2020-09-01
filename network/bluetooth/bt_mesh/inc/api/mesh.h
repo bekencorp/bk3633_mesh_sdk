@@ -34,8 +34,6 @@
 #include <mesh/mesh_shell.h>
 #endif
 
-#include "genie_mesh.h"
-
-#include "mesh_model.h"
+#include "genie_app.h"
 
 #endif /* __BT_MESH_H */

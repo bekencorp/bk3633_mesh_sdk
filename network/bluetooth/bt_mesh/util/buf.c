@@ -306,16 +306,18 @@ struct net_buf *net_buf_slist_get(sys_slist_t *list)
 
 void net_buf_put(struct k_fifo *fifo, struct net_buf *buf)
 {
-	struct net_buf *tail;
+    struct net_buf *tail;
+    unsigned int key;
+    key = irq_lock();
+    NET_BUF_ASSERT(fifo);
+    NET_BUF_ASSERT(buf);
 
-	NET_BUF_ASSERT(fifo);
-	NET_BUF_ASSERT(buf);
+    for (tail = buf; tail->frags; tail = tail->frags) {
+        tail->flags |= NET_BUF_FRAGS;
+    }
 
-	for (tail = buf; tail->frags; tail = tail->frags) {
-		tail->flags |= NET_BUF_FRAGS;
-	}
-
-	k_fifo_put_list(fifo, buf, tail);
+    k_fifo_put_list(fifo, buf, tail);
+    irq_unlock(key);
 }
 
 #if defined(CONFIG_NET_BUF_LOG)
@@ -347,7 +349,7 @@ void net_buf_unref(struct net_buf *buf)
 		buf->frags = NULL;
 
 		pool = net_buf_pool_get(buf->pool_id);
-
+ 
 #if defined(CONFIG_NET_BUF_POOL_USAGE)
 		pool->avail_count++;
 		NET_BUF_ASSERT(pool->avail_count <= pool->buf_count);
