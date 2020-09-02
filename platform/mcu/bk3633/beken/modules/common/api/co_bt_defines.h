@@ -168,7 +168,7 @@ enum random_addr_type
 #define DATA_CHANNEL_USED_NB_MIN    2
 
 /// Advertising interval (in 625us slot) (chapter 2.E.7.8.5)
-#define ADV_INTERVAL_MIN    0x0020 //(20 ms)
+#define ADV_INTERVAL_MIN    0x0010 //(20 ms)
 #define ADV_INTERVAL_MAX    0x4000 //(10.24 sec)
 #define ADV_INTERVAL_DFT    0x0800 //(1.28 sec)
 

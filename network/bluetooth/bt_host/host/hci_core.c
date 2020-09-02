@@ -203,8 +203,10 @@ struct net_buf *bt_hci_cmd_create(u16_t opcode, u8_t param_len)
     return buf;
 }
 
+static kmutex_t cmd_mutex;
 int bt_hci_cmd_send(u16_t opcode, struct net_buf *buf)
 {
+    krhino_mutex_lock(&cmd_mutex, -1);
     if (!buf) {
         buf = bt_hci_cmd_create(opcode, 0);
         if (!buf) {
@@ -230,15 +232,17 @@ int bt_hci_cmd_send(u16_t opcode, struct net_buf *buf)
     }
 
     net_buf_put(&bt_dev.cmd_tx_queue, buf);
+    krhino_mutex_unlock(&cmd_mutex);
     return 0;
 }
 
 void process_events(struct k_poll_event *ev, int count);
+static kmutex_t sync_mutex;
 int bt_hci_cmd_send_sync(u16_t opcode, struct net_buf *buf, struct net_buf **rsp)
 {
     int err = 0;
     uint32_t time_start;
-
+    krhino_mutex_lock(&sync_mutex, -1);
     if (!buf) {
         buf = bt_hci_cmd_create(opcode, 0);
         if (!buf) {
@@ -293,6 +297,7 @@ int bt_hci_cmd_send_sync(u16_t opcode, struct net_buf *buf, struct net_buf **rsp
         }
     }
 
+    krhino_mutex_unlock(&sync_mutex);
 exit:
     return err;
 }
@@ -2838,6 +2843,8 @@ static int hci_init(void)
         }
     }
 
+    krhino_mutex_create(&sync_mutex, "hci_sync_mutex");
+    krhino_mutex_create(&cmd_mutex, "cmd_send_mutex");
 #if defined(CONFIG_BT_DEBUG) && BT_DBG_ENABLED
     show_dev_info();
 #endif
@@ -3152,7 +3159,7 @@ static bool valid_adv_param(const struct bt_le_adv_param *param)
     }
 
     if (param->interval_min > param->interval_max ||
-        param->interval_min < 0x0020 || param->interval_max > 0x4000) {
+        param->interval_min < 0x0010 || param->interval_max > 0x4000) {
         return false;
     }
 

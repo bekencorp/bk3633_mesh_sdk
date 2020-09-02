@@ -170,8 +170,8 @@ static void _gen_onoff_set(struct bt_mesh_model *p_model,
     BT_DBG("ret %d", ret);
     
     if(ret == MESH_SUCCESS || ret == MESH_TID_REPEAT) {
-        gen_onoff_publication(p_model);
         genie_event(GENIE_EVT_SDK_ANALYZE_MSG, (S_ELEM_STATE *)p_model->user_data);
+        // gen_onoff_publication(p_model);
         _gen_onoff_status(p_model, p_ctx, 1);
     }
 }
@@ -185,8 +185,8 @@ static void _gen_onoff_set_unack(struct bt_mesh_model *p_model,
     E_MESH_ERROR_TYPE ret = _gen_onoff_analyze(p_model, p_ctx->addr, p_buf);
 
     if(ret == MESH_SUCCESS) {
-        gen_onoff_publication(p_model);
         genie_event(GENIE_EVT_SDK_ANALYZE_MSG, (S_ELEM_STATE *)p_model->user_data);
+        // gen_onoff_publication(p_model);
     }
 }
 

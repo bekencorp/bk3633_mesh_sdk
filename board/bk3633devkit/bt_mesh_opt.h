@@ -1,5 +1,5 @@
-#ifndef _BK3633_MESH_CONFIG_H_
-#define _BK3633_MESH_CONFIG_H_
+#ifndef _PCA10040_MESH_CONFIG_H_
+#define _PCA10040_MESH_CONFIG_H_
 
 /* Generic options */
 #define CONFIG_BT_MESH_MODEL_KEY_COUNT 2

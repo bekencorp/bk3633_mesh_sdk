@@ -36,8 +36,8 @@
 #endif
 
 /* Window and Interval are equal for continuous scanning */
-#define MESH_SCAN_INTERVAL 0x400
-#define MESH_SCAN_WINDOW   0x400
+#define MESH_SCAN_INTERVAL 0x20
+#define MESH_SCAN_WINDOW   0x20
 
 /* Convert from ms to 0.625ms units */
 #define ADV_INT(_ms) ((_ms) * 8 / 5)
@@ -45,8 +45,8 @@
 /* Pre-5.0 controllers enforce a minimum interval of 100ms
  * whereas 5.0+ controllers can go down to 20ms.
  */
-#define ADV_INT_DEFAULT  K_MSEC(20)
-#define ADV_INT_FAST     K_MSEC(20)
+#define ADV_INT_DEFAULT  K_MSEC(10)
+#define ADV_INT_FAST     K_MSEC(10)
 
 #define GENIE_DEFAULT_DURATION 90
 
@@ -58,7 +58,7 @@
 #else
 #define ADV_STACK_SIZE 768//(512-256)
 #endif
- 
+
 static K_FIFO_DEFINE(adv_queue);
 static struct k_thread adv_thread_data;
 static BT_STACK_NOINIT(adv_thread_stack, ADV_STACK_SIZE);
@@ -121,13 +121,13 @@ static inline void adv_send(struct net_buf *buf)
 
     adv_int = min(adv_int_min, BT_MESH_ADV(buf)->adv_int);
 
-    duration = (BT_MESH_ADV(buf)->count + 1) * (adv_int + 10);
+    duration = (BT_MESH_ADV(buf)->count + 1) * (adv_int);
 
     BT_DBG("type %u len %u: %s", BT_MESH_ADV(buf)->type,
            buf->len, bt_hex(buf->data, buf->len));
     BT_DBG("count %u interval %ums, %ums, %ums duration %ums",
            BT_MESH_ADV(buf)->count + 1, adv_int, adv_int, BT_MESH_ADV(buf)->adv_int, duration);
-
+  
     ad.type = adv_type[BT_MESH_ADV(buf)->type];
     ad.data_len = buf->len;
     ad.data = buf->data;
@@ -136,7 +136,7 @@ static inline void adv_send(struct net_buf *buf)
     param.interval_min = ADV_INT(adv_int);
     param.interval_max = param.interval_min;
     param.own_addr = NULL;
-
+ 
     err = bt_mesh_adv_start(&param, &ad, 1, NULL, 0);
     net_buf_unref(buf);
     adv_send_start(duration, err, cb, cb_data);
