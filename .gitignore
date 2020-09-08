@@ -1,5 +1,7 @@
-build
 out
 *.o
 *.d
 *.crf
+*.cfg
+*.xml
+*.html
