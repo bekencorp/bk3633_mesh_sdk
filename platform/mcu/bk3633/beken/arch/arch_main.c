@@ -360,6 +360,7 @@ void soc_system_init(void)
 {
 	os_printf("%s \r\n", __func__);
     func_init();
+    hal_init();
 }
 
 

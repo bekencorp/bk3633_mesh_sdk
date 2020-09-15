@@ -44,16 +44,16 @@ static void _led_init(void)
 
 int led_startup(void)
 {
-#if _______BEKEN_FLASH_DRIVER_READY______
     genie_flash_init();
-#endif
     _led_init();
     _init_light_para();
+#if defined(CONFIG_GENIE_OTA)
     uint8_t ota_flag = ais_get_ota_indicat();
     if (!(ota_flag && g_powerup[0].last_onoff == 0)) {
         _led_flash(1, 0);
         //g_elem_state[0].state.onoff[T_CUR] = g_elem_state[0].state.onoff[T_TAR] = 1;
     }
+#endif //CONFIG_GENIE_OTA
 }
 
 void set_light_board_type(light_type_e type)
@@ -137,12 +137,11 @@ static uint32_t _temperature_to_rgb(uint16_t temperature, int16_t delta_uv)
 {
     // UNUSED(delta_uv);
     uint16_t index = round((temperature - 800) / 100.0);
-    if(index > sizeof(temperature_map))
+    if(index > sizeof(temperature_map)/sizeof(uint32_t))
     {
-        index = sizeof(temperature_map) - 1;
+        index = sizeof(temperature_map)/sizeof(uint32_t) - 1;
     }
 
-    LIGHT_DBG("index = %d\n", index);
     return temperature_map[index];
 }
 
@@ -190,7 +189,7 @@ static void _light_lighten(light_channel_e channel, uint16_t state)
 
     high_count = led_pwm_count * state_cal / LIGHTNESS_MAX;
 
-    LIGHT_DBG("channel %d, state 0x%x, led_pwm_count 0x%x high_count = 0x%x\r\n", channel, state, led_pwm_count, high_count);
+    LIGHT_DBG("channel %d, led_pwm_count 0x%x high_count = 0x%x\r\n", channel, led_pwm_count, high_count);
     hal_pwm_duty_cycle_chg(channel, led_pwm_count, high_count);
 }
 
@@ -226,9 +225,9 @@ void led_ctl_set_handler(uint16_t ctl_lightness, uint16_t temperature, uint16_t 
 
     uint32_t rgb = _temperature_to_rgb(temperature, ctl_UV);
 
-    rgb_cal[0] = _color_8to16(rgb >> 16) * ctl_lightness;
-    rgb_cal[1] = _color_8to16(rgb >> 8) * ctl_lightness;
-    rgb_cal[2] = _color_8to16(rgb) * ctl_lightness;
+    rgb_cal[0] = _color_8to16(rgb >> 16) * ctl_lightness / LIGHTNESS_MAX;
+    rgb_cal[1] = _color_8to16(rgb >> 8) * ctl_lightness / LIGHTNESS_MAX;
+    rgb_cal[2] = _color_8to16(rgb) * ctl_lightness / LIGHTNESS_MAX;
     _light_set_rgb(rgb_cal);
 
 }
@@ -250,9 +249,9 @@ void led_hsl_set_handler(uint16_t hue, uint16_t saturation, uint16_t lightness)
     _hsl_2_rgb(rgb, hsl);
     LIGHT_DBG("r = %d,g = %d,b = %d\n", rgb[0], rgb[1], rgb[2]);
 
-    rgb_cal[0] = rgb[0] * LIGHTNESS_MAX;
-    rgb_cal[1] = rgb[1] * LIGHTNESS_MAX;
-    rgb_cal[2] = rgb[2] * LIGHTNESS_MAX;
+    rgb_cal[0] = rgb[0] * lightness / LIGHTNESS_MAX;
+    rgb_cal[1] = rgb[1] * lightness / LIGHTNESS_MAX;
+    rgb_cal[2] = rgb[2] * lightness / LIGHTNESS_MAX;
     _light_set_rgb(rgb_cal);
 }
 

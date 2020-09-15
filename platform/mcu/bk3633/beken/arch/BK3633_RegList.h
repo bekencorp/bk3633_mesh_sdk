@@ -56,7 +56,6 @@
 #define clrf_SYS_Reg0x1_CPU_PWD                                 addSYS_Reg0x1 &= ~0x1
 #define get_SYS_Reg0x1_CPU_PWD                                  (addSYS_Reg0x1 & 0x1)
 
-#define REG_AHB0_ICU_CORECLKCON                                 addSYS_Reg0x1
 
 //addSYS_Reg0x2
 #define addSYS_Reg0x2                                           *((volatile unsigned long *) (0x00800000+0x2*4))
@@ -357,12 +356,9 @@
 //addSYS_Reg0x7
 #define addSYS_Reg0x7                                           *((volatile unsigned long *) (0x00800000+0x7*4))
 
-#define REG_AHB0_ICU_WDTCLKCON                                  addSYS_Reg0x7
-
 //addSYS_Reg0x8
 #define addSYS_Reg0x8                                           *((volatile unsigned long *) (0x00800000+0x8*4))
 
-#define REG_AHB0_ICU_RNGCLKCON                                  addSYS_Reg0x8
 
 //addSYS_Reg0x9
 #define addSYS_Reg0x9                                           *((volatile unsigned long *) (0x00800000+0x9*4))
@@ -370,7 +366,6 @@
 //addSYS_Reg0xa
 #define addSYS_Reg0xa                                           *((volatile unsigned long *) (0x00800000+0xa*4))
 
-#define REG_AHB0_ICU_RTCCLKCON                                  addSYS_Reg0xa
 
 //addSYS_Reg0xb
 #define addSYS_Reg0xb                                           *((volatile unsigned long *) (0x00800000+0xb*4))
@@ -404,7 +399,6 @@
 #define clrf_SYS_Reg0xb_cache_load_mode                         addSYS_Reg0xb &= ~0x1
 #define get_SYS_Reg0xb_cache_load_mode                          (addSYS_Reg0xb & 0x1)
 
-#define REG_AHB0_ICU_LPO_CLK_ON                                 addSYS_Reg0xb
 
 
 //addSYS_Reg0xc
@@ -414,8 +408,6 @@
 #define bitSYS_Reg0xc_test_gpio_sel                             0xFFFFFF
 #define set_SYS_Reg0xc_test_gpio_sel(val)                       addSYS_Reg0xc = ((addSYS_Reg0xc & (~0xFFFFFF)) | ((val) << 0))
 #define get_SYS_Reg0xc_test_gpio_sel                            (addSYS_Reg0xc & 0xFFFFFF)
-
-#define REG_AHB0_ICU_CLK32K_SEL                                 addSYS_Reg0xc
 
 
 //addSYS_Reg0xd
@@ -2117,41 +2109,6 @@
 
 
 
-#define flash_200k_ADDR                 (*((volatile unsigned long *)    (0x00032000)))
-
-#define BIT_ADDRESS_SW                  0
-#define BIT_OP_TYPE_SW                  24
-#define BIT_OP_SW                       29
-#define BIT_WP_VALUE                    30
-#define BIT_BUSY_SW                     31
-
-#define SET_ADDRESS_SW                  0xFFFFFF << BIT_ADDRESS_SW
-#define SET_OP_TYPE_SW                  0x1F     << BIT_OP_TYPE_SW
-#define SET_OP_SW                       0x1      << BIT_OP_SW
-#define SET_WP_VALUE                    0x1      << BIT_WP_VALUE
-#define SET_BUSY_SW                     0x1      << BIT_BUSY_SW
-
-#define BIT_FLASH_CLK_CONF              0
-#define BIT_MODE_SEL                    4
-#define BIT_FWREN_FLASH_CPU             9
-#define BIT_WRSR_DATA                   10
-#define BIT_CRC_EN                      26
-
-#define SET_FLASH_CLK_CONF              0xF      << BIT_FLASH_CLK_CONF
-#define SET_MODE_SEL                    0x1F     << BIT_MODE_SEL
-#define SET_FWREN_FLASH_CPU             0x1      << BIT_FWREN_FLASH_CPU
-#define SET_WRSR_DATA                   0xFFFF   << BIT_WRSR_DATA
-#define SET_CRC_EN                      0x1      << BIT_CRC_EN
-
-#define BIT_SR_DATA_FLASH               0
-#define BIT_CRC_ERR_COUNTER             8
-#define BIT_DATA_FLASH_SW_SEL           16
-#define BIT_DATA_SW_FLASH_SEL           19
-
-#define SET_SR_DATA_FLASH               0xFF     << BIT_SR_DATA_FLASH
-#define SET_CRC_ERR_COUNTER             0xFF     << BIT_CRC_ERR_COUNTER
-#define SET_DATA_FLASH_SW_SEL           0x7      << BIT_DATA_FLASH_SW_SEL
-#define SET_DATA_SW_FLASH_SEL           0x7      << BIT_DATA_SW_FLASH_SEL
 
 
 

@@ -252,7 +252,7 @@ int bt_hci_cmd_send_sync(u16_t opcode, struct net_buf *buf, struct net_buf **rsp
         }
     }
 
-    BT_DBG("opcode 0x%04x len %u\r\n", opcode, buf->len);
+    BT_ERR("opcode 0x%04x len %u\r\n", opcode, buf->len);
 
     cmd(buf)->sync = SYNC_TX;
     net_buf_ref(buf);
@@ -325,6 +325,7 @@ static int set_advertise_enable(bool enable)
 
     buf = bt_hci_cmd_create(BT_HCI_OP_LE_SET_ADV_ENABLE, 1);
     if (!buf) {
+        BT_ERR("%s, L %d.\n", __func__, __LINE__);
         return -ENOBUFS;
     }
 
@@ -334,15 +335,16 @@ static int set_advertise_enable(bool enable)
         net_buf_add_u8(buf, BT_HCI_LE_ADV_DISABLE);
     }
 
-    err = bt_hci_cmd_send_sync(BT_HCI_OP_LE_SET_ADV_ENABLE, buf, NULL);
-    if (err) {
-        return err;
-    }
-
     if (enable) {
         atomic_set_bit(bt_dev.flags, BT_DEV_ADVERTISING);
     } else {
         atomic_clear_bit(bt_dev.flags, BT_DEV_ADVERTISING);
+    }
+
+    err = bt_hci_cmd_send_sync(BT_HCI_OP_LE_SET_ADV_ENABLE, buf, NULL);
+    if (err) {
+        BT_ERR("%s, L %d.\n", __func__, __LINE__);
+        return err;
     }
 
     return 0;
@@ -2044,7 +2046,7 @@ static void send_cmd(struct net_buf *buf)
 
     bt_dev.sent_cmd = net_buf_ref(buf);
 
-    BT_DBG("Sending command 0x%04x (buf %p) to driver", cmd(buf)->opcode, buf);
+    BT_DBG("Sending command opcode(0x%04x) (buf %p) to driver", cmd(buf)->opcode, buf);
 
     err = bt_send(buf);
     if (err) {
@@ -3174,6 +3176,7 @@ static int set_ad(u16_t hci_op, const struct bt_data *ad, size_t ad_len)
 
     buf = bt_hci_cmd_create(hci_op, sizeof(*set_data));
     if (!buf) {
+        BT_ERR("%s, L %d.\n", __func__, __LINE__);
         return -ENOBUFS;
     }
 
@@ -3185,6 +3188,7 @@ static int set_ad(u16_t hci_op, const struct bt_data *ad, size_t ad_len)
         /* Check if ad fit in the remaining buffer */
         if (set_data->len + ad[i].data_len + 2 > 31) {
             net_buf_unref(buf);
+            BT_ERR("%s, L %d. Invalid adv data len.\n", __func__, __LINE__);
             return -EINVAL;
         }
 
@@ -3220,7 +3224,6 @@ static int set_ad_data(u16_t hci_op, const uint8_t *ad_data, int ad_len)
     return bt_hci_cmd_send_sync(hci_op, buf, NULL);
 }
 
-
 int bt_le_adv_start(const struct bt_le_adv_param *param,
                     const struct bt_data *ad, size_t ad_len,
                     const struct bt_data *sd, size_t sd_len)
@@ -3230,10 +3233,12 @@ int bt_le_adv_start(const struct bt_le_adv_param *param,
     int                               err;
 
     if (!valid_adv_param(param)) {
+        BT_ERR("%s, L %d, Invalid adv Params.\n", __func__, __LINE__);
         return -EINVAL;
     }
 
     if (atomic_test_bit(bt_dev.flags, BT_DEV_ADVERTISING)) {
+        BT_ERR("%s, L %d, advertising Not ready.\n", __func__, __LINE__);
         return -EALREADY;
     }
 
@@ -3268,6 +3273,7 @@ int bt_le_adv_start(const struct bt_le_adv_param *param,
         if (IS_ENABLED(CONFIG_BT_PRIVACY)) {
             err = le_set_private_addr();
             if (err) {
+                BT_ERR("%s, L %d.\n", __func__, __LINE__);
                 return err;
             }
 
@@ -3321,6 +3327,7 @@ int bt_le_adv_start(const struct bt_le_adv_param *param,
 
     buf = bt_hci_cmd_create(BT_HCI_OP_LE_SET_ADV_PARAM, sizeof(set_param));
     if (!buf) {
+        BT_ERR("%s, L %d.\n", __func__, __LINE__);
         return -ENOBUFS;
     }
 
@@ -3328,11 +3335,13 @@ int bt_le_adv_start(const struct bt_le_adv_param *param,
 
     err = bt_hci_cmd_send_sync(BT_HCI_OP_LE_SET_ADV_PARAM, buf, NULL);
     if (err) {
+        BT_ERR("%s, L %d.\n", __func__, __LINE__);
         return err;
     }
 
     err = set_advertise_enable(true);
     if (err) {
+        BT_ERR("%s, L %d.\n", __func__, __LINE__);
         return err;
     }
 

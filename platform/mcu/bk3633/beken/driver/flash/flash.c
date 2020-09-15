@@ -23,7 +23,6 @@
 
 extern void  _app_data_flash_end;
 
-static UINT32 flash_id;
 static DD_OPERATIONS flash_op =
 {
     NULL,
@@ -32,13 +31,6 @@ static DD_OPERATIONS flash_op =
     flash_write,
     flash_ctrl
 };
-
-uint8_t flash_enable_write_flag1;
-uint8_t flash_enable_write_flag2;
-uint8_t flash_enable_write_flag3;
-uint8_t flash_enable_write_flag4;
-uint8_t flash_enable_erase_flag1;
-uint8_t flash_enable_erase_flag2;
 
 uint32_t flash_mid = 0;
 
@@ -73,7 +65,7 @@ static void flash_get_current_flash_config(void)
     int i;
     for(i = 0; i < (sizeof(flash_config) / sizeof(flash_config_t) - 1); i++)
     {
-        if(flash_id == flash_config[i].flash_id)
+        if(flash_mid == flash_config[i].flash_id)
         {
             flash_current_config = &flash_config[i];
             uint16_t size = flash_current_config->flash_size*4;
@@ -84,7 +76,7 @@ static void flash_get_current_flash_config(void)
     if(i == (sizeof(flash_config) / sizeof(flash_config_t) - 1))
     {
         flash_current_config = &flash_config[i];
-		os_printf("flash id : 0x%x\r\n", flash_id);
+		os_printf("flash id : 0x%x\r\n", flash_mid);
         os_printf("don't config this flash, choose default config\r\n");
     }
     os_printf("code area end addr:0x%X\r\n", &_app_data_flash_end);
@@ -100,19 +92,19 @@ static void flash_set_clk(UINT8 clk_conf)
                       | (temp0    &  SET_FWREN_FLASH_CPU)
                       | (temp0    &  SET_WRSR_DATA)
                       | (temp0    &  SET_CRC_EN));
-	while(REG_FLASH_OPERATE_SW & 0x80000000){;}
+	while(REG_FLASH_OPERATE_SW & FLASH_BUSY_BIT);
 }
 
 uint8_t flash_identify(uint32_t* id, void (*callback)(void))
 {
     unsigned int temp0;
 
-	while(REG_FLASH_OPERATE_SW & 0x80000000);
+	while(REG_FLASH_OPERATE_SW & FLASH_BUSY_BIT);
 	
 	REG_FLASH_OPERATE_SW = (       FLASH_ADDR_FIX
 								| (FLASH_OPCODE_RDID << BIT_OP_TYPE_SW)
 								| (0x1				 << BIT_OP_SW));
-	while(REG_FLASH_OPERATE_SW & 0x80000000){;}
+	while(REG_FLASH_OPERATE_SW & FLASH_BUSY_BIT);
 
     for (temp0=0; temp0<8; temp0++)
             REG_FLASH_DATA_SW_FLASH = 0xffffffff;
@@ -127,12 +119,12 @@ uint32_t flash_get_id(void)
 {
     unsigned int temp0;
 
-	while(REG_FLASH_OPERATE_SW & 0x80000000);
+	while(REG_FLASH_OPERATE_SW & FLASH_BUSY_BIT);
 	
 	REG_FLASH_OPERATE_SW = (       FLASH_ADDR_FIX
 								| (FLASH_OPCODE_RDID << BIT_OP_TYPE_SW)
 								| (0x1				 << BIT_OP_SW));
-	while(REG_FLASH_OPERATE_SW & 0x80000000);
+	while(REG_FLASH_OPERATE_SW & FLASH_BUSY_BIT);
 
     for (temp0=0; temp0<8; temp0++)
             REG_FLASH_DATA_SW_FLASH = 0xffffffff;
@@ -144,23 +136,23 @@ static UINT16 flash_read_sr(UINT8 sr_width)
 {
 	UINT16 temp;
 /*
-	while(REG_FLASH_OPERATE_SW & 0x80000000);
+	while(REG_FLASH_OPERATE_SW & FLASH_BUSY_BIT);
 	temp0 = REG_FLASH_OPERATE_SW;
 	REG_FLASH_OPERATE_SW = (  (temp0             &  SET_ADDRESS_SW)
 	                        | (FLASH_OPCODE_RDSR2 << BIT_OP_TYPE_SW)
 	                        | (0x1               << BIT_OP_SW)
 	                        | (temp0             &  SET_WP_VALUE));
-	while(REG_FLASH_OPERATE_SW & 0x80000000);
+	while(REG_FLASH_OPERATE_SW & FLASH_BUSY_BIT);
 
 	temp=(REG_FLASH_SR_DATA_CRC_CNT&0xff)<<8;
 */
-	 while(REG_FLASH_OPERATE_SW & 0x80000000);
+	 while(REG_FLASH_OPERATE_SW & FLASH_BUSY_BIT);
 	 
 	 REG_FLASH_OPERATE_SW = (  FLASH_ADDR_FIX
 							 | (FLASH_OPCODE_RDSR << BIT_OP_TYPE_SW)
 							 | (0x1 			  << BIT_OP_SW));
 
-	while(REG_FLASH_OPERATE_SW & 0x80000000);
+	while(REG_FLASH_OPERATE_SW & FLASH_BUSY_BIT);
     temp = (REG_FLASH_SR_DATA_CRC_CNT & 0xff);
 
 	return temp;
@@ -193,10 +185,14 @@ void flash_write_sr( uint8_t bytes,  uint16_t val )
 
     if(val==0||bytes>2)	
         return;
+
     REG_FLASH_CONF |= (val << BIT_WRSR_DATA)|SET_FWREN_FLASH_CPU;
-    while(REG_FLASH_OPERATE_SW & 0x80000000);
+
+    while(REG_FLASH_OPERATE_SW & FLASH_BUSY_BIT);
+
 	if(flash_mid != flash_get_id())
 		return;
+
     if( bytes == 1 ) 
     {
         REG_FLASH_OPERATE_SW = (FLASH_ADDR_FIX|(FLASH_OPCODE_WRSR << BIT_OP_TYPE_SW)
@@ -211,18 +207,17 @@ void flash_write_sr( uint8_t bytes,  uint16_t val )
 	                           | (0x1<< BIT_WP_VALUE));       
     }
         
-    while(REG_FLASH_OPERATE_SW & 0x80000000);
-
+    while(REG_FLASH_OPERATE_SW & FLASH_BUSY_BIT);
 
     REG_FLASH_OPERATE_SW = FLASH_ADDR_FIX; 
 
-    while(REG_FLASH_OPERATE_SW & 0x80000000);
+    while(REG_FLASH_OPERATE_SW & FLASH_BUSY_BIT);
 }
 
 void flash_set_qe(void)
 {
 	uint32_t temp0;
-	while(REG_FLASH_OPERATE_SW & 0x80000000){;}
+	while(REG_FLASH_OPERATE_SW & FLASH_BUSY_BIT);
 
 	temp0 = REG_FLASH_CONF;
 
@@ -259,37 +254,7 @@ void flash_set_qe(void)
 						        | (FLASH_OPCODE_WRSR2 << BIT_OP_TYPE_SW)
 						        | (0x1				  << BIT_OP_SW)); 
 	}
-	while(REG_FLASH_OPERATE_SW & 0x80000000);
-}
-
-static void flash_clr_qwfr(void)
-{
-        uint32_t temp0,mod_sel;	
-	
-    temp0 = REG_FLASH_CONF;
-    while(REG_FLASH_OPERATE_SW & 0x80000000){;}
-    mod_sel = temp0 & (0xC << BIT_MODE_SEL); //??3ymode_sel?D
-    mod_sel |= (0x1 << BIT_MODE_SEL);
-    REG_FLASH_CONF = (  (temp0 &  SET_FLASH_CLK_CONF)
-                        | mod_sel
-                        | (temp0 &  SET_FWREN_FLASH_CPU)
-                        | (temp0 &  SET_WRSR_DATA)
-                        | (temp0 &  SET_CRC_EN));
-    //reset flash
-    if(flash_mid == XTX_FLASH_1)
-    {
-        REG_FLASH_OPERATE_SW = (  (FLASH_ADDR_FIX << BIT_ADDRESS_SW)
-                                | (FLASH_OPCODE_CRMR << BIT_OP_TYPE_SW)
-                                | (0x1               << BIT_OP_SW));
-    }
-    else
-    {
-        REG_FLASH_OPERATE_SW = (  (FLASH_ADDR_FIX<< BIT_ADDRESS_SW)
-                                | (FLASH_OPCODE_CRMR2 << BIT_OP_TYPE_SW)
-                                | (0x1               << BIT_OP_SW));
-    }
-
-    while(REG_FLASH_OPERATE_SW & 0x80000000);
+	while(REG_FLASH_OPERATE_SW & FLASH_BUSY_BIT);
 }
 
 UINT8 flash_get_line_mode(void)
@@ -297,21 +262,61 @@ UINT8 flash_get_line_mode(void)
     return flash_current_config->line_mode;
 }
 
+static void flash_set_qwfr(void)
+{
+    UINT32 value;
+
+    value = REG_FLASH_CONF;
+    value &= ~(MODEL_SEL_MASK << BIT_MODE_SEL);
+    value |= (flash_current_config->mode_sel << BIT_MODE_SEL);
+    REG_FLASH_CONF = value;
+}
+
 void flash_set_line_mode(UINT8 mode)
 {
+    uint32_t value;
+    
+    if(1 == mode)
+    {
+        clr_flash_qwfr();
+    }
+    if(2 == mode)
+    {
+        clr_flash_qwfr();
+        value = REG_FLASH_CONF;
+        value &= ~(MODEL_SEL_MASK << BIT_MODE_SEL);
+        value |= ((MODE_DUAL & MODEL_SEL_MASK) << BIT_MODE_SEL);
+        REG_FLASH_CONF = value;
 
+    }
+    else if(4 == mode)
+    {
+        clr_flash_qwfr();
+        value = REG_FLASH_SR_DATA_CRC_CNT;
+        value &= ~(M_VALUE_MASK << M_VALUE_POST);
+        value |= (flash_current_config->m_value<< M_VALUE_POST);
+        
+        REG_FLASH_SR_DATA_CRC_CNT = value;
+
+        if(1 == flash_current_config->qe_bit)
+        {
+            flash_set_qe();
+        }
+
+        flash_set_qwfr();
+    }
 }
 
 static UINT32 flash_read_mid(void)
 {
     unsigned int temp0;
 
-	while(REG_FLASH_OPERATE_SW & 0x80000000);
+	while(REG_FLASH_OPERATE_SW & FLASH_BUSY_BIT);
 	
 	REG_FLASH_OPERATE_SW = (       FLASH_ADDR_FIX
 								| (FLASH_OPCODE_RDID << BIT_OP_TYPE_SW)
 								| (0x1				 << BIT_OP_SW));
-	while(REG_FLASH_OPERATE_SW & 0x80000000);
+	while(REG_FLASH_OPERATE_SW & FLASH_BUSY_BIT);
 
     for (temp0 = 0; temp0 < 8; temp0++)
     {
@@ -323,62 +328,75 @@ static UINT32 flash_read_mid(void)
 
 static void flash_erase_sector(UINT32 address)
 {
+    UINT32 value;
+
     GLOBAL_INT_DISABLE();
-    flash_set_line_mode(1);
-    if(flash_enable_erase_flag1==FLASH_ERASE_ENABLE1&&flash_enable_erase_flag2==FLASH_ERASE_ENABLE2)    
-    {
-        flash_wp_256k();
-        
-        while(REG_FLASH_OPERATE_SW & 0x80000000);
 
-        REG_FLASH_OPERATE_SW = (  (address << BIT_ADDRESS_SW)
-                                                   | (FLASH_OPCODE_SE<< BIT_OP_TYPE_SW)
-                                                   | (0x1             << BIT_OP_SW));
+    flash_wp_256k();
 
-        while(REG_FLASH_OPERATE_SW & 0x80000000);
-        flash_set_line_mode(4);
-        flash_wp_ALL();
-        printf("flash_erase_sector 0x%x", address);
-    }
+    while(REG_FLASH_OPERATE_SW & FLASH_BUSY_BIT);
+
+    value = REG_FLASH_OPERATE_SW;
+    value = ((address << BIT_ADDRESS_SW)
+             | (FLASH_OPCODE_SE << BIT_OP_TYPE_SW)
+             | (0x1 << BIT_OP_SW));
+    REG_FLASH_OPERATE_SW = value;
+
+    while(REG_FLASH_OPERATE_SW & FLASH_BUSY_BIT);
+
+    flash_wp_ALL();
+
     GLOBAL_INT_RESTORE();
 }
 
 void flash_read_data(UINT8 *buffer, UINT32 address, UINT32 len)
 {
-    uint32_t i, j, k;
-    uint32_t addr = address;
+    uint32_t i, reg_value;
+    uint32_t addr = address & (~0x1F);
     uint32_t buf[8];
-    k=0;
-    if (len == 0)
-        return;
+    uint8_t *pb = (uint8_t *)&buf[0];
 
-    GLOBAL_INT_DISABLE();
-    while(REG_FLASH_OPERATE_SW & 0x80000000);
-
-    for(j=0; j < ((len-1)/32+1); j++)
+    if(len == 0)
     {
-        REG_FLASH_OPERATE_SW = (  (addr << BIT_ADDRESS_SW)
+        return;
+    }
+
+    while(REG_FLASH_OPERATE_SW & FLASH_BUSY_BIT);
+
+    while(len)
+    {
+        reg_value = REG_FLASH_OPERATE_SW;
+        reg_value = (  (addr << BIT_ADDRESS_SW)
                                 | (FLASH_OPCODE_READ << BIT_OP_TYPE_SW)
-                                | (0x1 << BIT_OP_SW));
-        while(REG_FLASH_OPERATE_SW & 0x80000000);
-        addr+=32;
-        for (i=0; i<8; i++)
+                                | (0x1 << BIT_OP_SW)
+                                | (reg_value & SET_WP_VALUE));
+        REG_FLASH_OPERATE_SW = reg_value;
+
+        while(REG_FLASH_OPERATE_SW & FLASH_BUSY_BIT);
+
+        addr += 32;
+
+        for (i = 0; i < 8; i++)
         {
             buf[i] = REG_FLASH_DATA_FLASH_SW;
         }
 
-        if(len > 32 * (j + 1))
-            memcpy(&buffer[k],buf,32);
-        else
+        for(i = address % 32; i < 32; i++)
         {
-            memcpy(&buffer[k],buf,len-k);
+            *buffer++ = pb[i];
+            address++;
+            len--;
+            if(len == 0)
+            {
+                break;
+            }
         }
-        k += 32;
     }
+/* 
     REG_FLASH_OPERATE_SW = FLASH_ADDR_FIX ;
-    for (i=0; i<8; i++)
-        REG_FLASH_DATA_SW_FLASH = 0xffffffff;
-    GLOBAL_INT_RESTORE();
+    for (i = 0; i < 8; i++)
+        REG_FLASH_DATA_SW_FLASH = 0xffffffff; */
+        
 }
 
 void flash_wp_256k( void)
@@ -433,99 +451,118 @@ void flash_wp_ALL( void )
 
 void flash_write_data(UINT8 *buffer, UINT32 address, UINT32 len)
 {
-    uint32_t i, j,k;
-    uint32_t addr = address;
+    uint32_t i, reg_value;
+    uint32_t addr = address & (~0x1F);
     uint32_t buf[8];
-    k=0;
+    uint8_t *pb = (uint8_t *)&buf[0];
+
     if (len == 0)
         return;
-    if (address<0x40000)
-        return;
-    GLOBAL_INT_DISABLE();
-	flash_set_line_mode(1);
+/*     if (address<0x40000)
+        return; */
 
-    while(REG_FLASH_OPERATE_SW & 0x80000000);
-    
-    flash_enable_write_flag3=FLASH_WRITE_ENABLE3; 
-    flash_wp_256k();
-    for(j=0;j<((len-1)/32+1);j++)
+    if(address % 32)
     {
-        if(len>32*(j+1))
-            memcpy(buf,&buffer[k],32);
-        else
-        {
-         	for(i=0;i<8;i++)
-                buf[i]=0xffffffff;
-            memcpy(buf,&buffer[k],len-k);
-        }
-        k += 32;
-        flash_enable_write_flag4=FLASH_WRITE_ENABLE4; 
-        for (i=0; i<8; i++)
-            REG_FLASH_DATA_SW_FLASH = buf[i];
-
-
-        if(flash_enable_write_flag1==FLASH_WRITE_ENABLE1 && flash_enable_write_flag2==FLASH_WRITE_ENABLE2 )
-        {
-            while(REG_FLASH_OPERATE_SW & 0x80000000);
-            
-            if(flash_enable_write_flag3==FLASH_WRITE_ENABLE3 && flash_enable_write_flag4==FLASH_WRITE_ENABLE4)
-            {
-                if(addr<0x40000)
-                    return;
-                REG_FLASH_OPERATE_SW = (  (addr << BIT_ADDRESS_SW)
-                                    | (FLASH_OPCODE_PP << BIT_OP_TYPE_SW)
-                                    | (0x1 << BIT_OP_SW));
-            }
-            while(REG_FLASH_OPERATE_SW & 0x80000000);
-        }
-        addr+=32;
+        flash_read_data(pb, addr, 32);
     }
+    else
+    {
+        memset(pb, 0xFF, 32);
+    }
+
+    while(REG_FLASH_OPERATE_SW & FLASH_BUSY_BIT);
+    
+    flash_wp_256k();
+
+    while(len)
+    {
+        if(len < 32)
+        {
+            flash_read_data(pb, addr, 32);
+        }
+
+        for (i = address % 32; i < 32; i++)
+        {
+            pb[i] = *buffer++;
+            address++;
+            len--;
+            if (len == 0)
+                break;
+        }
+
+        for (i = 0; i < 8; i++)
+        {
+            REG_FLASH_DATA_SW_FLASH = buf[i];
+        }
+
+        while(REG_FLASH_OPERATE_SW & FLASH_BUSY_BIT);
+
+        reg_value = REG_FLASH_OPERATE_SW;
+        reg_value = ((addr << BIT_ADDRESS_SW)
+                     | (FLASH_OPCODE_PP << BIT_OP_TYPE_SW)
+                     | (0x1 << BIT_OP_SW)
+                     | (reg_value & SET_WP_VALUE));
+        REG_FLASH_OPERATE_SW = reg_value;
+
+        while(REG_FLASH_OPERATE_SW & FLASH_BUSY_BIT);
+        addr += 32;
+        memset(pb, 0xFF, 32);
+    }
+
     flash_wp_ALL();
-    REG_FLASH_OPERATE_SW=FLASH_ADDR_FIX ;
-    flash_enable_write_flag3=0;
-    flash_enable_write_flag4=0;
+
+/*     REG_FLASH_OPERATE_SW=FLASH_ADDR_FIX;
+
     for (i=0; i<8; i++)
-        REG_FLASH_DATA_SW_FLASH = 0xffffffff;
-	flash_set_line_mode(4);
-	GLOBAL_INT_RESTORE();
+        REG_FLASH_DATA_SW_FLASH = 0xffffffff; */
+
 }
 
 void clr_flash_qwfr(void)
 {
-    uint32_t temp0,mod_sel;	
-	
+    uint32_t temp0;	
+
+	while(REG_FLASH_OPERATE_SW & FLASH_BUSY_BIT);
+
     temp0 = REG_FLASH_CONF;
-    while(REG_FLASH_OPERATE_SW & (unsigned long)0x80000000){;}
-    mod_sel = temp0 & (0xC << BIT_MODE_SEL); //??3ymode_sel?D
-    mod_sel |= (0x1 << BIT_MODE_SEL);
-    REG_FLASH_CONF = (  (temp0 &  SET_FLASH_CLK_CONF)
-                        | mod_sel
-                        | (temp0 &  SET_FWREN_FLASH_CPU)
-                        | (temp0 &  SET_WRSR_DATA)
-                        | (temp0 &  SET_CRC_EN));
+    temp0 &= ~(MODEL_SEL_MASK << BIT_MODE_SEL);
+    REG_FLASH_CONF = temp0;
+
     //reset flash
     if(flash_mid == XTX_FLASH_1)
     {
-        REG_FLASH_OPERATE_SW = (  (FLASH_ADDR_FIX << BIT_ADDRESS_SW)
+        temp0 = REG_FLASH_OPERATE_SW;
+        temp0 = (  (FLASH_ADDR_FIX<< BIT_ADDRESS_SW)
                                 | (FLASH_OPCODE_CRMR << BIT_OP_TYPE_SW)
-                                | (0x1               << BIT_OP_SW));
+                                | (0x1               << BIT_OP_SW)
+                                | (temp0 & SET_WP_VALUE));
+        REG_FLASH_OPERATE_SW = temp0;
     }
     else
     {
-        REG_FLASH_OPERATE_SW = (  (FLASH_ADDR_FIX<< BIT_ADDRESS_SW)
+        temp0 = REG_FLASH_OPERATE_SW;
+        temp0 = (  (FLASH_ADDR_FIX<< BIT_ADDRESS_SW)
                                 | (FLASH_OPCODE_CRMR2 << BIT_OP_TYPE_SW)
-                                | (0x1               << BIT_OP_SW));
+                                | (0x1               << BIT_OP_SW)
+                                | (temp0 & SET_WP_VALUE));
+        REG_FLASH_OPERATE_SW = temp0;
     }
 
-    while(REG_FLASH_OPERATE_SW & 0x80000000);
+    while(REG_FLASH_OPERATE_SW & FLASH_BUSY_BIT);
 }
 
 void flash_set_dual_mode(void)
 {
+    UINT32 value;
+
     clr_flash_qwfr();
-    REG_FLASH_CONF &= (~(7<<BIT_MODE_SEL));
-    REG_FLASH_CONF |= (1<<BIT_MODE_SEL);
-    while(REG_FLASH_OPERATE_SW & 0x80000000);
+
+    value = REG_FLASH_CONF;
+    value &= (~(MODEL_SEL_MASK<<BIT_MODE_SEL));
+    value |= ((MODE_DUAL & MODEL_SEL_MASK)<<BIT_MODE_SEL);
+    REG_FLASH_CONF = value;
+
+    while(REG_FLASH_OPERATE_SW & FLASH_BUSY_BIT);
 }
 
 void set_flash_clk(unsigned char clk_conf) 
@@ -538,17 +575,20 @@ void set_flash_clk(unsigned char clk_conf)
                       | (temp0    &  SET_FWREN_FLASH_CPU)
                       | (temp0    &  SET_WRSR_DATA)
                       | (temp0    &  SET_CRC_EN));
-	while(REG_FLASH_OPERATE_SW & 0x80000000){;}
+	while(REG_FLASH_OPERATE_SW & FLASH_BUSY_BIT);
 }
 
 void flash_init(void)
 {
+    flash_mid = flash_get_id();
+    flash_get_current_flash_config();
+    
     flash_set_dual_mode();
     set_flash_clk(0x08);
 
     ddev_register_dev(FLASH_DEV_NAME, &flash_op);
     
-    os_printf("flash_init end\r\n");
+    os_printf("flash_init end, id 0x%x\r\n", flash_mid);
 }
 
 void flash_exit(void)
@@ -558,71 +598,34 @@ void flash_exit(void)
 
 UINT32 flash_read(char *user_buf, UINT32 count, UINT32 address)
 {
-    uint32_t pre_address;
-    uint32_t post_address;
-    uint32_t pre_len;
-    uint32_t post_len;
-    uint32_t page0;
-    uint32_t page1;
-    page0 = address &(~FLASH_PAGE_MASK);
-    page1 = (address + count) &(~FLASH_PAGE_MASK);
-    if(page0 != page1)
-    {
-        pre_address = address;
-        pre_len = page1 - address;
-        flash_read_data(user_buf, pre_address, pre_len);
-        post_address = page1;
-        post_len = address + count - page1;
-        flash_read_data((user_buf + pre_len), post_address, post_len);
-    }
-    else
-    {
-        flash_read_data(user_buf, address, count);
-    }
+    GLOBAL_INT_DISABLE();
+
+    flash_read_data(user_buf, address, count);
+
+    GLOBAL_INT_RESTORE();
 
     return FLASH_SUCCESS;
 }
 
 UINT32 flash_write(char *user_buf, UINT32 count, UINT32 address)
 {
-        uint32_t pre_address;
-    uint32_t post_address;
-    uint32_t pre_len;
-    uint32_t post_len;
-    uint32_t page0;
-    uint32_t page1;
-    
-    if(flash_mid != flash_get_id())
+    GLOBAL_INT_DISABLE();
+
+    if(4 == flash_current_config->line_mode)
     {
-        printf("Wrong flash ID = 0x%x\r\n", flash_get_id());
-        return FLASH_FAILURE;
+        flash_set_line_mode(LINE_MODE_TWO);
+        //os_printf("change line mode 2\r\n");
     }
 
-    flash_enable_write_flag1=FLASH_WRITE_ENABLE1; 
-    
-    page0 = address &(~FLASH_PAGE_MASK);
-    page1 = (address + count) &(~FLASH_PAGE_MASK);
-     
-    if(page0 != page1)
-    {
-        pre_address = address;
-        pre_len = page1 - address;
-        flash_enable_write_flag2=FLASH_WRITE_ENABLE2;
-        flash_write_data(user_buf, pre_address, pre_len);
-        
-        post_address = page1;
-        post_len = address + count - page1;
-        flash_write_data((user_buf + pre_len), post_address, post_len);
+    flash_write_data((UINT8 *)user_buf, address, count);
 
-    }
-    else
+    if(4 == flash_current_config->line_mode)
     {
-        flash_enable_write_flag2=FLASH_WRITE_ENABLE2;
-        flash_write_data(user_buf, address, count);
-
+        flash_set_line_mode(LINE_MODE_FOUR);
+        //os_printf("change line mode 4\r\n");
     }
-    flash_enable_write_flag1=0; 
-    flash_enable_write_flag2=0;	
+
+    GLOBAL_INT_RESTORE();
     return FLASH_SUCCESS;
 }
 
@@ -677,7 +680,7 @@ UINT32 flash_ctrl(UINT32 cmd, void *parm)
         break;
 
     case CMD_FLASH_CLR_QWFR:
-        flash_clr_qwfr();
+        clr_flash_qwfr();
         break;
 
     case CMD_FLASH_SET_WSR:

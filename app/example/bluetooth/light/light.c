@@ -94,8 +94,10 @@ struct bt_mesh_elem elements[] = {
 
 static void light_state_store(struct k_work *work)
 {
-#if _______BEKEN_FLASH_DRIVER_READY______
     uint8_t *p_read = aos_malloc(sizeof(g_powerup));
+
+    LIGHT_DBG("");
+
     genie_flash_read_userdata(GFI_MESH_POWERUP, p_read, sizeof(g_powerup));
     S_MODEL_POWERUP *pu = (S_MODEL_POWERUP *)p_read;
 
@@ -105,7 +107,6 @@ static void light_state_store(struct k_work *work)
     }
 
     aos_free(p_read);
-#endif
 
 #if 0
     if (g_powerup[0].last_onoff == 0 && ais_get_ota_ready() == 1) {
@@ -214,7 +215,7 @@ void _init_light_para(void)
 #ifdef CONFIG_MESH_MODEL_LIGHTNESS_SRV
     g_elem_state[0].state.light_ln_actual[T_CUR] = g_elem_state[0].state.light_ln_actual[T_TAR] \
                          = g_elem_state[0].powerup.light_ln_last = g_elem_state[i].powerup.default_light_ln = LIGHTNESS_DEFAULT;
-    g_elem_state[i].powerup.light_ln_range_max = LIGHTNESS_MAX;
+    g_elem_state[0].powerup.light_ln_range_max = LIGHTNESS_MAX;
 #endif
 
 #ifdef CONFIG_MESH_MODEL_CTL_SRV
@@ -222,7 +223,7 @@ void _init_light_para(void)
                          = g_elem_state[0].powerup.ctl_temp_last = g_elem_state[0].powerup.ctl_temp_def = CTL_TEMP_DEFAULT;
     g_elem_state[0].powerup.ctl_temp_range_max = CTL_TEMP_MAX;
     g_elem_state[0].powerup.ctl_temp_range_min = CTL_TEMP_MIN;
-    g_elem_state[0].powerup.ctl_ln_last = LIGHTNESS_DEFAULT;
+    g_elem_state[0].powerup.ctl_ln_last = g_elem_state[0].state.ctl_lightness[T_CUR] = g_elem_state[0].state.ctl_lightness[T_TAR] = LIGHTNESS_DEFAULT;
 #endif
 
 #ifdef CONFIG_MESH_MODEL_HSL_SRV
@@ -265,9 +266,7 @@ static void _reset_light_para(void)
 
         i++;
     }
-#if _______BEKEN_FLASH_DRIVER_READY______
     genie_flash_write_userdata(GFI_MESH_POWERUP, (uint8_t *)g_powerup, sizeof(g_powerup));
-#endif
     LIGHT_DBG("done");
 }
 

@@ -281,7 +281,7 @@ UINT32 pwm_ctrl(UINT32 cmd, void *param)
     UINT32 value;
     pwm_param_t *p_param;
     pwm_capture_t *p_capture;
-    printf(" +++++ %s, cmd 0x%x ++++++\n", __func__, cmd);
+    // printf("%s, cmd 0x%x.\n", __func__, cmd);
     switch(cmd)
     {
     case CMD_PWM_UNIT_ENABLE:

@@ -67,7 +67,7 @@ const char *genie_event_str[] = {
 };
 
 #if BT_DBG_ENABLED
-#define GENIE_MESH_EVENT_PRINT(id) BT_INFO_G("%s", genie_event_str[id])
+#define GENIE_MESH_EVENT_PRINT(id) BT_INFO("%s", genie_event_str[id])
 #else
 #define GENIE_MESH_EVENT_PRINT(id)
 #endif
@@ -134,6 +134,8 @@ static E_GENIE_EVENT _genie_event_handle_mesh_init(void)
     mesh_netkey_para_t netkey;
     mesh_appkey_para_t appkey;
 
+    BT_DBG("\r\n");
+
 #ifdef CONFIG_GENIE_OTA
     ais_check_ota_change();
 #endif
@@ -149,11 +151,12 @@ static E_GENIE_EVENT _genie_event_handle_mesh_init(void)
     // bit4:appkey
     uint8_t read_flag = 0;
     if(genie_flash_read_addr(&addr) == GENIE_FLASH_SUCCESS) {
+        BT_DBG("addr 0x%x\r\n", addr);
         read_flag |= 0x01;
     }
-    if(genie_flash_read_seq(&seq) == GENIE_FLASH_SUCCESS) {
+/*     if(genie_flash_read_seq(&seq) == GENIE_FLASH_SUCCESS) {
         read_flag |= 0x02;
-    }
+    } */
 #ifdef CONIFG_OLD_FLASH_PARA
     if(genie_flash_read_para(&bt_mesh) == GENIE_FLASH_SUCCESS){
         BT_DBG("read old");
@@ -175,18 +178,25 @@ static E_GENIE_EVENT _genie_event_handle_mesh_init(void)
 #endif
     {
         if(genie_flash_read_devkey(devkey) == GENIE_FLASH_SUCCESS) {
+            BT_DBG("devkey %s\r\n", bt_hex(devkey, 16));
             read_flag |= 0x04;
         }
         if(genie_flash_read_netkey(&netkey) == GENIE_FLASH_SUCCESS) {
+            BT_DBG("netkey %s\r\n", bt_hex(netkey.key, 16));
             read_flag |= 0x08;
         }
         if(genie_flash_read_appkey(&appkey) == GENIE_FLASH_SUCCESS) {
+            BT_DBG("appkey %s\r\n", bt_hex(appkey.key, 16));
             read_flag |= 0x10;
         }
     }
 
     BT_DBG("flag %02x", read_flag);
-    if((read_flag & 0x1F) == 0x1F) {
+#if 0
+	if((read_flag & 0x1F) == 0x1F) {
+#else
+    if((read_flag & 0x1F) == 0x1D) {            ////(0x1F)
+#endif
         BT_INFO(">>>proved<<<");
 #if 0
         seq += CONFIG_MESH_SEQ_COUNT_INT;
@@ -321,6 +331,7 @@ static void _genie_event_save_mesh_data(uint8_t *p_status)
 
 static E_GENIE_EVENT _genie_event_handle_appkey_add(uint8_t *p_status)
 {
+    BT_DBG("g_in_prov %d", g_in_prov);
     if(g_in_prov) {
         g_in_prov = 0;
         /* disable prov timer */
@@ -370,9 +381,7 @@ static E_GENIE_EVENT _genie_event_handle_seq_update(void)
         genie_flash_write_seq(&seq);
     }
 #else
-#if _______BEKEN_FLASH_DRIVER_READY______
     genie_flash_write_seq(&seq);
-#endif
 #endif
     return GENIE_EVT_SDK_SEQ_UPDATE;
 }

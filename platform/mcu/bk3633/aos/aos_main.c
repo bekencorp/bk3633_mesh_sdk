@@ -13,7 +13,7 @@
 #include "fake_clock_pub.h"
 #include "BK3633_RegList.h"
 
-#define AOS_START_STACK 220
+#define AOS_START_STACK 300
 
 extern void board_init(void);
 

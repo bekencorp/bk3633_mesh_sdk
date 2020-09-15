@@ -189,9 +189,9 @@ static void _hsl_set(struct bt_mesh_model *p_model,
 
     if(ret == MESH_SUCCESS || ret == MESH_TID_REPEAT) {
         set_light_board_type(LIGHT_TYPE_HSL);
+        //light_hsl_publication(p_model);
         genie_event(GENIE_EVT_SDK_ANALYZE_MSG, (S_ELEM_STATE *)p_model->user_data);
         _hsl_status(p_model, p_ctx, 1, 0);
-        light_hsl_publication(p_model);
     }
 }
 
@@ -204,8 +204,8 @@ static void _hsl_set_unack(struct bt_mesh_model *p_model,
     E_MESH_ERROR_TYPE ret = _hsl_analyze(p_model, p_ctx->addr, p_buf);
 
     if(ret == MESH_SUCCESS) {
+        //light_hsl_publication(p_model);
         genie_event(GENIE_EVT_SDK_ANALYZE_MSG, (S_ELEM_STATE *)p_model->user_data);
-        light_hsl_publication(p_model);
     }
 }
 

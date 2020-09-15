@@ -52,8 +52,8 @@
 
 static const struct bt_mesh_le_adv_param slow_adv_param = {
     .options = (BT_MESH_LE_ADV_OPT_CONNECTABLE | BT_MESH_LE_ADV_OPT_ONE_TIME),
-    .interval_min = BT_MESH_GAP_ADV_SLOW_INT_MIN,
-    .interval_max = BT_MESH_GAP_ADV_SLOW_INT_MAX,
+    .interval_min = BT_MESH_GAP_ADV_FAST_INT_MIN_2,
+    .interval_max = BT_MESH_GAP_ADV_FAST_INT_MIN_2,
 };
 
 static const struct bt_mesh_le_adv_param fast_adv_param = {

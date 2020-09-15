@@ -13,7 +13,7 @@ endif # Linux32
 endif # Win32
 
 ota_offset = 0x1F00			#SEC_IMAGE_RUN_CADDR
-ota_length = 0x30000 - 0x1F00
+ota_length = 0x18000 - 0x1F00
 rom_ver    = 0x0006
 BIM_BIN_FILE   := $(SOURCE_ROOT)platform/mcu/$(HOST_MCU_FAMILY)/bin/bk3633_boot.bin
 STACK_BIN_FILE := $(SOURCE_ROOT)platform/mcu/$(HOST_MCU_FAMILY)/bin/bk3633_controller.bin

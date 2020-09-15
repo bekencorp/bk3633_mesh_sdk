@@ -131,7 +131,7 @@
 //   <e> CFG_CONLESS_CTE_TX
 //   	<i> select CFG_CONLESS_CTE_TX
 //   </e>
-#if ( 1 )
+#if ( 0 )
   #define CFG_CONLESS_CTE_TX
 #endif
 
@@ -163,6 +163,13 @@
 #if ( 1 )
   #define CFG_HCITL
 #endif
+
+#define CFG_ECC_P256_ACC     0
+#define CFG_STACK_LOG_OUTPUT 0
+#define CFG_BLE_PER_SYNC     0
+#define CFG_BLE_PER_ADV      0
+#define CFG_BLE_EXT_ADV      0
+#define CFG_BLE_EXT_SCAN     0
 
 //   <e> CFG_HW_AUDIO
 //   	<i> enable HW_AUDIO
@@ -709,7 +716,7 @@
 #endif
     #define KE_PROFILING                    1
 #else
-    #define RW_DEBUG                        1
+    #define RW_DEBUG                        0
     #define RW_SWDIAG                       0
     #define KE_PROFILING                    0
 #endif /* CFG_DBG */

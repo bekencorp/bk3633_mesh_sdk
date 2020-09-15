@@ -37,6 +37,12 @@
 #include "RomCallFlash.h"
 //#include "prf.h" 
 
+#define GPIO_TRIGER_SCAN_EVT_END    0x33
+#define GPIO_TRIGER_SCAN_EVT_START  0x13
+#define GPIO_TRIGER_CONN_EVT_START  0x30
+#define GPIO_TRIGER_CONN_EVT_END    0x34
+#define GPIO_TRIGER_ADV_EVT_START   0x31
+#define GPIO_TRIGER_ADV_EVT_END     0x32
 /*
  * DEFINES
  ****************************************************************************************

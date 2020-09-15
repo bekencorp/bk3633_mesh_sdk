@@ -15,38 +15,43 @@
 #define FLASH_H_
 
 #include <stdint.h>               // standard integer functions
+#include "BK3633_RegList.h"
 
-#define AHB_FLASH_BASE			         0x00802000
-#define REG_FLASH_OPERATE_SW            (*((volatile unsigned long *)   (AHB_FLASH_BASE+0*4)))
-#define REG_FLASH_DATA_SW_FLASH         (*((volatile unsigned long *)   (AHB_FLASH_BASE+1*4)))
+#define AHB_FLASH_BASE			        BASEADDR_FLASH
+#define REG_FLASH_OPERATE_SW            (addFLASH_Reg0x0)
+#define REG_FLASH_DATA_SW_FLASH         (addFLASH_Reg0x1)
 #define REG_FLASH_DATA_FLASH_SW         (*((volatile unsigned long *)   (AHB_FLASH_BASE+2*4)))
 #define REG_FLASH_RDID_DATA_FLASH       (*((volatile unsigned long *)   (AHB_FLASH_BASE+4*4)))
-#define REG_FLASH_SR_DATA_CRC_CNT       (*((volatile unsigned long *)   (AHB_FLASH_BASE+5*4)))
-#define REG_FLASH_CONF                  (*((volatile unsigned long *)   (AHB_FLASH_BASE+7*4)))
+#define REG_FLASH_SR_DATA_CRC_CNT       (addFLASH_Reg0x5)
+#define REG_FLASH_CONF                  (addFLASH_Reg0x7)
 #define flash_200k_ADDR                 (*((volatile unsigned long *)    (0x00032000)))
-#define BIT_ADDRESS_SW                  0
-#define BIT_OP_TYPE_SW                  24
-#define BIT_OP_SW                       29
-#define BIT_WP_VALUE                    30
-#define BIT_BUSY_SW                     31
+#define BIT_ADDRESS_SW                  posFLASH_Reg0x0_addr_sw_reg
+#define BIT_OP_TYPE_SW                  posFLASH_Reg0x0_op_type_sw
+#define BIT_OP_SW                       posFLASH_Reg0x0_op_sw
+#define BIT_WP_VALUE                    posFLASH_Reg0x0_wp_value
+#define BIT_BUSY_SW                     posFLASH_Reg0x0_busy_sw
 
 #define SET_ADDRESS_SW                  0xFFFFFF << BIT_ADDRESS_SW
 #define SET_OP_TYPE_SW                  0x1F     << BIT_OP_TYPE_SW
 #define SET_OP_SW                       0x1      << BIT_OP_SW
 #define SET_WP_VALUE                    0x1      << BIT_WP_VALUE
-#define SET_BUSY_SW                     0x1      << BIT_BUSY_SW
+#define FLASH_BUSY_BIT                  (0x1      << BIT_BUSY_SW)
 
-#define BIT_FLASH_CLK_CONF              0
-#define BIT_MODE_SEL                    4
-#define BIT_FWREN_FLASH_CPU             9
-#define BIT_WRSR_DATA                   10
-#define BIT_CRC_EN                      26
+#define BIT_FLASH_CLK_CONF              posFLASH_Reg0x7_flash_clk_conf
+#define BIT_MODE_SEL                    posFLASH_Reg0x7_mode_sel
+#define BIT_FWREN_FLASH_CPU             posFLASH_Reg0x7_fwren_flash_cpu
+#define BIT_WRSR_DATA                   posFLASH_Reg0x7_wrsr_data
+#define BIT_CRC_EN                      posFLASH_Reg0x7_crc_en
 
-#define SET_FLASH_CLK_CONF              0xF      << BIT_FLASH_CLK_CONF
-#define SET_MODE_SEL                    0x1F     << BIT_MODE_SEL
-#define SET_FWREN_FLASH_CPU             0x1      << BIT_FWREN_FLASH_CPU
-#define SET_WRSR_DATA                   0xFFFF   << BIT_WRSR_DATA
-#define SET_CRC_EN                      0x1      << BIT_CRC_EN
+#define MODEL_SEL_MASK					0x1F
+#define SET_FLASH_CLK_CONF              bitFLASH_Reg0x7_flash_clk_conf
+#define SET_MODE_SEL                    (MODEL_SEL_MASK << BIT_MODE_SEL)
+#define SET_FWREN_FLASH_CPU             bitFLASH_Reg0x7_fwren_flash_cpu
+#define SET_WRSR_DATA                   bitFLASH_Reg0x7_wrsr_data
+#define SET_CRC_EN                      bitFLASH_Reg0x7_crc_en
+
+#define M_VALUE_MASK					0xFF
+#define M_VALUE_POST					posFLASH_Reg0x5_m_value
 
 #define BIT_SR_DATA_FLASH               0
 #define BIT_CRC_ERR_COUNTER             8
@@ -61,13 +66,10 @@
 
 ///Flash type code used to select the correct erasing and programming algorithm
 #define FLASH_TYPE_UNKNOWN             0
-#define FLASH_SPACE_TYPE_MAIN          0x3435
-#define FLASH_TYPE_EMBEN_BK3435        FLASH_SPACE_TYPE_MAIN
 
 
-///Base address of Flash on system bus
-#define FLASH_MAIN_BASE_ADDR         0x00000000
-
+#define LINE_MODE_TWO                        2
+#define LINE_MODE_FOUR                       4
 
 
 #define FLASH_MAIN_SIZE              0x00040000

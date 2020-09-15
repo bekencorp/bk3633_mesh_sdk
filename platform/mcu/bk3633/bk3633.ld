@@ -13,12 +13,12 @@ INCLUDE ./platform/mcu/bk3633/bin/stack_rom_symbol.txt
 OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")
 OUTPUT_ARCH(arm)
 ENTRY(_vector_start);
-_vector_start = 0x30000;
+_vector_start = 0x18000;
 
 SECTIONS
 {
 /* vectors go to vectors region */
-	.vectors 0x30000 : /*Do not change the section order, for image*/
+	.vectors 0x18000 : /*Do not change the section order, for image*/
 	{
       KEEP(*(sys.vectors))
       KEEP(*(sys.handlers))

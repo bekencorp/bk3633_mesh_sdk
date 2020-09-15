@@ -68,9 +68,11 @@ enum lld_msg_id
      */
     LLD_ADV_REP_IND,
     LLD_SCAN_REQ_IND,
+#if (CFG_BLE_PER_SYNC)
     LLD_SYNC_START_REQ,
     LLD_PER_ADV_REP_IND,
     LLD_PER_ADV_RX_END_IND,
+#endif // CFG_BLE_PER_SYNC
     LLD_SCAN_END_IND,
     LLD_ADV_END_IND,
     LLD_PER_ADV_END_IND,

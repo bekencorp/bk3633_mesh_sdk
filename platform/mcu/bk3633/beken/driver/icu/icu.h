@@ -35,7 +35,7 @@
 #define ICU_CLK_SRC_SEL_PLL_SEL_POSI                 (10)
 #define ICU_CLK_SRC_SEL_PLL_SEL_MASK                 (0x01UL << ICU_CLK_SRC_SEL_PLL_SEL_POSI)
 
-#define ICU_CORE_CLK_CON                             &(REG_AHB0_ICU_CORECLKCON)
+
 #define ICU_CORE_CLK_PWD_POSI                        (0)
 #define ICU_CORE_CLK_DIV_POSI                        (1)
 #define ICU_CORE_CLK_PWD_MASK                        (0x01UL << ICU_CORE_CLK_PWD_POSI)
@@ -47,11 +47,9 @@
 #define ICU_ADC_CLK_PWD_MASK                         (0x01UL << ICU_ADC_CLK_ADC_PWD_POSI)
 #define ICU_ADC_CLK_DIV_MASK                         (0x7FUL << ICU_ADC_CLK_DIV_POSI)
 
-#define ICU_UART_CLK_CON                             &(addSYS_Reg0x3)
-#define ICU_UART_CLK_PWD_POSI                        (0)
+#define ICU_UART_CLK_PWD_POSI                        (posSYS_Reg0x3_uart0_pwd)
 #define ICU_UART_CLK_DIV_POSI                        (1)
 #define ICU_UART_CLK_PWD_MASK                        (0x01UL << ICU_UART_CLK_PWD_POSI)
-#define ICU_UART_CLK_DIV_MASK                        (0x7FUL << ICU_UART_CLK_DIV_POSI)
 
 #define ICU_I2C_CLK_CON                              &(REG_AHB0_ICU_I2CCLKCON)
 #define ICU_I2C_CLK_PWD_POSI                         (0)
@@ -69,26 +67,12 @@
 #define ICU_BLE_CLK_PWD_POSI                         (0)
 #define ICU_BLE_CLK_PWD_MASK                         (0x01UL << ICU_BLE_CLK_PWD_POSI)
 
-#define ICU_WDT_CLK_CON                              &(REG_AHB0_ICU_WDTCLKCON)
-#define ICU_WDT_CLK_PWD_POSI                         (0)
+#define ICU_WDT_CLK_PWD_POSI                         (posSYS_Reg0x3_wdt_pwd)
 #define ICU_WDT_CLK_PWD_MASK                         (0x01UL << ICU_WDT_CLK_PWD_POSI)
 
-#define ICU_RNG_CLK_CON                              &(REG_AHB0_ICU_RNGCLKCON)
-#define ICU_USB_CLK_PWD_POSI                         (0)
-#define ICU_SDM_CLK_PWD_POSI                         (1)
-#define ICU_I2S_CLK_PWD_POSI                         (2)
-#define ICU_USB_CLK_PWD_MASK                         (0x01UL << ICU_USB_CLK_PWD_POSI)
-#define ICU_SDM_CLK_PWD_MASK                         (0x01UL << ICU_SDM_CLK_PWD_POSI)
+#define ICU_I2S_CLK_PWD_POSI                         (posSYS_Reg0x3_i2s_pwd)
 #define ICU_I2S_CLK_PWD_MASK                         (0x01UL << ICU_I2S_CLK_PWD_POSI)
 
-
-#define ICU_RTC_CLK_CON                              &(REG_AHB0_ICU_RTCCLKCON)
-#define ICU_RTC_CLK_PWD_POSI                         (0)
-#define ICU_RTC_CLK_PWD_MASK                         (0x01UL << ICU_RTC_CLK_PWD_POSI)
-
-#define ICU_LPO_CLK_ON                               &(REG_AHB0_ICU_LPO_CLK_ON)
-
-#define ICU_CLK_32K_SEL                              &(REG_AHB0_ICU_CLK32K_SEL)
 
 #define ICU_ANA_CTL                                  &(REG_AHB0_ICU_ANA_CTL)
 

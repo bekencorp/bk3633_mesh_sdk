@@ -1,5 +1,5 @@
-#ifndef _PCA10040_MESH_CONFIG_H_
-#define _PCA10040_MESH_CONFIG_H_
+#ifndef _BK3633_MESH_CONFIG_H_
+#define _BK3633_MESH_CONFIG_H_
 
 /* Generic options */
 #define CONFIG_BT_MESH_MODEL_KEY_COUNT 2
@@ -14,7 +14,7 @@
 #define CONFIG_BT_MESH_RX_SDU_MAX 36
 #define CONFIG_BT_MESH_RX_SEG_MSG_COUNT 2
 #define CONFIG_BT_MESH_ADV_PRIO 41
-#define CONFIG_BT_MESH_PROXY_FILTER_SIZE 1
+#define CONFIG_BT_MESH_PROXY_FILTER_SIZE 50
 #define CONFIG_BT_MESH_NODE_ID_TIMEOUT 60
 
 /* Friend related options */
@@ -44,7 +44,7 @@
 
 /* Proxy related options */
 #ifdef CONFIG_BT_MESH_PROXY
-#define CONFIG_BT_MESH_PROXY_FILTER_SIZE 1
+#define CONFIG_BT_MESH_PROXY_FILTER_SIZE 50
 #endif // BT_MESH_PROXY
 
 #endif

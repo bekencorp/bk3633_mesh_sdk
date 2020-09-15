@@ -709,11 +709,12 @@ void rwip_init(uint32_t error)
     display_add_config();
     #endif //DISPLAY_SUPPORT
 
+#if (CFG_ECC_P256_ACC)
     #if (BT_EMB_PRESENT || BLE_EMB_PRESENT)
     // Initialize Diffie Hellman Elliptic Curve Algorithm
     ecc_init(false);
     #endif // (BT_EMB_PRESENT || BLE_EMB_PRESENT)
-
+#endif // CFG_ECC_P256_ACC
     // Initialize H4TL
     #if (H4TL_SUPPORT)
     #if (BLE_HOST_PRESENT)
@@ -842,9 +843,11 @@ void rwip_reset(void)
     ke_flush();
 
     #if (BT_EMB_PRESENT || BLE_EMB_PRESENT)
+#if (CFG_ECC_P256_ACC)
     // Reset Diffie Hellman Elliptic Curve Algorithm
     ecc_init(true);
-    #endif // (BT_EMB_PRESENT || BLE_EMB_PRESENT)
+#endif
+   #endif // (BT_EMB_PRESENT || BLE_EMB_PRESENT)
 
     #if (HCI_PRESENT)
     // Reset the HCI

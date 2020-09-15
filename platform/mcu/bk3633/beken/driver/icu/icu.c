@@ -109,10 +109,10 @@ UINT32 icu_ctrl(UINT32 cmd, void *param)
     	} */
     	break;
 
-    case CMD_ICU_CLK_32K_SRC_SEL:
+/*     case CMD_ICU_CLK_32K_SRC_SEL:
     	reg = *(UINT32 *)param & 0x1;
     	REG_WRITE(ICU_CLK_32K_SEL, reg);
-    	break;
+    	break; */
 
     case CMD_CLK_PWR_UP:
     	dev = *(PWM_CHAN_E *)param;
@@ -136,19 +136,19 @@ UINT32 icu_ctrl(UINT32 cmd, void *param)
                 REG_WRITE(REG_SYS_PWD, reg);
                 break;
             case CLK_PWR_DEV_UART:
-                reg  = REG_READ(ICU_UART_CLK_CON);
+                reg  = REG_READ(REG_SYS_PWD);
                 reg &= ~ICU_UART_CLK_PWD_MASK;
-                REG_WRITE(ICU_UART_CLK_CON, reg);
+                REG_WRITE(REG_SYS_PWD, reg);
                 break;
             case CLK_PWR_DEV_WDT:
-                reg  = REG_READ(ICU_WDT_CLK_CON);
+                reg  = REG_READ(REG_SYS_PWD);
                 reg &= ~ICU_WDT_CLK_PWD_MASK;
-                REG_WRITE(ICU_WDT_CLK_CON, reg);
+                REG_WRITE(REG_SYS_PWD, reg);
                 break;
             case CLK_PWR_DEV_I2S_PCM:
-                reg  = REG_READ(ICU_RNG_CLK_CON);
+                reg  = REG_READ(REG_SYS_PWD);
                 reg &= ~ICU_I2S_CLK_PWD_MASK;
-                REG_WRITE(ICU_RNG_CLK_CON, reg);
+                REG_WRITE(REG_SYS_PWD, reg);
                 break;
             default:
                 break;
@@ -176,19 +176,19 @@ UINT32 icu_ctrl(UINT32 cmd, void *param)
                 REG_WRITE(REG_SYS_PWD, reg);
                 break;
             case CLK_PWR_DEV_UART:
-                reg  = REG_READ(ICU_UART_CLK_CON);
+                reg  = REG_READ(REG_SYS_PWD);
                 reg |= ICU_UART_CLK_PWD_MASK;
-                REG_WRITE(ICU_UART_CLK_CON, reg);
+                REG_WRITE(REG_SYS_PWD, reg);
                 break;
             case CLK_PWR_DEV_WDT:
-                reg  = REG_READ(ICU_WDT_CLK_CON);
+                reg  = REG_READ(REG_SYS_PWD);
                 reg |= ICU_WDT_CLK_PWD_MASK;
-                REG_WRITE(ICU_WDT_CLK_CON, reg);
+                REG_WRITE(REG_SYS_PWD, reg);
                 break;
             case CLK_PWR_DEV_I2S_PCM:
-                reg  = REG_READ(ICU_RNG_CLK_CON);
+                reg  = REG_READ(REG_SYS_PWD);
                 reg |= ICU_I2S_CLK_PWD_MASK;
-                REG_WRITE(ICU_RNG_CLK_CON, reg);
+                REG_WRITE(REG_SYS_PWD, reg);
                 break;
             default:
                 break;

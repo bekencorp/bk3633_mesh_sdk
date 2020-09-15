@@ -22,10 +22,11 @@ flag(1B) | align(1B) | index(2B) | len(2B) | CRC(2B) | data(nB)
 ------------------------------------------------------------------------
 ***********************************************************************/
 
-#define GENIE_FLASH_PARTITION_SYSTEM   HAL_PARTITION_PARAMETER_1
-#define GENIE_FLASH_PARTITION_USERDATA HAL_PARTITION_PARAMETER_2
-#define GENIE_FLASH_PARTITION_RECYCLE  HAL_PARTITION_PARAMETER_3
-#define GENIE_FLASH_PARTITION_SEQ      HAL_PARTITION_PARAMETER_4
+#define GENIE_FLASH_PARTITION_SEQ   HAL_PARTITION_PARAMETER_1
+#define GENIE_FLASH_PARTITION_SYSTEM   HAL_PARTITION_PARAMETER_3
+#define GENIE_FLASH_PARTITION_USERDATA HAL_PARTITION_CUSTOM_1
+#define GENIE_FLASH_PARTITION_RECYCLE  HAL_PARTITION_CUSTOM_2
+
 
 #define GENIE_FLASH_SIZE_SYSTEM_PART 0x1000
 #define GENIE_FLASH_START_INITED_FLAG 0
@@ -268,7 +269,7 @@ static E_GENIE_FLASH_ERRCODE _genie_flash_check_remain(void)
     return GENIE_FLASH_SUCCESS;
 }
 
-void _ginie_flash_get_enc_key(uint8_t project_key[16])
+void _genie_flash_get_enc_key(uint8_t project_key[16])
 {
     uint32_t offset = 100;
     uint8_t random[16];
@@ -342,6 +343,8 @@ E_GENIE_FLASH_ERRCODE genie_flash_init(void)
     static uint8_t flash_already_inited = 0;
     E_GENIE_FLASH_ERRCODE ret = GENIE_FLASH_SUCCESS;
 
+    BT_DBG("\r\n");
+
     if(flash_already_inited == 1) {
         return GENIE_FLASH_SUCCESS;
     }
@@ -355,7 +358,7 @@ E_GENIE_FLASH_ERRCODE genie_flash_init(void)
     memset(prj_key, 0, 16);
     stringtohex(key_char, prj_key, 16);
 
-    _ginie_flash_get_enc_key(prj_key);
+    _genie_flash_get_enc_key(prj_key);
 #endif
 
     /* check if any valid data in Recycle, if true ,recovery it */
@@ -743,7 +746,7 @@ static E_GENIE_FLASH_ERRCODE genie_flash_init_partition(hal_partition_t in_parti
     uint32_t offset = 0;
     uint32_t flash_flag = 0;
 
-    BT_DBG("");
+    BT_DBG("in_partition %d", in_partition);
     switch (in_partition) {
     case GENIE_FLASH_PARTITION_SYSTEM:
         flash_flag = GENIE_FLASH_FLAG_INITED_SYS;

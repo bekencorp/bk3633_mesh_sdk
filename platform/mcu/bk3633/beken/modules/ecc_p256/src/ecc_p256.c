@@ -36,6 +36,8 @@
 #include "dbg_swdiag.h"          // Software diag
 //#include "led.h"
 
+#if (CFG_ECC_P256_ACC)
+
 // ECC Accelerator in a simulation environement
 #ifdef CFG_ECC_SIM_ACCEL
 #include "reg_ecc_accel.h"
@@ -2669,3 +2671,5 @@ void ecc_get_debug_Keys(uint8_t*secret_key, uint8_t* pub_key_x, uint8_t* pub_key
         secret_key[i] = DebugE256SecretKey[i];
     }
 }
+
+#endif
