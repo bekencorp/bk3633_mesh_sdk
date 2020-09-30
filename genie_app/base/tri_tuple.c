@@ -71,8 +71,22 @@ void genie_tri_tuple_set_silent_adv(void)
 uint8_t *genie_tri_tuple_get_uuid(void)
 {
     int i;
-    
-    memcpy(g_mac,DEFAULT_MAC,6);
+    uint32_t off_set = 0x000;
+    uint8_t addr[6] = {0};
+    uint8_t dummy_addr[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+    if((hal_flash_read(HAL_PARTITION_MAC, &off_set, addr, sizeof(addr)) == 0) &&
+       memcmp(addr, dummy_addr, sizeof(addr)) != 0) {
+        memcpy(g_mac, addr, 6);
+    }
+
+    if ((memcmp(addr, dummy_addr, 6) == 0)) {
+        memcpy(addr, DEFAULT_MAC, 6);
+        memcpy(g_mac, DEFAULT_MAC, 6);
+        printf("-----------------\n");
+    }
+
+    printf("%s, addr:%02x : %02x: %02x : %02x : %02x: %02x\n",
+           __func__, addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
 #if 0  
     // all fields in uuid should be in little-endian
     // CID: Taobao

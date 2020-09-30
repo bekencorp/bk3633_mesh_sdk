@@ -252,7 +252,7 @@ int bt_hci_cmd_send_sync(u16_t opcode, struct net_buf *buf, struct net_buf **rsp
         }
     }
 
-    BT_ERR("opcode 0x%04x len %u\r\n", opcode, buf->len);
+    BT_DBG("opcode 0x%04x len %u\r\n", opcode, buf->len);
 
     cmd(buf)->sync = SYNC_TX;
     net_buf_ref(buf);
@@ -3161,7 +3161,7 @@ static bool valid_adv_param(const struct bt_le_adv_param *param)
     }
 
     if (param->interval_min > param->interval_max ||
-        param->interval_min < 0x0010 || param->interval_max > 0x4000) {
+        param->interval_min < 0x0008 || param->interval_max > 0x4000) {
         return false;
     }
 

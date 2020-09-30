@@ -179,7 +179,9 @@ int32_t hal_flash_read(hal_partition_t in_partition, uint32_t *off_set, void *ou
 	flash_hdl = ddev_open(FLASH_DEV_NAME, &status, 0);
     hal_wdg_reload(&wdg);
     hal_flash_lock();
-    ddev_read(flash_hdl, out_buf, out_buf_len, start_addr);
+    if (ddev_read(flash_hdl, out_buf, out_buf_len, start_addr) != 0) {
+        return -1;
+    }
     hal_flash_unlock();
     hal_wdg_reload(&wdg);
 	ddev_close(flash_hdl);

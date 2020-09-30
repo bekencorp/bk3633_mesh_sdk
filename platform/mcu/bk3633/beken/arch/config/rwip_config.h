@@ -795,7 +795,7 @@
 ////  #include "rwapp_config.h"   // Application configuration		////==> No such file
 #endif // defined(CFG_APP)
 
-
+#define KERNEL_MEM_RW          0
 
 /******************************************************************************************/
 /* -------------------------   KERNEL SETUP          -------------------------------------*/

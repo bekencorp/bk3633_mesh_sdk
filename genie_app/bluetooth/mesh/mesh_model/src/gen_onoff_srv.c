@@ -62,6 +62,7 @@ static E_MESH_ERROR_TYPE _gen_onoff_analyze(struct bt_mesh_model *p_model,
 {
     u8_t onoff = 0;
     u8_t tid = 0;
+    
     u8_t trans = 0;
     u8_t delay = 0;
     S_ELEM_STATE *p_elem = p_model->user_data;

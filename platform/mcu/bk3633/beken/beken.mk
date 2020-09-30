@@ -25,7 +25,9 @@ GLOBAL_INCLUDES +=  driver/include
 GLOBAL_INCLUDES +=  modules/common/api
 GLOBAL_INCLUDES +=  modules/common
 GLOBAL_INCLUDES +=  ip/ble/ll/api
-
+GLOBAL_INCLUDES +=  ip/ble/ll/import/reg
+GLOBAL_INCLUDES +=  ip/sch/import/
+GLOBAL_INCLUDES += ip/em/api
 ### include ###
 $(NAME)_INCLUDES := driver/icu
 $(NAME)_INCLUDES += driver/uart
@@ -47,11 +49,10 @@ $(NAME)_INCLUDES += ip/ble/ll/src/llc
 $(NAME)_INCLUDES += ip/ble/ll/src/lld
 $(NAME)_INCLUDES += ip/ble/ll/src/llm
 $(NAME)_INCLUDES += ip/ble/ll/src
+$(NAME)_INCLUDES += ip/ble/ll/api
 #$(NAME)_INCLUDES += ip/ble/ll/api
 $(NAME)_INCLUDES += ip/hci/api
 $(NAME)_INCLUDES += ip/em/api
-$(NAME)_INCLUDES += ip/ble/ll/import/reg
-$(NAME)_INCLUDES += ip/sch/import
 #$(NAME)_INCLUDES += ble/ble_stack_inc/hci/src
 #$(NAME)_INCLUDES += ble/ble_stack_inc/nvds/api
 #$(NAME)_INCLUDES += ble/ble_stack_inc/mesh/api
@@ -101,6 +102,8 @@ $(NAME)_SOURCES  += driver/uart/uart.c
 $(NAME)_SOURCES  += driver/wdt/wdt.c
 $(NAME)_SOURCES  += driver/pwm/pwm.c
 
+$(NAME)_SOURCES  += driver/
+$(NAME)_SOURCES  += ip/platform/driver/rf/rf_xvr.c
 #$(NAME)_SOURCES  += func/func.c
 #$(NAME)_SOURCES  += func/debug_uart.c
 #$(NAME)_SOURCES  += func/misc/fake_clock.c

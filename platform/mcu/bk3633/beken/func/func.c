@@ -9,7 +9,8 @@
 #include "RomCallFlash.h"
 #include "app.h"
 #include "gpio.h"
-
+#include "rf.h"
+#include "k_mm.h"
 #if CFG_ROLE_LAUNCH
 #include "role_launch.h"
 #endif
@@ -18,7 +19,7 @@
 //#include "bk7011_cal_pub.h"
 #endif
 
-#if CFG_UART_DEBUG 
+#if CFG_UART_DEBUG
 #include "uart_debug_pub.h"
 #endif
 
@@ -62,6 +63,9 @@ void rom_env_init(struct rom_env_tag *api)
 
     rom_env.gpio_config = gpio_config;
     rom_env.gpio_triger = gpio_triger;
+    rom_env.rf_init = rf_init;
+    rom_env.malloc = krhino_mm_alloc;
+    rom_env.free = krhino_mm_free;
 #if 1
 	rom_env.krhino_sem_create = krhino_sem_create;
 

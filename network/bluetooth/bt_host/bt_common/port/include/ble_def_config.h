@@ -49,7 +49,7 @@
  * CONFIG_BT_HCI_CMD_COUNT: hci cmd buffer count,range 2 to 64
  */
 #ifndef CONFIG_BT_HCI_CMD_COUNT
-#define CONFIG_BT_HCI_CMD_COUNT 2
+#define CONFIG_BT_HCI_CMD_COUNT 5
 #endif
 
 /**

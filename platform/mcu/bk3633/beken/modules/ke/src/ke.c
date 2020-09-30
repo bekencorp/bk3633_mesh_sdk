@@ -53,9 +53,11 @@ struct ke_env_tag ke_env;
 
 void ke_init(void)
 {
+#if (KERNEL_MEM_RW)
     // ke_mem_init MUST be called first to be able to allocate memory right from start
     memset(ke_env.heap, 0, sizeof(struct mblock_free*) * KE_MEM_BLOCK_MAX);
     memset(ke_env.heap_size, 0, sizeof(uint16_t) * KE_MEM_BLOCK_MAX);
+#endif // KERNEL_MEM_RW
     #if (KE_PROFILING)
     ke_env.max_heap_used = 0;
     memset(ke_env.heap_used, 0, sizeof(uint16_t) * KE_MEM_BLOCK_MAX);

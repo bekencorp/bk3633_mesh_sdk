@@ -61,8 +61,8 @@ struct bt_mesh_cfg_srv cfg_srv = {
     .default_ttl = 7,
 
     /* 5 transmissions with 20ms interval */
-    .net_transmit = BT_MESH_TRANSMIT(3, 20),
-    .relay_retransmit = BT_MESH_TRANSMIT(3, 20),
+    .net_transmit = BT_MESH_TRANSMIT(4, 20),
+    .relay_retransmit = BT_MESH_TRANSMIT(4, 20),
 };
 
 static void hb_send(struct bt_mesh_model *model)

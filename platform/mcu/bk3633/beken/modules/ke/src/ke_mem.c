@@ -68,7 +68,7 @@ struct mblock_used
     uint16_t size;
 };
 
-
+#if 0
 /*
  * LOCAL FUNCTION DEFINITIONS
  ****************************************************************************************
@@ -164,9 +164,11 @@ bool ke_mem_is_empty(uint8_t type)
     // return result.
     return result;
 }
+#endif // #if 0
 
 bool ke_check_malloc(uint32_t size, uint8_t type)
 {
+#if 0
     struct mblock_free *node = NULL,*found = NULL;
     uint8_t cursor = 0;
     uint32_t totalsize;
@@ -233,11 +235,19 @@ bool ke_check_malloc(uint32_t size, uint8_t type)
     GLOBAL_INT_RESTORE();
 
     return (found != NULL);
+#else
+    return 1;
+#endif // #if 0
 }
 
 
 void *ke_malloc(uint32_t size, uint8_t type)
 {
+    void *alloc_buf = rom_env.malloc(sizeof(struct mblock_used) + size);
+    ((struct mblock_used *)alloc_buf)->corrupt_check = KE_ALLOCATED_PATTERN;
+    alloc_buf = ((struct mblock_used *)alloc_buf) + 1;
+	return alloc_buf;
+#if 0
     struct mblock_free *node = NULL,*found = NULL;
     uint8_t cursor = 0;
     struct mblock_used *alloc = NULL;
@@ -404,10 +414,17 @@ void *ke_malloc(uint32_t size, uint8_t type)
 //    debug_mem_set((uint32_t*)alloc,type);
 
     return (void*)alloc;
+#endif 
 }
 
 void ke_free(void* mem_ptr)
 {
+    if(mem_ptr)
+	{
+	    mem_ptr = ((struct mblock_used *)mem_ptr) - 1;
+		rom_env.free(mem_ptr);
+	}
+#if 0
     struct mblock_free *freed;
     struct mblock_used *bfreed;
     struct mblock_free *node, *next_node, *prev_node;
@@ -544,6 +561,7 @@ free_end:
     #endif //KE_PROFILING
     // end of protection
     GLOBAL_INT_RESTORE();
+#endif // #if 0
 }
 
 

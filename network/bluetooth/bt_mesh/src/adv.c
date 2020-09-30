@@ -36,8 +36,8 @@
 #endif
 
 /* Window and Interval are equal for continuous scanning */
-#define MESH_SCAN_INTERVAL 0x20
-#define MESH_SCAN_WINDOW   0x20
+#define MESH_SCAN_INTERVAL 0x200
+#define MESH_SCAN_WINDOW   0x200
 
 /* Convert from ms to 0.625ms units */
 #define ADV_INT(_ms) ((_ms) * 8 / 5)

@@ -63,6 +63,9 @@
 #define EM_BLE_CS_NB              (BLE_ACTIVITY_MAX + BLE_OBSERVER + BLE_CENTRAL)
 #define EM_BLE_CS_END             (EM_BLE_CS_OFFSET + EM_BLE_CS_NB * REG_EM_BLE_CS_SIZE)
 
+#if ((REG_EM_BLE_CS_SIZE % 4) != 0)
+#error "CS Pointers must be 32 bits aligned"
+#endif // ((REG_EM_BLE_CS_SIZE % 4) != 0)
 /**
  * Control Structures indexes definition
  */
@@ -158,6 +161,9 @@ enum ENC_MODE
 #define EM_BLE_WPAL_SIZE           (BLE_WHITELIST_MAX * REG_EM_BLE_WPAL_SIZE)
 #define EM_BLE_WPAL_END            (EM_BLE_WPAL_OFFSET + EM_BLE_WPAL_SIZE)
 
+#if ((REG_EM_BLE_WPAL_SIZE % 4) != 0)
+#error "WPAL Pointers must be 32 bits aligned"
+#endif // ((REG_EM_BLE_WPAL_SIZE % 4) != 0)
 /*
  * RESOLVING LIST
  ****************************************************************************************
@@ -168,6 +174,9 @@ enum ENC_MODE
 #define EM_BLE_RAL_SIZE          (BLE_RESOL_ADDR_LIST_MAX * REG_EM_BLE_RAL_SIZE)
 #define EM_BLE_RAL_END           (EM_BLE_RAL_OFFSET + EM_BLE_RAL_SIZE)
 
+#if ((REG_EM_BLE_RAL_SIZE % 4) != 0)
+#error "RAL Pointers must be 32 bits aligned"
+#endif // ((REG_EM_BLE_RAL_SIZE % 4) != 0)
 /*
  * RX DESCRIPTORS
  ****************************************************************************************
@@ -178,6 +187,9 @@ enum ENC_MODE
 #define EM_BLE_RX_DESC_NB          (BLE_RX_DESC_NB)
 #define EM_BLE_RX_DESC_END         (EM_BLE_RX_DESC_OFFSET + EM_BLE_RX_DESC_NB * REG_EM_BLE_RX_DESC_SIZE)
 
+#if ((REG_EM_BLE_RX_DESC_SIZE % 4) != 0)
+#error "RX Descriptors must be 32 bits aligned"
+#endif // ((REG_EM_BLE_TX_DESC_SIZE % 4) != 0)
 /*
  * TX DESCRIPTORS
  ****************************************************************************************
@@ -195,6 +207,9 @@ enum ENC_MODE
 
 #define EM_BLE_TXDESC_INDEX(act_id, idx)      (BLE_NB_TX_DESC_PER_ACT * act_id + idx)
 
+#if ((REG_EM_BLE_TX_DESC_SIZE % 4) != 0)
+#error "TX Descriptors must be 32 bits aligned"
+#endif // ((REG_EM_BLE_TX_DESC_SIZE % 4) != 0)
 /*
  * LLCP TX BUFFERS
  ****************************************************************************************
@@ -291,6 +306,9 @@ enum ENC_MODE
 #if (REG_EM_BLE_TX_ISO_DESC_SIZE != REG_EM_BLE_RX_ISO_DESC_SIZE)
 #error "TX and RX ISO descriptors shall have the same size"
 #endif // (REG_EM_BLE_TX_ISO_DESC_SIZE != REG_EM_BLE_RX_ISO_DESC_SIZE)
+#if ((REG_EM_BLE_TX_ISO_DESC_SIZE % 4) != 0)
+#error "TX/RX ISO Descriptor must be 32 bits aligned"
+#endif // ((REG_EM_BLE_TX_ISO_DESC_SIZE % 4) != 0)
 
 /*
  * ISO TX/RX DATA BUFFERS
@@ -308,6 +326,9 @@ enum ENC_MODE
 #if (REG_EM_BLE_TX_ISO_BUF_SIZE != REG_EM_BLE_RX_ISO_BUF_SIZE)
 #error "TX and RX ISO buffer shall have the same size"
 #endif // (REG_EM_BLE_TX_ISO_DESC_SIZE != REG_EM_BLE_RX_ISO_DESC_SIZE)
+#if ((REG_EM_BLE_TX_ISO_BUF_SIZE % 4) != 0)
+#error "TX/RX ISO Buffers must be 32 bits aligned"
+#endif // ((REG_EM_BLE_TX_ISO_BUF_SIZE % 4) != 0)
 
 #else
 #define EM_BLE_ISO_BUFFER_END                 (EM_BLE_ACLTXBUF_END)

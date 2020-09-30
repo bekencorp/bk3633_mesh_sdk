@@ -673,6 +673,7 @@ void rwip_init(uint32_t error)
 
     // Initialize kernel
     ke_init();
+#if (KERNEL_MEM_RW)
     // Initialize memory heap used by kernel.
     // Memory allocated for environment variables
     // ke_mem_init(KE_MEM_ENV,           (uint8_t*)rwip_heap_env,     RWIP_CALC_HEAP_LEN_IN_BYTES(RWIP_HEAP_ENV_SIZE));
@@ -688,7 +689,7 @@ void rwip_init(uint32_t error)
                REG_EM_ET_BASE_ADDR + (16 * 1024 -  4));
     // Non Retention memory block
     // ke_mem_init(KE_MEM_NON_RETENTION, (uint8_t*)rwip_heap_non_ret, RWIP_CALC_HEAP_LEN_IN_BYTES(RWIP_HEAP_NON_RET_SIZE));
-
+#endif // KERNEL_MEM_RW
     #if (BT_EMB_PRESENT || BLE_EMB_PRESENT)
     #if (RW_DEBUG)
     // Initialize the debug process
@@ -698,7 +699,7 @@ void rwip_init(uint32_t error)
 
     // Initialize RF
     #if (BT_EMB_PRESENT || BLE_EMB_PRESENT)
-	rf_init(&rwip_rf);
+	rom_env.rf_init(&rwip_rf);
     #endif //BT_EMB_PRESENT || BLE_EMB_PRESENT
 
     #if (DISPLAY_SUPPORT)
@@ -785,7 +786,6 @@ void rwip_init(uint32_t error)
     UART_PRINTF("rwip_wlcoex_set ok\r\n");
     #endif //(RW_WLAN_COEX)
     #endif //(BT_EMB_PRESENT || BLE_EMB_PRESENT)
-
     #if (BT_EMB_PRESENT || (BLE_EMB_PRESENT && !BLE_HOST_PRESENT))
     // If FW initializes due to FW reset, send the message to Host
     if(error != RESET_NO_ERROR)

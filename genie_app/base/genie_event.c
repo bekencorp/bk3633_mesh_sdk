@@ -12,7 +12,7 @@
 #include "common/log.h"
 
 #ifndef CONFIG_MESH_SEQ_COUNT_INT
-#define CONFIG_MESH_SEQ_COUNT_INT 30
+#define CONFIG_MESH_SEQ_COUNT_INT 10000
 #endif
 extern void user_event(E_GENIE_EVENT event, void *p_arg);
 extern S_ELEM_STATE g_elem_state[];
@@ -191,6 +191,7 @@ static E_GENIE_EVENT _genie_event_handle_mesh_init(void)
         }
     }
 
+    read_flag = 0;
     BT_DBG("flag %02x", read_flag);
 #if 0
 	if((read_flag & 0x1F) == 0x1F) {
@@ -198,7 +199,7 @@ static E_GENIE_EVENT _genie_event_handle_mesh_init(void)
     if((read_flag & 0x1F) == 0x1D) {            ////(0x1F)
 #endif
         BT_INFO(">>>proved<<<");
-#if 0
+#if 1
         seq += CONFIG_MESH_SEQ_COUNT_INT;
 #endif
         bt_mesh_provision(netkey.key, netkey.net_index, netkey.flag, netkey.ivi, seq, addr, devkey);
@@ -230,6 +231,7 @@ static E_GENIE_EVENT _genie_event_handle_mesh_init(void)
         aos_reboot();
     } else {
         BT_INFO(">>>unprovisioned<<<");
+        genie_flash_reset_system();
         if (genie_reset_get_flag()) {
             return GENIE_EVT_HW_RESET_START;
         }
@@ -376,12 +378,12 @@ static E_GENIE_EVENT _genie_event_handle_hb_set(mesh_hb_para_t *p_para)
 static E_GENIE_EVENT _genie_event_handle_seq_update(void)
 {
     uint32_t seq = bt_mesh.seq;
-#if 0
+#if 1
     if (seq % CONFIG_MESH_SEQ_COUNT_INT == 0) {
         genie_flash_write_seq(&seq);
     }
 #else
-    genie_flash_write_seq(&seq);
+    // genie_flash_write_seq(&seq);
 #endif
     return GENIE_EVT_SDK_SEQ_UPDATE;
 }

@@ -14,6 +14,7 @@
 //#include "ea.h"
 //#include "app.h"
 #include <string.h>
+#include "rwip.h"
 
 struct rom_env_tag
 {
@@ -35,10 +36,13 @@ struct rom_env_tag
 	void(*assert_param)(int param0, int param1, const char * file, int line);
 
 	void (*assert_warn)(int param0, int param1, const char * file, int line);
-		
+
 	void (*hci_event_process)(uint8_t type, uint8_t *buf, uint16_t len);
     void (*gpio_triger)(uint8_t gpio);
 	void (*gpio_config)(uint8_t gpio, uint32_t dir, uint32_t pull);
+    void *(*malloc)(size_t size);
+	void (*free)(void *ptr);
+	void (*rf_init)(void *api);
 #ifdef ALIOS_KERNEL
 	kstat_t (*krhino_sem_create)(ksem_t *sem, const name_t *name, sem_count_t count);
 	kstat_t (*krhino_sem_give)(ksem_t *sem);

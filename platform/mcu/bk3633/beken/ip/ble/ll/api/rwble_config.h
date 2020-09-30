@@ -203,7 +203,7 @@
 #define BLE_RESOL_ADDR_LIST_MAX     (BLE_RAL_MAX)
 
 /// Number of RX data buffers (common for all activities)
-#define BLE_DATA_BUF_NB_RX           (BLE_RX_DESC_NB + 3)
+#define BLE_DATA_BUF_NB_RX           (BLE_RX_DESC_NB)
 /// Guard space reserved for HCI ACL header in BLE RX buffers
 #define BLE_ACL_RX_BUF_HEADER_SPACE  (HCI_ACL_HDR_LEN + 1)
 
@@ -213,7 +213,7 @@
 /// Number of advertising data buffers
 #define BLE_ADV_BUF_NB_TX            (BLE_ACTIVITY_MAX + 2) // sean add 2 2020.02.28
 /// Number of advertising or scan response data fragments in extended advertising PDU chain
-#define BLE_ADV_FRAG_NB_TX           (5)
+#define BLE_ADV_FRAG_NB_TX           (1)
 /// Size of advertising or scan response data fragments in extended advertising PDU chain
 #define BLE_ADV_FRAG_SIZE_TX         (254)
 /// Maximum advertising data length
