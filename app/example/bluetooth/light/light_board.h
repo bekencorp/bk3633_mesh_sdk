@@ -13,7 +13,10 @@
 #include "genie_app.h"
 #include "gpio_pub.h"
 
-#ifndef CONFIG_INFO_DISABLE
+
+#define CONFIG_INFO_ENABLE IS_ENABLED(CONFIG_BT_MESH_DEBUG_LIGHT)
+
+#ifdef CONFIG_INFO_ENABLE
 #define LIGHT_DBG(fmt, ...)  printf("[%s]"fmt"\n", __func__, ##__VA_ARGS__)
 #else
 #define LIGHT_DBG(fmt, ...)

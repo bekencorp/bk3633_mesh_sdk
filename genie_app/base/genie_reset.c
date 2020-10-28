@@ -81,14 +81,6 @@ void genie_reset_by_repeat_init(void)
         count = 0;
     }
 
-#if 0
-    if (number == GENIE_RESET_BY_REPEAT_COUNTER) {
-        BT_DBG("Genie Event Reset By Repeat Notify");
-        genie_event(GENIE_EVT_RESET_BY_REPEAT_NOTIFY, &by_boot);
-        number = 0;
-    }
-#endif
-
     BT_DBG("read count %d", count);
 
     /* update number and check if exceeded */
@@ -101,7 +93,8 @@ void genie_reset_by_repeat_init(void)
         k_timer_init(&g_genie_reset_timer, _genie_reset_timer_cb, NULL);
         k_timer_start(&g_genie_reset_timer, GENIE_RESET_BY_REPEAT_TIMEOUT);
     } else {
-        //genie_event(GENIE_EVT_HW_RESET, NULL);
+        BT_DBG("Match the repeat num %d", GENIE_RESET_BY_REPEAT_COUNTER);
+        genie_event(GENIE_EVT_REPEAT_RESET, NULL);
         _genie_reset_set_flag(1);
     }
 }

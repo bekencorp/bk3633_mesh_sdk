@@ -44,7 +44,6 @@ static void _led_init(void)
 
 int led_startup(void)
 {
-    genie_flash_init();
     _led_init();
     _init_light_para();
 #if defined(CONFIG_GENIE_OTA)
@@ -197,9 +196,7 @@ static void _light_set_rgb(uint16_t rgb[LED_CHANNEL_MAX])
 {
     light_channel_e channel;
 
-    LIGHT_DBG("rgb[0] = 0x%x\r\n", rgb[0]);
-    LIGHT_DBG("rgb[1] = 0x%x\r\n", rgb[1]);
-    LIGHT_DBG("rgb[2] = 0x%x\r\n", rgb[2]);
+    LIGHT_DBG("rgb[0] = 0x%x, rgb[1] = 0x%x, rgb[2] = 0x%x\r\n", rgb[0], rgb[1], rgb[2]);
 
     light_channel_e ledId;
 
@@ -213,9 +210,7 @@ void led_ctl_set_handler(uint16_t ctl_lightness, uint16_t temperature, uint16_t 
 {
     uint16_t rgb_cal[LED_CHANNEL_MAX];
 
-    LIGHT_DBG("ctl_lightness = 0x%x\n", ctl_lightness);
-    LIGHT_DBG("temperature = 0x%x\n", temperature);
-    LIGHT_DBG("delta_uv = 0x%x\n", ctl_UV);
+    LIGHT_DBG("ctl_lightness = 0x%x, temperature = 0x%x, delta_uv = 0x%x\n", ctl_lightness, temperature, ctl_UV);
 
     if(ctl_lightness > LIGHTNESS_MAX || temperature > LIGHT_CTL_TEMP_MAX)
     {
@@ -234,9 +229,7 @@ void led_ctl_set_handler(uint16_t ctl_lightness, uint16_t temperature, uint16_t 
 
 void led_hsl_set_handler(uint16_t hue, uint16_t saturation, uint16_t lightness)
 {
-    LIGHT_DBG("hue = 0x%x\n", hue);
-    LIGHT_DBG("saturation = 0x%x\n", saturation);
-    LIGHT_DBG("lightness = 0x%x\n", lightness);
+    LIGHT_DBG("hue = 0x%x, sat = 0x%x, ln = 0x%x\n", hue, saturation, lightness);
 
     uint16_t rgb_cal[LED_CHANNEL_MAX];
     uint16_t hsl[LED_CHANNEL_MAX];

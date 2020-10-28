@@ -127,6 +127,8 @@ void bt_mesh_attention(struct bt_mesh_model *model, u8_t time);
 
 u8_t *bt_mesh_label_uuid_get(u16_t addr);
 
+int bt_mesh_label_uuid_set(u8_t *uuid, u16_t addr);
+
 u8_t bt_mesh_net_transmit_get(void);
 u8_t bt_mesh_relay_get(void);
 u8_t bt_mesh_friend_get(void);

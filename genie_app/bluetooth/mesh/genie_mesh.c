@@ -256,6 +256,7 @@ static void _genie_indicate_cb(void *p_timer, void *args)
     S_ELEM_STATE *p_elem = p_cb_timer->args;
     BT_DBG("p_cb_timer %p", p_cb_timer);
     //genie_prov_timer_stop();
+#ifdef CONFIG_MESH_MODEL_VENDOR_SRV
 #ifdef STATUS_INDICATION_IN_ONE_PACKET
     if (g_indication_flag & INDICATION_FLAG_POWERON) {
         genie_event(GENIE_EVT_SDK_MESH_PWRON_INDC, p_elem);
@@ -275,6 +276,7 @@ static void _genie_indicate_cb(void *p_timer, void *args)
 #endif
 #ifdef CONFIG_MESH_MODEL_CTL_SRV
         g_indication_flag |= INDICATION_FLAG_CTL;
+#endif
 #endif
     }
 
@@ -1016,27 +1018,18 @@ s16_t genie_light_action_notify(S_ELEM_STATE *p_elem) {
 }
 #endif
 
-uint8_t elem_state_init(uint8_t state_count, S_ELEM_STATE *p_elem)
+uint8_t genie_elem_state_init(uint8_t state_count, S_ELEM_STATE *p_elem)
 {
     uint8_t i = 0;
 
     while(i < state_count) {
         p_elem[i].elem_index = i;
+        p_elem[i].message_index = MM_INDEX_NONE;
 #ifdef CONFIG_MESH_MODEL_TRANS
         //memcpy(&elem[i].powerup, &f_power_up[i], sizeof(S_MESH_POWERUP));
         k_timer_init(&p_elem[i].state.delay_timer, _mesh_delay_timer_cb, &p_elem[i]);
         k_timer_init(&p_elem[i].state.trans_timer, _mesh_trans_timer_cycle, &p_elem[i]);
-#endif
-#ifdef CONFIG_ALI_SIMPLE_MODLE
-        p_elem[i].state.onoff[T_TAR] = GEN_ONOFF_DEFAULT;
-#ifdef MESH_MODEL_LIGHTNESS_SRV
-        p_elem[i].state.light_ln_actual[T_TAR] = LIGHTNESS_DEFAULT;
-#endif
-#ifdef MESH_MODEL_CTL_SRV
-        p_elem[i].state.ctl_temp[T_CUR] = CTL_TEMP_DEFAULT;
-        p_elem[i].state.ctl_temp[T_TAR] = CTL_TEMP_DEFAULT;
-#endif
-#ifdef CONFIG_MESH_MODEL_TRANS
+
         p_elem[i].state.trans = 0x41;
         p_elem[i].state.delay = 100;
         if(p_elem[i].state.trans) {
@@ -1044,11 +1037,93 @@ uint8_t elem_state_init(uint8_t state_count, S_ELEM_STATE *p_elem)
             p_elem[i].state.trans_end_time = p_elem[i].state.trans_start_time + get_transition_time(p_elem[i].state.trans);
         }
 #endif
+
+#ifdef CONFIG_MESH_MODEL_GEN_ONOFF_SRV
+        p_elem[i].state.onoff[T_CUR] = p_elem[i].state.onoff[T_TAR] \
+                         = p_elem[i].powerup.last_onoff = GEN_ONOFF_DEFAULT;
 #endif
+
+#ifdef CONFIG_MESH_MODEL_LIGHTNESS_SRV
+        p_elem[i].state.light_ln_actual[T_CUR] = p_elem[i].state.light_ln_actual[T_TAR] \
+                         = p_elem[i].powerup.light_ln_last = g_elem_state[i].powerup.default_light_ln = LIGHTNESS_DEFAULT;
+        p_elem[i].powerup.light_ln_range_max = LIGHTNESS_MAX;
+#endif
+
+#ifdef CONFIG_MESH_MODEL_CTL_SRV
+        p_elem[i].state.ctl_temp[T_CUR] = p_elem[i].state.ctl_temp[T_TAR] \
+                         = p_elem[i].powerup.ctl_temp_last = p_elem[i].powerup.ctl_temp_def = CTL_TEMP_DEFAULT;
+        p_elem[i].powerup.ctl_temp_range_max = CTL_TEMP_MAX;
+        p_elem[i].powerup.ctl_temp_range_min = CTL_TEMP_MIN;
+        p_elem[i].powerup.ctl_ln_last = p_elem[i].state.ctl_lightness[T_CUR] = p_elem[i].state.ctl_lightness[T_TAR] = LIGHTNESS_DEFAULT;
+#endif
+
+#ifdef CONFIG_MESH_MODEL_HSL_SRV
+        p_elem[i].state.hsl_lightness[T_CUR] = p_elem[i].state.hsl_lightness[T_TAR] \
+                         = p_elem[i].powerup.last_hsl_lightness = LIGHTNESS_DEFAULT;
+        p_elem[i].state.hsl_hue[T_CUR] = p_elem[i].state.hsl_hue[T_TAR] = p_elem[i].powerup.last_hsl_hue = 0;
+        p_elem[i].state.hsl_sat[T_CUR] = p_elem[i].state.hsl_sat[T_TAR] = p_elem[i].powerup.last_hsl_sat = 0;
+
+        p_elem[i].powerup.default_sat = 0;
+#endif
+
         i++;
     }
     BT_DBG("+ done");
     return 0;
+}
+
+uint8_t genie_restore_user_state(uint8_t state_count,S_ELEM_STATE *p_elem, S_MODEL_POWERUP *p_pup)
+{
+    uint8_t i = 0;
+    
+    while(i < state_count) 
+    {
+#ifdef CONFIG_GENIE_OTA
+        // if the device reboot by ota, it must be off.
+        if(p_pup[i].last_onoff == 0)
+        {
+            p_elem[i].powerup.last_onoff = p_pup[i].last_onoff;
+            p_elem[i].state.onoff[T_TAR] = 0;
+            // load lightness
+            if(p_pup[i].light_ln_last)
+            {
+                p_elem[i].state.light_ln_actual[T_TAR] = p_pup[i].light_ln_last;
+                p_elem[i].powerup.light_ln_last = p_pup[i].light_ln_last;
+            }
+            // load temperature
+            if(p_pup[i].ctl_temp_last)
+            {
+                p_elem[i].state.ctl_temp[T_TAR] = p_pup[i].ctl_temp_last;
+                p_elem[i].powerup.ctl_temp_last = p_pup[i].ctl_temp_last;
+            }
+            clear_trans_para(&p_elem[i]);
+        } else
+#endif
+        {
+            memcpy(&p_elem[i].powerup, &p_pup[i], sizeof(S_MODEL_POWERUP));
+#ifdef CONFIG_MESH_MODEL_GEN_ONOFF_SRV
+            p_elem[i].state.onoff[T_CUR] = p_elem[i].state.onoff[T_TAR] = p_pup[i].last_onoff;
+#endif
+
+#ifdef CONFIG_MESH_MODEL_LIGHTNESS_SRV
+            p_elem[i].state.light_ln_actual[T_CUR] = p_elem[i].state.light_ln_actual[T_TAR] \
+                            = p_pup[i].light_ln_last;
+#endif
+
+#ifdef CONFIG_MESH_MODEL_CTL_SRV
+            p_elem[i].state.ctl_temp[T_CUR] = p_elem[i].state.ctl_temp[T_TAR] = p_pup[i].ctl_temp_last;
+            p_elem[i].state.ctl_lightness[T_CUR] = p_elem[i].state.ctl_lightness[T_TAR] = p_pup[i].ctl_ln_last;
+            p_elem[i].state.ctl_UV[T_CUR] = p_elem[i].state.ctl_UV[T_TAR] = p_pup[i].ctl_uv_last;
+#endif
+
+#ifdef CONFIG_MESH_MODEL_HSL_SRV
+            p_elem[i].state.hsl_lightness[T_CUR] = p_elem[i].state.hsl_lightness[T_TAR] = p_pup[i].last_hsl_lightness;
+            p_elem[i].state.hsl_hue[T_CUR] = p_elem[i].state.hsl_hue[T_TAR] = p_pup[i].last_hsl_hue;
+            p_elem[i].state.hsl_sat[T_CUR] = p_elem[i].state.hsl_sat[T_TAR] = p_pup[i].last_hsl_sat;
+#endif
+        }
+        i++;
+    }
 }
 
 #ifdef CONFIG_MESH_MODEL_TRANS  //transation api
@@ -1202,6 +1277,8 @@ static void _prov_reset(void)
 
 }
 
+static uint8_t label_uuid[16] = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xFF, 0x00};
+static uint16_t vir_addr = 0x9779;
 static void _genie_mesh_ready(int err)
 {
     if (err) {
@@ -1219,10 +1296,12 @@ static void _genie_mesh_ready(int err)
     vendor_timer_init(_vendor_timer_event);
 #endif
 
+    bt_mesh_label_uuid_set(label_uuid, vir_addr);
     //send event
     genie_event(GENIE_EVT_SDK_MESH_INIT, NULL);
 }
 
+static uint8_t dev_uuid[16] = {0x00, 0x1B, 0xDC, 0x08, 0x10, 0x21, 0x0B, 0x0E, 0x0A, 0x0C, 0x00, 0x0B, 0x0E, 0x0A, 0x0C, 0x00};
 void genie_mesh_init(void)
 {
     int ret;
@@ -1231,7 +1310,7 @@ void genie_mesh_init(void)
 
     // genie_tri_tuple_load();
 
-    prov.uuid = genie_tri_tuple_get_uuid();
+    prov.uuid = dev_uuid;//genie_tri_tuple_get_uuid();
 #ifdef GENIE_OLD_AUTH
     prov.static_val = genie_tri_tuple_get_auth();
     prov.static_val_len = STATIC_OOB_LENGTH;

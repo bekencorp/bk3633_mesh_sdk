@@ -163,13 +163,13 @@ typedef struct {
     struct bt_conn *p_conn;
     k_timer_t timer;
     ota_info_t ota_info;
-#if 0
+
     uint8_t flash_clean:1;
     uint8_t ota_ready:1;
     k_timer_t timerdisconnect;
     uint8_t recv_buf[OTA_RECV_BUF_SIZE];
     uint16_t rx_len;
-#endif
+
 } ais_srv_ctx_t;
 
 static ais_srv_ctx_t g_ais_srv_ctx; 
@@ -182,12 +182,12 @@ static uint8_t g_ais_conn = 0;
 
 extern bool ota_check_reboot(void);
 static void _ais_execute_disconnet();
-#if 0
+
 bool ais_get_ota_ready(void)
 {
     return g_ais_srv_ctx.ota_ready;
 }
-#endif
+
 
 bool ais_get_ota_indicat(void)
 {
@@ -250,9 +250,9 @@ static void _ais_set_ota_change(void)
     uint32_t ota_change = 0xA5A5A501;
     genie_flash_write_reliable(GFI_OTA_IMAGE_CHANGE, (uint8_t *)&ota_change, sizeof(ota_change));
 #endif
-#if 0
+
     g_ais_srv_ctx.ota_ready = 1;
-#endif
+
 }
 
 static void _ais_ota_encrypt(uint8_t *payload, uint8_t len)
@@ -579,11 +579,11 @@ static bool _ais_ota_upd_req(uint8_t msg_id, ais_ota_upd_req_t *p_ota_req)
     ais_ota_upd_resp_t *p_upd_resp = (ais_ota_upd_resp_t *)payload;
 
     BT_DBG("ota_ver %08x size %d temp: %d", p_ota_req->ver, p_ota_req->fw_size, tmp_size);
-#if 0
+
     if (g_ais_srv_ctx.ota_ready == 1) {
         return false;
     }
-#endif
+
     memset(payload, 10, sizeof(payload));
     if (p_ota_req->image_type != 0 || p_ota_req->ver <= PROJECT_SW_VERSION ||
         tmp_size < p_ota_req->fw_size || 0 == p_ota_req->fw_size) {

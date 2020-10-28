@@ -16,6 +16,7 @@
 #endif
 
 #include "light_board.h"
+#include "uart_test_cmd.h"
 
 
 led_flash_t g_flash_para;
@@ -38,7 +39,9 @@ static struct bt_mesh_model root_models[] = {
     MESH_MODEL_GEN_ONOFF_SRV(&g_elem_state[0]),
 #endif
 
+#ifdef CONFIG_MESH_MODEL_GEN_DEF_TRANS_TIME_SRV
     MESH_MODEL_GEN_DEF_TRANS_TIME_SRV(&g_elem_state[0]),
+#endif
 
 #ifdef CONFIG_MESH_MODEL_GEN_ONPOWERUP_SRV
     MESH_MODEL_GEN_ONPOWERUP_SRV(&g_elem_state[0]),
@@ -99,21 +102,18 @@ static void light_state_store(struct k_work *work)
     LIGHT_DBG("");
 
     genie_flash_read_userdata(GFI_MESH_POWERUP, p_read, sizeof(g_powerup));
-    S_MODEL_POWERUP *pu = (S_MODEL_POWERUP *)p_read;
 
     if(memcmp(g_powerup, p_read, sizeof(g_powerup))) {
-        LIGHT_DBG("save %d %d %d", g_powerup[0].last_onoff, g_powerup[0].light_ln_last, g_powerup[0].ctl_temp_last);
+        LIGHT_DBG("save %d", g_powerup[0].last_onoff);
         genie_flash_write_userdata(GFI_MESH_POWERUP, (uint8_t *)g_powerup, sizeof(g_powerup));
     }
 
     aos_free(p_read);
 
-#if 0
+#if CONFIG_GENIE_OTA
     if (g_powerup[0].last_onoff == 0 && ais_get_ota_ready() == 1) {
         //Means have ota, wait for reboot while light off
         aos_reboot();
-    } else {
-        g_powerup[0].last_onoff = 1;
     }
 #endif
 }
@@ -157,87 +157,17 @@ void _init_light_para(void)
 
     //read flash
     memset(g_elem_state, 0, sizeof(g_elem_state));
-    elem_state_init(MESH_ELEM_STATE_COUNT, g_elem_state);
-#if _______BEKEN_FLASH_DRIVER_READY______
+    genie_elem_state_init(MESH_ELEM_STATE_COUNT, g_elem_state);
+
     // load light para
     ret = genie_flash_read_userdata(GFI_MESH_POWERUP, (uint8_t *)g_powerup, sizeof(g_powerup));
-    
-    if(ret == GENIE_FLASH_SUCCESS) {
-        while(i < MESH_ELEM_STATE_COUNT) {
-#ifdef CONFIG_GENIE_OTA
-            // if the device reboot by ota, it must be off.
-            if(g_powerup[0].last_onoff == 0) {
-                g_elem_state[0].powerup.last_onoff = g_powerup[0].last_onoff;
-                g_elem_state[0].state.onoff[T_TAR] = 0;
-                // load lightness
-                if(g_powerup[0].light_ln_last) {
-                    g_elem_state[0].state.light_ln_actual[T_TAR] = g_powerup[0].light_ln_last;
-                    g_elem_state[0].powerup.light_ln_last = g_powerup[0].light_ln_last;
-                }
-                // load temperature
-                if(g_powerup[0].ctl_temp_last) {
-                    g_elem_state[0].state.ctl_temp[T_TAR] = g_powerup[0].ctl_temp_last;
-                    g_elem_state[0].powerup.ctl_temp_last = g_powerup[0].ctl_temp_last;
-                }
-                clear_trans_para(&g_elem_state[0]);
-            } else
-#endif
-            {
-                memcpy(&g_elem_state[0].powerup, &g_powerup[0], sizeof(S_MODEL_POWERUP));
-                // load lightness
-                if(g_powerup[0].light_ln_last) {
-                    g_elem_state[0].state.light_ln_actual[T_TAR] = g_powerup[0].light_ln_last;
-                }
-                // load temperature
-                if(g_powerup[0].ctl_temp_last) {
-                    g_elem_state[0].state.ctl_temp[T_TAR] = g_powerup[0].ctl_temp_last;
-                }
-                //LIGHT_DBG("l:%d t:%d", g_powerup[0].light_ln_last, g_powerup[0].ctl_temp_last);
-
-                // cal transition
-                if(g_elem_state[0].state.onoff[T_TAR] == 1) {
-                    g_elem_state[0].state.trans_start_time = k_uptime_get() + g_elem_state[0].state.delay * 5;
-                    g_elem_state[0].state.trans_end_time = g_elem_state[0].state.trans_start_time + get_transition_time(g_elem_state[0].state.trans);
-                }
-            }
-            g_elem_state[0].state.ctl_temp[T_CUR] = g_elem_state[0].state.ctl_temp[T_TAR];
-
-            i++;
-        }
+    if(ret == GENIE_FLASH_SUCCESS)
+    {
+        genie_restore_user_state(MESH_ELEM_STATE_COUNT, g_elem_state, g_powerup);
     }
-#else
-
-#ifdef CONFIG_MESH_MODEL_GEN_ONOFF_SRV
-    g_elem_state[0].state.onoff[T_CUR] = g_elem_state[0].state.onoff[T_TAR] \
-                         = g_elem_state[0].powerup.last_onoff = GEN_ONOFF_DEFAULT;
-#endif
-
-#ifdef CONFIG_MESH_MODEL_LIGHTNESS_SRV
-    g_elem_state[0].state.light_ln_actual[T_CUR] = g_elem_state[0].state.light_ln_actual[T_TAR] \
-                         = g_elem_state[0].powerup.light_ln_last = g_elem_state[i].powerup.default_light_ln = LIGHTNESS_DEFAULT;
-    g_elem_state[0].powerup.light_ln_range_max = LIGHTNESS_MAX;
-#endif
-
-#ifdef CONFIG_MESH_MODEL_CTL_SRV
-    g_elem_state[0].state.ctl_temp[T_CUR] = g_elem_state[0].state.ctl_temp[T_TAR] \
-                         = g_elem_state[0].powerup.ctl_temp_last = g_elem_state[0].powerup.ctl_temp_def = CTL_TEMP_DEFAULT;
-    g_elem_state[0].powerup.ctl_temp_range_max = CTL_TEMP_MAX;
-    g_elem_state[0].powerup.ctl_temp_range_min = CTL_TEMP_MIN;
-    g_elem_state[0].powerup.ctl_ln_last = g_elem_state[0].state.ctl_lightness[T_CUR] = g_elem_state[0].state.ctl_lightness[T_TAR] = LIGHTNESS_DEFAULT;
-#endif
-
-#ifdef CONFIG_MESH_MODEL_HSL_SRV
-    g_elem_state[0].state.hsl_lightness[T_CUR] = g_elem_state[0].state.hsl_lightness[T_TAR] \
-                         = g_elem_state[0].powerup.last_hsl_lightness = LIGHTNESS_DEFAULT;
-    g_elem_state[0].state.hsl_hue[T_CUR] = g_elem_state[0].state.hsl_hue[T_TAR] = g_elem_state[0].powerup.last_hsl_hue = 0;
-    g_elem_state[0].state.hsl_sat[T_CUR] = g_elem_state[0].state.hsl_sat[T_TAR] = g_elem_state[0].powerup.last_hsl_sat = 0;
-
-    g_elem_state[0].powerup.default_sat = 0;
-#endif
-
-    LIGHT_DBG("init parameter");
+    LIGHT_DBG("init parameter ret %d", ret);
     led_ctl_set_handler(g_elem_state[0].powerup.light_ln_last, g_elem_state[0].powerup.ctl_temp_last, 0);
-#endif
+
     //LIGHT_DBG("done");
 }
 
@@ -291,9 +221,9 @@ static led_func_ret_e _led_gen_onoff_srv(S_ELEM_STATE *p_elem)
             switch(light_type)
             {
                 case LIGHT_TYPE_HSL:
-                    light_para[0] = p_elem->state.hsl_lightness[T_CUR];
-                    light_para[1] = p_elem->state.hsl_hue[T_CUR];
-                    light_para[2] = p_elem->state.hsl_sat[T_CUR];
+                    light_para[0] = p_elem->state.hsl_hue[T_CUR];
+                    light_para[1] = p_elem->state.hsl_sat[T_CUR];
+                    light_para[2] = p_elem->state.hsl_lightness[T_CUR];
 
                     led_hsl_set_handler(light_para[0], light_para[1], light_para[2]);
                     break;
@@ -414,6 +344,9 @@ static void _save_hsl_srv(S_ELEM_STATE *p_elem)
 
 static void _save_light_state(S_ELEM_STATE *p_elem)
 {
+    model_message_index_e dest_index = p_elem->message_index;
+
+    LIGHT_DBG("dest_index %d", dest_index);
 
 #ifdef CONFIG_MESH_MODEL_LIGHTNESS_SRV
     _save_ln_srv(p_elem);
@@ -431,56 +364,46 @@ static void _save_light_state(S_ELEM_STATE *p_elem)
     _save_hsl_srv(p_elem);
 #endif
 
+    p_elem->message_index = MM_INDEX_NONE;
+
     k_delayed_work_submit(&light_state_store_work, LIGHT_STATE_STORE_DELAY_TIME);
 
-#if 0
-    uint8_t *p_read = aos_malloc(sizeof(g_powerup));
-    genie_flash_read_userdata(GFI_MESH_POWERUP, p_read, sizeof(g_powerup));
-
-    if(memcmp(g_powerup, p_read, sizeof(g_powerup))) {
-        LIGHT_DBG("save %d %d", g_powerup[p_elem->elem_index].light_ln_last, g_powerup[p_elem->elem_index].ctl_temp_last);
-        genie_flash_write_userdata(GFI_MESH_POWERUP, (uint8_t *)g_powerup, sizeof(g_powerup));
-    }
-    aos_free(p_read);
-#endif
 }
 
-static void _led_ctrl(S_ELEM_STATE *p_elem)
+static led_func_ret_e _led_ctrl(S_ELEM_STATE *p_elem)
 {
-    led_func_ret_e ret;
+    led_func_ret_e ret = LED_FUNC_EXEC;
 
+    model_message_index_e dest_index = p_elem->message_index;
+
+    switch(dest_index)
+    {
 #ifdef CONFIG_MESH_MODEL_GEN_ONOFF_SRV
-    ret == _led_gen_onoff_srv(p_elem);
-    if(ret == LED_FUNC_EXEC)
-    {
-        return;
-    }
+        case MM_INDEX_SRV_ONOFF:
+            ret == _led_gen_onoff_srv(p_elem);
+            break;
 #endif
-
 #ifdef CONFIG_MESH_MODEL_CTL_SRV
-    ret == _led_ctl_srv(p_elem);
-    if(ret == LED_FUNC_EXEC)
-    {
-        return;
-    }
+        case MM_INDEX_SRV_CTL:
+            ret == _led_ctl_srv(p_elem);
+            break;
 #endif
-
 #ifdef CONFIG_MESH_MODEL_HSL_SRV
-    ret == _led_hsl_srv(p_elem);
-    if(ret == LED_FUNC_EXEC)
-    {
-        return;
-    }
+        case MM_INDEX_SRV_HSL:
+            ret == _led_hsl_srv(p_elem);
+            break;
 #endif
-
 #ifdef CONFIG_MESH_MODEL_LIGHTNESS_SRV
-    ret == _led_ln_srv(p_elem);
-    if(ret == LED_FUNC_EXEC)
-    {
-        return;
-    }
+        case MM_INDEX_SRV_LN:
+            ret == _led_ln_srv(p_elem);
+            break;
 #endif
+        default:
+            ret = LED_FUNC_PASS;
+            break;
+    }
 
+    return ret;
 }
 
 void _cal_flash_next_step(uint32_t delta_time)
@@ -603,15 +526,21 @@ void user_event(E_GENIE_EVENT event, void *p_arg)
         case GENIE_EVT_SDK_ACTION_DONE:
         {
             S_ELEM_STATE *p_elem = (S_ELEM_STATE *)p_arg;
-            _led_ctrl(p_elem);
-            if(event == GENIE_EVT_SDK_ACTION_DONE)
+            if(_led_ctrl(p_elem) == LED_FUNC_EXEC)
                 _save_light_state(p_elem);
             break;
         }
+#ifdef CONFIG_MESH_MODEL_VENDOR_SRV
         case GENIE_EVT_SDK_INDICATE:
             break;
         case GENIE_EVT_SDK_VENDOR_MSG:
             break;
+#endif
+#ifdef CONFIG_GENIE_RESET_BY_REPEAT
+        case GENIE_EVT_REPEAT_RESET:
+            erase_reboot_uart_cmd_handler(NULL);
+            break;
+#endif
         default:
             break;
     }
@@ -623,10 +552,14 @@ void user_event(E_GENIE_EVENT event, void *p_arg)
 
 int application_start(int argc, char **argv)
 {
-    led_startup();
-
     /* genie initilize */
     genie_init();
+
+    led_startup();
+
+#ifdef CONFIG_UART_TEST_CMD
+    uart_test_init();
+#endif
 
     BT_INFO("BUILD_TIME:%s", __DATE__","__TIME__);
 

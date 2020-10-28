@@ -2997,7 +2997,7 @@ static int irk_init(void)
 static int bt_init(void)
 {
     int err;
-    printk("%s\n", __func__);
+    BT_DBG("");
     err = hci_init();
     if (err) {
         return err;
@@ -3029,7 +3029,7 @@ static int bt_init(void)
 static void init_work(struct k_work *work)
 {
     int err;
-    printk("%s\r\n\r\n", __func__);
+    BT_DBG("");
     err = bt_init();
     if (ready_cb) {
         ready_cb(err);

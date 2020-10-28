@@ -15,38 +15,6 @@
 #define UART_WPRT                os_null_printf
 #endif
 
-#define UART_INDEX_1              (1)
-#define UART_INDEX_2              (2)
-
-#if (CFG_RUNNING_PLATFORM == FPGA_PLATFORM)
-#define UART_SELECT_CFG            UART_INDEX_1
-#else
-#define UART_SELECT_CFG            UART_INDEX_2
-#endif
-
-#if (UART_SELECT_CFG == UART_INDEX_1)
-#define IRQ_UART                   IRQ_UART1
-#define PRI_IRQ_UART               PRI_IRQ_UART1
-#define PWD_UART_CLK_BIT           PWD_UART1_CLK_BIT
-#define GFUNC_MODE_UART            GFUNC_MODE_UART1
-#define IRQ_UART_BIT               IRQ_UART1_BIT
-#else  /* UART_INDEX_2 */
-#define IRQ_UART                   IRQ_UART2
-#define PRI_IRQ_UART               PRI_IRQ_UART2
-#define PWD_UART_CLK_BIT           PWD_UART2_CLK_BIT
-#define GFUNC_MODE_UART            GFUNC_MODE_UART2
-#define IRQ_UART_BIT               IRQ_UART2_BIT
-#endif
-
-#define DEBUG_PRT_MAX_CNT          (16)
-
-#if CFG_UART_DEBUG_COMMAND_LINE
-#define RX_RB_LENGTH               (128)  // 64
-#define TX_RB_LENGTH               (64)
-#else
-#define RX_RB_LENGTH               (64)
-#define TX_RB_LENGTH               (64)
-#endif
 
 #define CARRIAGE_RETURN(buf, count) \
     do { \
@@ -59,6 +27,7 @@
 /* uart parameter config----start*/
 #define UART_BAUDRATE_3250000        3250000
 #define UART_BAUDRATE_2000000        2000000
+#define UART_BAUDRATE_1000000        1000000
 #define UART_BAUDRATE_921600         921600
 #define UART_BAUDRATE_460800         460800
 #define UART_BAUDRATE_230400         230400
@@ -66,7 +35,7 @@
 #define UART_BAUDRATE_3000           3250
 #define UART_BAUDRATE_19200          19200
 
-#define UART_BAUD_RATE               UART_BAUDRATE_115200
+#define UART_BAUD_RATE               UART_BAUDRATE_1000000
 
 #define UART_CLOCK_FREQ_10M          10000000
 #define UART_CLOCK_FREQ_16M          16000000
@@ -85,18 +54,18 @@
 #define TX_FIFO_THRD                (0x40)
 #define RX_FIFO_THRD                (0x10)
 
-#define DEF_TX_EN                   0x1
-#define DEF_RX_EN                   0x1
-#define DEF_IRDA_MODE               0x0    // 0:uart mode  1:IRDA MODE
+#define DEBUG_PRT_MAX_CNT          (16)
+
+#if CFG_UART_DEBUG_COMMAND_LINE
+#define RX_RB_LENGTH               (128)  // 64
+#define TX_RB_LENGTH               (64)
+#else
+#define RX_RB_LENGTH               (64)
+#define TX_RB_LENGTH               (64)
+#endif
+
 #define DEF_DATA_LEN                0x3    // 0=5bit, 1=6bit, 2=7bit, 3=8bit
-#define DEF_PARITY_EN               0x0    // 0=no parity  1: enable parity
-#define DEF_PARITY_MODE             0x0    // 0:odd  1: even
-#define DEF_STOP_BIT                0x0    // 1bit
 
-#define FLOW_CTRL_HIGH_CNT          (96)
-#define FLOW_CTRL_LOW_CNT           (32)
-
-#define DEBUG_TX_FIFO_MAX_COUNT     16
 
 /* uart parameter config----end*/
 
@@ -120,28 +89,22 @@ typedef struct _uart_
                          }while(0)
 #endif
 
-#if (UART_SELECT_CFG == UART_INDEX_1)
-#define UART_BASE_ADDR                       (0x0806300)
-#else
-#define UART_BASE_ADDR                       (0x0806a00)
-#endif
-
-#define UART1_BASE_ADDR			            (0x0806300)
-#define UART2_BASE_ADDR			            (0x0806a00)
+#define UART1_BASE_ADDR			            (BASEADDR_UART0)
+#define UART2_BASE_ADDR			            (BASEADDR_UART2)
 
 
 #define REG_UART1_CONFIG                     (UART1_BASE_ADDR + 4 * 0)
 #define REG_UART2_CONFIG                     (UART2_BASE_ADDR + 4 * 0)
 
-#define UART_TX_ENABLE                         (1 << 0)
-#define UART_RX_ENABLE                         (1 << 1)
-#define UART_IRDA                              (1 << 2)
-#define UART_DATA_LEN_POSI                     (3)
+#define UART_TX_ENABLE                         (1 << posUART0_Reg0x0_UART_TX_ENABLE)
+#define UART_RX_ENABLE                         (1 << posUART0_Reg0x0_UART_RX_ENABLE)
+#define UART_IRDA                              (1 << posUART0_Reg0x0_UART_IRDA)
+#define UART_DATA_LEN_POSI                     (posUART0_Reg0x0_UART_LEN)
 #define UART_DATA_LEN_MASK                     (0x03)
-#define UART_PAR_EN                            (1 << 5)
-#define UART_PAR_ODD_MODE                      (1 << 6)
-#define UART_STOP_LEN_2                        (1 << 7)
-#define UART_CLK_DIVID_POSI                    (8)
+#define UART_PAR_EN                            (1 << posUART0_Reg0x0_UART_PAR_EN)
+#define UART_PAR_ODD_MODE                      (1 << posUART0_Reg0x0_UART_PAR_MODE)
+#define UART_STOP_LEN_2                        (1 << posUART0_Reg0x0_UART_STOP_LEN)
+#define UART_CLK_DIVID_POSI                    (posUART0_Reg0x0_UART_CLK_DIVID)
 #define UART_CLK_DIVID_MASK                    (0x1FFF)
 
 #define REG_UART1_FIFO_CONFIG                 (UART1_BASE_ADDR + 4 * 1)

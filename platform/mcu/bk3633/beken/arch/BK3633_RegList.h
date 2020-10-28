@@ -334,8 +334,6 @@
 #define set_SYS_Reg0x4_xtal_out_div(val)                        addSYS_Reg0x4 = ((addSYS_Reg0x4 & (~0x1C000000)) | ((val) << 26))
 #define get_SYS_Reg0x4_xtal_out_div                             ((addSYS_Reg0x4 & 0x1C000000) >> 26)
 
-#define REG_AHB0_ICU_I2CCLKCON                                  addSYS_Reg0x4
-
 
 //addSYS_Reg0x5
 #define addSYS_Reg0x5                                           *((volatile unsigned long *) (0x00800000+0x5*4))
@@ -346,12 +344,9 @@
 #define get_SYS_Reg0x5_rw_ant_ctrl                              (addSYS_Reg0x5 & 0xFFFF)
 
 
-#define REG_AHB0_ICU_SPICLKCON                                  addSYS_Reg0x5
-
 //addSYS_Reg0x6
 #define addSYS_Reg0x6                                           *((volatile unsigned long *) (0x00800000+0x6*4))
 
-#define REG_AHB0_ICU_BLECLKCON                                  addSYS_Reg0x6
 
 //addSYS_Reg0x7
 #define addSYS_Reg0x7                                           *((volatile unsigned long *) (0x00800000+0x7*4))
@@ -427,7 +422,6 @@
 #define clrf_SYS_Reg0xd_PLL_PWR_sel                             addSYS_Reg0xd &= ~0x40
 #define get_SYS_Reg0xd_PLL_PWR_sel                              ((addSYS_Reg0xd & 0x40) >> 6)
 
-#define REG_AHB0_ICU_ANA_CTL                                    addSYS_Reg0xd
 
 
 
@@ -450,9 +444,6 @@
 #define setf_SYS_Reg0xe_resettrx                                addSYS_Reg0xe |= 0x1
 #define clrf_SYS_Reg0xe_resettrx                                addSYS_Reg0xe &= ~0x1
 #define get_SYS_Reg0xe_resettrx                                 (addSYS_Reg0xe & 0x1)
-
-#define REG_AHB0_ICU_CPU_STATUS                                 addSYS_Reg0xe
-
 
 
 //addSYS_Reg0xf
@@ -631,8 +622,6 @@
 #define setf_SYS_Reg0x10_int_rwdm_en                            addSYS_Reg0x10 |= 0x400000
 #define clrf_SYS_Reg0x10_int_rwdm_en                            addSYS_Reg0x10 &= ~0x400000
 #define get_SYS_Reg0x10_int_rwdm_en                             ((addSYS_Reg0x10 & 0x400000) >> 22)
-
-#define REG_AHB0_ICU_INT_ENABLE                                 addSYS_Reg0x10
 
 
 
@@ -878,28 +867,22 @@
 #define set_SYS_Reg0x13_boost_pwd_delay_TIME(val)               addSYS_Reg0x13 = ((addSYS_Reg0x13 & (~0xFFFF)) | ((val) << 0))
 #define get_SYS_Reg0x13_boost_pwd_delay_TIME                    (addSYS_Reg0x13 & 0xFFFF)
 
-#define REG_AHB0_ICU_FLASH                                      addSYS_Reg0x13
-
 
 //addSYS_Reg0x14
 
 #define addSYS_Reg0x14                                          *((volatile unsigned long *) (0x00800000+0x14*4))
-
-#define REG_AHB0_ICU_ANALOG_MODE                                addSYS_Reg0x14
 
 
 //addSYS_Reg0x15
 
 #define addSYS_Reg0x15                                          *((volatile unsigned long *) (0x00800000+0x15*4))
 
-#define REG_AHB0_ICU_ANALOG0_PWD                                addSYS_Reg0x15
 
 
 //addSYS_Reg0x16
 
 #define addSYS_Reg0x16                                          *((volatile unsigned long *) (0x00800000+0x16*4))
 
-#define REG_AHB0_ICU_ANALOG1_PWD                                addSYS_Reg0x16
 
 
 //addSYS_Reg0x17
@@ -990,7 +973,6 @@
 #define clrf_SYS_Reg0x17_cb_bias_pwd                            addSYS_Reg0x17 &= ~0x1
 #define get_SYS_Reg0x17_cb_bias_pwd                             (addSYS_Reg0x17 & 0x1)
 
-#define REG_AHB0_ICU_DIGITAL_PWD                                addSYS_Reg0x17
 
 //Digital PWD Bit
 #define BIT_ANA_TEST_PIN                   5
@@ -1061,7 +1043,6 @@
 #define clrf_SYS_Reg0x18_ret_dtcm_ram0_dis                      addSYS_Reg0x18 &= ~0x1
 #define get_SYS_Reg0x18_ret_dtcm_ram0_dis                       (addSYS_Reg0x18 & 0x1)
 
-#define REG_AHB0_ICU_DEEP_SLEEP0                                addSYS_Reg0x18
 
 
 
@@ -1069,7 +1050,6 @@
 
 #define addSYS_Reg0x19                                          *((volatile unsigned long *) (0x00800000+0x19*4))
 
-#define REG_AHB0_ICU_DEEP_SLEEP1                                addSYS_Reg0x19
 
 
 
@@ -3215,8 +3195,6 @@
 #define set_UART0_Reg0x0_UART_CLK_DIVID(val)                    addUART0_Reg0x0 = ((addUART0_Reg0x0 & (~0x1FFF00)) | ((val) << 8))
 #define get_UART0_Reg0x0_UART_CLK_DIVID                         ((addUART0_Reg0x0 & 0x1FFF00) >> 8)
 
-#define REG_APB3_UART_CFG                                       addUART0_Reg0x0
-
 
 
 //addUART0_Reg0x1
@@ -3237,9 +3215,6 @@
 #define bitUART0_Reg0x1_RX_STOP_DETECT_TIME                     0x30000
 #define set_UART0_Reg0x1_RX_STOP_DETECT_TIME(val)               addUART0_Reg0x1 = ((addUART0_Reg0x1 & (~0x30000)) | ((val) << 16))
 #define get_UART0_Reg0x1_RX_STOP_DETECT_TIME                    ((addUART0_Reg0x1 & 0x30000) >> 16)
-
-#define REG_APB3_UART_FIFO_CFG                                  addUART0_Reg0x1
-
 
 
 //addUART0_Reg0x2
@@ -3278,9 +3253,6 @@
 #define bitUART0_Reg0x2_FIFO_RD_READY                           0x200000
 #define get_UART0_Reg0x2_FIFO_RD_READY                          ((addUART0_Reg0x2 & 0x200000) >> 21)
 
-#define REG_APB3_UART_FIFO_STAT                                 addUART0_Reg0x2
-
-
 
 //addUART0_Reg0x3
 
@@ -3294,9 +3266,6 @@
 #define posUART0_Reg0x3_UART_RX_FIFO_DOUT                       8
 #define bitUART0_Reg0x3_UART_RX_FIFO_DOUT                       0xFF00
 #define get_UART0_Reg0x3_UART_RX_FIFO_DOUT                      ((addUART0_Reg0x3 & 0xFF00) >> 8)
-
-#define REG_APB3_UART_PORT                                      addUART0_Reg0x3
-
 
 
 //addUART0_Reg0x4
@@ -3359,9 +3328,6 @@
 #define clrf_UART0_Reg0x4_UART_RXD_WAKEUP_MASK                  addUART0_Reg0x4 &= ~0x80
 #define get_UART0_Reg0x4_UART_RXD_WAKEUP_MASK                   ((addUART0_Reg0x4 & 0x80) >> 7)
 
-#define REG_APB3_UART_INT_ENABLE                                addUART0_Reg0x4
-
-
 
 //addUART0_Reg0x5
 
@@ -3417,8 +3383,6 @@
 #define clrf_UART0_Reg0x5_UART_RXD_WAKEUP                       addUART0_Reg0x5 &= ~0x80
 #define get_UART0_Reg0x5_UART_RXD_WAKEUP                        ((addUART0_Reg0x5 & 0x80) >> 7)
 
-#define REG_APB3_UART_INT_STAT                                  addUART0_Reg0x5
-
 
 
 //addUART0_Reg0x6
@@ -3456,9 +3420,6 @@
 #define clrf_UART0_Reg0x6_CTS_POLARITY_SEL                      addUART0_Reg0x6 &= ~0x40000
 #define get_UART0_Reg0x6_CTS_POLARITY_SEL                       ((addUART0_Reg0x6 & 0x40000) >> 18)
 
-#define REG_APB3_UART_FLOW_CFG                                  addUART0_Reg0x6
-
-
 
 //addUART0_Reg0x7
 
@@ -3494,8 +3455,6 @@
 #define setf_UART0_Reg0x7_RXD_NEGEDGE_WAKE_EN                   addUART0_Reg0x7 |= 0x400000
 #define clrf_UART0_Reg0x7_RXD_NEGEDGE_WAKE_EN                   addUART0_Reg0x7 &= ~0x400000
 #define get_UART0_Reg0x7_RXD_NEGEDGE_WAKE_EN                    ((addUART0_Reg0x7 & 0x400000) >> 22)
-
-#define REG_APB3_UART_WAKE_CFG                                  addUART0_Reg0x7
 
 
 //************************************************************//
@@ -3858,9 +3817,6 @@
 #define set_I2C0_Reg0x0_IDLE_CR(val)                            addI2C0_Reg0x0 = ((addI2C0_Reg0x0 & (~0x7)) | ((val) << 0))
 #define get_I2C0_Reg0x0_IDLE_CR                                 (addI2C0_Reg0x0 & 0x7)
 
-#define REG_APB4_I2C_CN                                         addI2C0_Reg0x0
-
-
 
 //addI2C0_Reg0x1
 
@@ -3942,9 +3898,6 @@
 #define clrf_I2C0_Reg0x1_SI                                     addI2C0_Reg0x1 &= ~0x1
 #define get_I2C0_Reg0x1_SI                                      (addI2C0_Reg0x1 & 0x1)
 
-#define REG_APB4_I2C_STAT                                       addI2C0_Reg0x1
-
-
 //addI2C0_Reg0x2
 
 #define addI2C0_Reg0x2                                          *((volatile unsigned long *) (0x00806400+0x2*4))
@@ -3953,8 +3906,6 @@
 #define bitI2C0_Reg0x2_SMB_DAT                                  0xFF
 #define set_I2C0_Reg0x2_SMB_DAT(val)                            addI2C0_Reg0x2 = ((addI2C0_Reg0x2 & (~0xFF)) | ((val) << 0))
 #define get_I2C0_Reg0x2_SMB_DAT                                 (addI2C0_Reg0x2 & 0xFF)
-
-#define REG_APB4_I2C_DAT                                        addI2C0_Reg0x2
 
 
 //************************************************************//

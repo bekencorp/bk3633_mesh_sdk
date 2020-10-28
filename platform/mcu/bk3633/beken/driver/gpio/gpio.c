@@ -25,7 +25,7 @@
 #include "icu.h"
 //#include "rf.h"
 #include "app.h"
-#include "app_task.h"
+//#include "app_task.h"
 #include "uart.h"
 #include "user_config.h"
 
@@ -66,24 +66,21 @@ void gpio_config(uint8_t gpio, Dir_Type dir, Pull_Type pull)
     		gpio_temp &= ~(1<<GPIO_INPUT_EN);
             gpio_temp |= (1<<GPIO_OUTPUT_EN);
             break;
-        //case SC_FUN:		
-    	//	gpio_temp |= (1<<GPIO_2FUN_EN);
-        //    break;
     }
 
     switch(pull)
     {
-    case PULL_HIGH:        
-        gpio_temp |= (1<<GPIO_PULL_EN);
-        gpio_temp |= (1<<GPIO_PULL_MODE);
-        break;
-    case PULL_LOW:
-        gpio_temp |= (1<<GPIO_PULL_EN);
-        gpio_temp &= ~(1<<GPIO_PULL_MODE);
-        break;
-    case PULL_NONE:
-        gpio_temp &= ~(1<<GPIO_PULL_EN);
-        break;
+        case PULL_HIGH:
+            gpio_temp |= (1<<GPIO_PULL_EN);
+            gpio_temp |= (1<<GPIO_PULL_MODE);
+            break;
+        case PULL_LOW:
+            gpio_temp |= (1<<GPIO_PULL_EN);
+            gpio_temp &= ~(1<<GPIO_PULL_MODE);
+            break;
+        case PULL_NONE:
+            gpio_temp &= ~(1<<GPIO_PULL_EN);
+            break;
     }
 
     *(volatile unsigned long *)dest_reg = gpio_temp;
@@ -106,74 +103,74 @@ static void gpio_enable_second_function(UINT32 func_mode)
     GPIO_INDEX gpio;
     switch(func_mode)
     {
-    case GFUNC_MODE_UART1:
-    	gpio_config(GPIO_UART1_TX, OUTPUT, PULL_HIGH);
-    	gpio_config_func(GPIO_UART1_TX);
-    	gpio_config(GPIO_UART1_RX, INPUT, PULL_NONE);
-    	gpio_config_func(GPIO_UART1_RX);
-        break;
+        case GFUNC_MODE_UART1:
+    	    gpio_config(GPIO_UART1_TX, OUTPUT, PULL_HIGH);
+    	    gpio_config_func(GPIO_UART1_TX);
+    	    gpio_config(GPIO_UART1_RX, INPUT, PULL_NONE);
+    	    gpio_config_func(GPIO_UART1_RX);
+            break;
 
-    case GFUNC_MODE_I2C:
-    	gpio_config(GPIO_I2C_SCL, OUTPUT, PULL_HIGH);
-    	gpio_config_func(GPIO_I2C_SCL);
-    	gpio_config(GPIO_I2C_SDA, OUTPUT, PULL_HIGH);
-    	gpio_config_func(GPIO_I2C_SDA);
-        break;
+        case GFUNC_MODE_UART2:
+    	    gpio_config(GPIO_UART2_TX, OUTPUT, PULL_HIGH);
+    	    gpio_config_func(GPIO_UART2_TX);
+    	    gpio_config(GPIO_UART2_RX, INPUT, PULL_NONE);
+    	    gpio_config_func(GPIO_UART2_RX);
+            break;
 
-    case GFUNC_MODE_SPI_MST:
-    	gpio_config(GPIO_SPI_SCK, OUTPUT, PULL_HIGH);
-    	gpio_config_func(GPIO_SPI_SCK);
-    	gpio_config(GPIO_SPI_MOSI, OUTPUT, PULL_HIGH);
-    	gpio_config_func(GPIO_SPI_MOSI);
-    	gpio_config(GPIO_SPI_MOSO, INPUT, PULL_NONE);
-    	gpio_config_func(GPIO_SPI_MOSO);
-    	gpio_config(GPIO_SPI_NSS, OUTPUT, PULL_HIGH);
-    	gpio_config_func(GPIO_SPI_NSS);
-        break;
+        case GFUNC_MODE_I2C:
+    	    gpio_config(GPIO_I2C_SCL, OUTPUT, PULL_HIGH);
+    	    gpio_config_func(GPIO_I2C_SCL);
+    	    gpio_config(GPIO_I2C_SDA, OUTPUT, PULL_HIGH);
+    	    gpio_config_func(GPIO_I2C_SDA);
+            break;
 
-    case GFUNC_MODE_SPI_SLV:
-    	gpio_config(GPIO_SPI_SCK, INPUT, PULL_NONE);
-    	gpio_config_func(GPIO_SPI_SCK);
-    	gpio_config(GPIO_SPI_MOSI, INPUT, PULL_NONE);
-    	gpio_config_func(GPIO_SPI_MOSI);
-    	gpio_config(GPIO_SPI_MOSO, OUTPUT, PULL_HIGH);
-    	gpio_config_func(GPIO_SPI_MOSO);
-    	gpio_config(GPIO_SPI_NSS, INPUT, PULL_NONE);
-    	gpio_config_func(GPIO_SPI_NSS);
-        break;
+        case GFUNC_MODE_SPI_MST:
+    	    gpio_config(GPIO_SPI_SCK, OUTPUT, PULL_HIGH);
+    	    gpio_config_func(GPIO_SPI_SCK);
+    	    gpio_config(GPIO_SPI_MOSI, OUTPUT, PULL_HIGH);
+    	    gpio_config_func(GPIO_SPI_MOSI);
+    	    gpio_config(GPIO_SPI_MOSO, INPUT, PULL_NONE);
+    	    gpio_config_func(GPIO_SPI_MOSO);
+    	    gpio_config(GPIO_SPI_NSS, OUTPUT, PULL_HIGH);
+    	    gpio_config_func(GPIO_SPI_NSS);
+            break;
 
-    case GFUNC_MODE_PWM0:
-    case GFUNC_MODE_PWM1:
-    case GFUNC_MODE_PWM2:
-    case GFUNC_MODE_PWM3:
-    case GFUNC_MODE_PWM4:
-    case GFUNC_MODE_PWM5:
-    	gpio = GPIO_PWM_0+(func_mode-GFUNC_MODE_PWM0);
-    	gpio_config(gpio, OUTPUT, PULL_HIGH);
-    	gpio_config_func(gpio);
-        break;
+        case GFUNC_MODE_SPI_SLV:
+    	    gpio_config(GPIO_SPI_SCK, INPUT, PULL_NONE);
+    	    gpio_config_func(GPIO_SPI_SCK);
+    	    gpio_config(GPIO_SPI_MOSI, INPUT, PULL_NONE);
+    	    gpio_config_func(GPIO_SPI_MOSI);
+    	    gpio_config(GPIO_SPI_MOSO, OUTPUT, PULL_HIGH);
+    	    gpio_config_func(GPIO_SPI_MOSO);
+    	    gpio_config(GPIO_SPI_NSS, INPUT, PULL_NONE);
+    	    gpio_config_func(GPIO_SPI_NSS);
+            break;
 
-    case GFUNC_MODE_UART2:
-    	gpio_config(GPIO_UART2_TX, OUTPUT, PULL_HIGH);
-    	gpio_config_func(GPIO_UART2_TX);
-    	gpio_config(GPIO_UART2_RX, INPUT, PULL_NONE);
-    	gpio_config_func(GPIO_UART2_RX);
-        break;
+        case GFUNC_MODE_PWM0:
+        case GFUNC_MODE_PWM1:
+        case GFUNC_MODE_PWM2:
+        case GFUNC_MODE_PWM3:
+        case GFUNC_MODE_PWM4:
+        case GFUNC_MODE_PWM5:
+    	    gpio = GPIO_PWM_0+(func_mode-GFUNC_MODE_PWM0);
+    	    gpio_config(gpio, OUTPUT, PULL_HIGH);
+    	    gpio_config_func(gpio);
+            break;
 
-    case GFUNC_MODE_ADC1:
-    case GFUNC_MODE_ADC2:
-    case GFUNC_MODE_ADC3:
-    case GFUNC_MODE_ADC4:
-    case GFUNC_MODE_ADC5:
-    case GFUNC_MODE_ADC6:
-    case GFUNC_MODE_ADC7:
-    	gpio = GPIO_ADC_CH1+(func_mode-GFUNC_MODE_ADC1);
-    	gpio_config(gpio, INPUT, PULL_NONE);
-    	gpio_config_func(gpio);
-        break;
+        case GFUNC_MODE_ADC1:
+        case GFUNC_MODE_ADC2:
+        case GFUNC_MODE_ADC3:
+        case GFUNC_MODE_ADC4:
+        case GFUNC_MODE_ADC5:
+        case GFUNC_MODE_ADC6:
+        case GFUNC_MODE_ADC7:
+    	    gpio = GPIO_ADC_CH1+(func_mode-GFUNC_MODE_ADC1);
+    	    gpio_config(gpio, INPUT, PULL_NONE);
+    	    gpio_config_func(gpio);
+            break;
 
-    default:
-        break;
+        default:
+            break;
     }
 
     return;
@@ -223,8 +220,6 @@ void gpio_debug_msg_init()
 
 void gpio_init(void)
 {
-    os_printf("%s \r\n\r\n", __func__);
-    
 	sddev_register_dev(GPIO_DEV_NAME, &gpio_op);
 
 #if DEBUG_HW
@@ -308,7 +303,7 @@ void gpio_int_enable(UINT32 index, UINT32 mode, void (*p_Int_Handler)(unsigned c
 	uint8_t idx = ((index&0x30)>>1)+(index&0x7);
     if((index >= GPIONUM) || (index&0x08))
     {
-        bk_printf("gpio_id_cross_border\r\n");
+        os_printf("gpio_id_cross_border\r\n");
         return;
     }
 

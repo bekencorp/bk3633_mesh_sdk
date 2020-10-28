@@ -1345,7 +1345,6 @@ static void send_mod_sub_status(struct bt_mesh_model *model,
     }
 }
 
-#ifdef CONFIG_ALI_SIMPLE_MODLE
 static void _elem_sub_bind(struct bt_mesh_elem *p_elem)
 {
     uint8_t i = 0;
@@ -1362,7 +1361,6 @@ static void _elem_sub_bind(struct bt_mesh_elem *p_elem)
         memcpy(p_mod->groups, g_sub_list, sizeof(g_sub_list));
     }
 }
-#endif
 
 static void mod_sub_add(struct bt_mesh_model *model,
             struct bt_mesh_msg_ctx *ctx,
@@ -1408,7 +1406,7 @@ static void mod_sub_add(struct bt_mesh_model *model,
         goto send_status;
     }
 
-#ifdef CONFIG_ALI_SIMPLE_MODLE
+#if 0
     for (i = 0; i < ARRAY_SIZE(mod->groups); i++) {
         if (g_sub_list[i] == BT_MESH_ADDR_UNASSIGNED) {
             g_sub_list[i] = sub_addr;
@@ -1491,7 +1489,7 @@ static void mod_sub_del(struct bt_mesh_model *model,
         bt_mesh_lpn_group_del(&sub_addr, 1);
     }
 
-#ifdef CONFIG_ALI_SIMPLE_MODLE
+#if 0
     int i;
     for (i = 0; i < ARRAY_SIZE(mod->groups); i++) {
         if (g_sub_list[i] == sub_addr) {
@@ -3464,6 +3462,27 @@ u8_t *bt_mesh_label_uuid_get(u16_t addr)
 
     return NULL;
 }
+
+int bt_mesh_label_uuid_set(u8_t *uuid, u16_t addr)
+{
+    int i;
+
+    if (uuid == NULL) {
+        BT_WARN("Invalid uuid value(NULL).");
+        return -1;
+    }
+
+    for (i = 0; i < ARRAY_SIZE(labels); i++) {
+        if (labels[i].addr == 0) {
+            memcpy(labels[i].uuid, uuid, sizeof(labels[i].uuid));
+            labels[i].addr = addr;
+            return 0;
+        }
+    }
+
+    return -1;
+}
+
 void lpn_send_hb(void)
 {
     struct bt_mesh_subnet *sub = bt_mesh_subnet_get(conf->hb_pub.net_idx);

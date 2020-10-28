@@ -19,6 +19,10 @@ typedef enum _BIND_OPERATION_ID_ {
     B_GEN_ONOFF_ID = 0,
 #endif
 
+#ifdef CONFIG_MESH_MODEL_GEN_ONPOWERUP_SRV
+    B_GEN_ONPOWERUP_ID,
+#endif
+
 #ifdef CONFIG_MESH_MODEL_GEN_LEVEL_SRV
 /* Generic Level */
     B_GEN_LEVEL_ID,
@@ -41,6 +45,7 @@ typedef enum _BIND_OPERATION_ID_ {
     B_LIGHT_CTL_TEMP_ID,
     B_LIGHT_CTL_DFT_TEMP_ID,
     B_LIGHT_CTL_TEMP_RANGE_ID,
+    B_LIGHT_CTL_DELTA_UV_ID,
 #endif
 
 #ifdef CONFIG_MESH_MODEL_HSL_SRV

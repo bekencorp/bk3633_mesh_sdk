@@ -15,7 +15,9 @@ typedef enum {
     GENIE_EVT_SW_RESET = GENIE_EVT_START, /* triggered from cloud */
     GENIE_EVT_HW_RESET_START,  /* triggered from user */
     GENIE_EVT_HW_RESET_DONE,   /*triggered by reset by repeat module */
-
+#ifdef CONFIG_GENIE_RESET_BY_REPEAT
+    GENIE_EVT_REPEAT_RESET,
+#endif
 /* SDK triggered event, with prefix of GENIE_EVT_SDK_MESH_ */
     GENIE_EVT_SDK_START,
     GENIE_EVT_SDK_MESH_INIT = GENIE_EVT_SDK_START,

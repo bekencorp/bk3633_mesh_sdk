@@ -20,7 +20,7 @@ static void _gen_level_prepear_buf(struct bt_mesh_model *model, struct net_buf_s
 
     //prepear buff
     bt_mesh_model_msg_init(msg, BT_MESH_MODEL_OP_GEN_LEVEL_STATUS);
-    
+
     net_buf_simple_add_le16(msg, elem->state.gen_level[T_CUR]);
 
     if(remain_byte){
@@ -99,18 +99,6 @@ static u8_t _gen_level_analyze(struct bt_mesh_model *model, u16_t src_addr, stru
         elem->state.gen_level[T_TAR], elem->state.trans, elem->state.delay);
     BT_DBG("start(%d) end(%d)", (u32_t)elem->state.trans_start_time, (u32_t)elem->state.trans_end_time);
 
-    genie_event(GENIE_EVT_SDK_ANALYZE_MSG, (void *)elem);
-
-    if(elem->state.trans || elem->state.delay) {
-        if(elem->state.delay) {
-            genie_event(GENIE_EVT_SDK_DELAY_START, (void *)elem);
-        } else {
-            genie_event(GENIE_EVT_SDK_TRANS_START, (void *)elem);
-        }
-    } else {
-        genie_event(GENIE_EVT_SDK_ACTION_DONE, (void *)elem);
-    }
-
     return MESH_SUCCESS;
 }
 
@@ -125,7 +113,6 @@ void gen_level_publication(struct bt_mesh_model *model)
 
     if (model->pub->addr != BT_MESH_ADDR_UNASSIGNED) {
         _gen_level_prepear_buf(model, msg, 0);
-        
         err = bt_mesh_model_publish(model);
         if (err) {
             BT_ERR("bt_mesh_model_publish err %d\n", err);
@@ -152,6 +139,7 @@ static void _gen_level_set(struct bt_mesh_model *model,
     BT_DBG("ret %d", ret);
 
     if(ret == MESH_SUCCESS || ret == MESH_TID_REPEAT) {
+        genie_event(GENIE_EVT_SDK_ANALYZE_MSG, (S_ELEM_STATE *)model->user_data);
         _gen_level_status(model, ctx, 1);
     }
 }
@@ -162,7 +150,11 @@ static void _gen_level_set_unack(struct bt_mesh_model *model,
 {
     BT_DBG("");
 
-    _gen_level_analyze(model, ctx->addr, buf);
+    E_MESH_ERROR_TYPE ret = _gen_level_analyze(model, ctx->addr, buf);
+
+    if(ret == MESH_SUCCESS) {
+        genie_event(GENIE_EVT_SDK_ANALYZE_MSG, (S_ELEM_STATE *)model->user_data);
+    }
 }
 
 static s32_t _format_32to16(s32_t value)
@@ -226,18 +218,6 @@ static u8_t _gen_delta_analyze(struct bt_mesh_model *model, u16_t src_addr, stru
     BT_DBG("delta(0x%04x)(%d) tar_level(0x%04x) trans(0x%02x) delay(0x%02x)",
         delta, delta, elem->state.gen_level[T_TAR], elem->state.trans, elem->state.delay);
     BT_DBG("start(%d) end(%d)", (u32_t)elem->state.trans_start_time, (u32_t)elem->state.trans_end_time);
-    
-    genie_event(GENIE_EVT_SDK_ANALYZE_MSG, (void *)elem);
-
-    if(elem->state.trans || elem->state.delay) {
-        if(elem->state.delay) {
-            genie_event(GENIE_EVT_SDK_DELAY_START, (void *)elem);
-        } else {
-            genie_event(GENIE_EVT_SDK_TRANS_START, (void *)elem);
-        }
-    } else {
-        genie_event(GENIE_EVT_SDK_ACTION_DONE, (void *)elem);
-    }
 
     return MESH_SUCCESS;
 }
@@ -251,6 +231,7 @@ static void _gen_delta_set(struct bt_mesh_model *model,
     BT_DBG("ret %d", ret);
 
     if(ret == MESH_SUCCESS || ret == MESH_TID_REPEAT) {
+        genie_event(GENIE_EVT_SDK_ANALYZE_MSG, (S_ELEM_STATE *)model->user_data);
         _gen_level_status(model, ctx, 1);
     }
 }
@@ -261,7 +242,11 @@ static void _gen_delta_set_unack(struct bt_mesh_model *model,
 {
     BT_DBG("");
 
-    _gen_delta_analyze(model, ctx->addr, buf);
+    E_MESH_ERROR_TYPE ret = _gen_delta_analyze(model, ctx->addr, buf);
+
+    if(ret == MESH_SUCCESS) {
+        genie_event(GENIE_EVT_SDK_ANALYZE_MSG, (S_ELEM_STATE *)model->user_data);
+    }
 }
 
 static u8_t _gen_level_move_analyze(struct bt_mesh_model *model, u16_t src_addr, struct net_buf_simple *buf)
@@ -321,18 +306,6 @@ static u8_t _gen_level_move_analyze(struct bt_mesh_model *model, u16_t src_addr,
     BT_DBG("delta_move(0x%04x)(%d) tar_level(0x%04x) trans(0x%02x) delay(0x%02x)",
         delta_move, delta_move, elem->state.gen_level[T_TAR], elem->state.trans, elem->state.delay);
     BT_DBG("start(%d) end(%d)", (u32_t)elem->state.trans_start_time, (u32_t)elem->state.trans_end_time);
-    
-    genie_event(GENIE_EVT_SDK_ANALYZE_MSG, (void *)elem);
-
-    if(elem->state.trans || elem->state.delay) {
-        if(elem->state.delay) {
-            genie_event(GENIE_EVT_SDK_DELAY_START, (void *)elem);
-        } else {
-            genie_event(GENIE_EVT_SDK_TRANS_START, (void *)elem);
-        }
-    } else {
-        genie_event(GENIE_EVT_SDK_ACTION_DONE, (void *)elem);
-    }
 
     return MESH_SUCCESS;
 }
@@ -346,6 +319,7 @@ static void _gen_move_set(struct bt_mesh_model *model,
     BT_DBG("ret %d", ret);
     
     if(ret == MESH_SUCCESS || ret == MESH_TID_REPEAT) {
+        genie_event(GENIE_EVT_SDK_ANALYZE_MSG, (S_ELEM_STATE *)model->user_data);
         _gen_level_status(model, ctx, 1);
     }
 }
@@ -356,7 +330,11 @@ static void _gen_move_set_unack(struct bt_mesh_model *model,
 {
     BT_DBG("");
     
-    _gen_level_move_analyze(model, ctx->addr, buf);
+    E_MESH_ERROR_TYPE ret = _gen_level_move_analyze(model, ctx->addr, buf);
+
+    if(ret == MESH_SUCCESS) {
+        genie_event(GENIE_EVT_SDK_ANALYZE_MSG, (S_ELEM_STATE *)model->user_data);
+    }
 }
 
 const struct bt_mesh_model_op g_gen_level_op[GEN_LV_OPC_NUM] = {

@@ -190,7 +190,7 @@ static void temp_work_thread(struct k_work *work)
         }
 
     /* sensor status */
-        bt_mesh_model_msg_init(msg, BT_MESH_MODEL_OP_SENSOR_GET);
+    bt_mesh_model_msg_init(msg, BT_MESH_MODEL_OP_SENSOR_GET);
     net_buf_simple_add_le16(msg, ID_TEMP_CELSIUS);
 
     ret = bt_mesh_model_publish(model);

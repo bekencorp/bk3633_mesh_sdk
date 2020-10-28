@@ -135,9 +135,14 @@ UINT32 icu_ctrl(UINT32 cmd, void *param)
                 reg &= ~(0x01UL << posi);
                 REG_WRITE(REG_SYS_PWD, reg);
                 break;
-            case CLK_PWR_DEV_UART:
+            case CLK_PWR_DEV_UART1:
                 reg  = REG_READ(REG_SYS_PWD);
-                reg &= ~ICU_UART_CLK_PWD_MASK;
+                reg &= ~ICU_UART1_CLK_PWD_MASK;
+                REG_WRITE(REG_SYS_PWD, reg);
+                break;
+            case CLK_PWR_DEV_UART2:
+                reg  = REG_READ(REG_SYS_PWD);
+                reg &= ~ICU_UART2_CLK_PWD_MASK;
                 REG_WRITE(REG_SYS_PWD, reg);
                 break;
             case CLK_PWR_DEV_WDT:
@@ -175,9 +180,14 @@ UINT32 icu_ctrl(UINT32 cmd, void *param)
                 reg |= (0x01UL << posi);
                 REG_WRITE(REG_SYS_PWD, reg);
                 break;
-            case CLK_PWR_DEV_UART:
+            case CLK_PWR_DEV_UART1:
                 reg  = REG_READ(REG_SYS_PWD);
-                reg |= ICU_UART_CLK_PWD_MASK;
+                reg |= ICU_UART1_CLK_PWD_MASK;
+                REG_WRITE(REG_SYS_PWD, reg);
+                break;
+            case CLK_PWR_DEV_UART2:
+                reg  = REG_READ(REG_SYS_PWD);
+                reg |= ICU_UART2_CLK_PWD_MASK;
                 REG_WRITE(REG_SYS_PWD, reg);
                 break;
             case CLK_PWR_DEV_WDT:
@@ -239,9 +249,9 @@ UINT32 icu_ctrl(UINT32 cmd, void *param)
         break;
 
     case CMD_ICU_INT_DISABLE:
-        reg = REG_READ(ICU_INT_ENABLE);
+        reg = REG_READ(REG_SYS_INT_EN);
         reg &= ~(*(UINT32 *)param);
-        REG_WRITE(ICU_INT_ENABLE, reg);
+        REG_WRITE(REG_SYS_INT_EN, reg);
         break;
 
     case CMD_ICU_INT_ENABLE:

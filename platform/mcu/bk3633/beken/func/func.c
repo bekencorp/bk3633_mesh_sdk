@@ -95,10 +95,6 @@ UINT32 func_init(void)
 	#endif
 #endif
 
-#if (!CFG_SUPPORT_RTT)
-    FUNC_PRT("[FUNC]intc_init\r\n");
-    intc_init();
-#endif
 
 #if 0//CFG_SUPPORT_CALIBRATION
     FUNC_PRT("[FUNC]calibration_main\r\n");

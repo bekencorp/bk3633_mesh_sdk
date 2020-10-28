@@ -42,8 +42,7 @@ void ais_clear_ota_indicat(void);
  */
 void ais_check_ota_change(void);
 
-#if 0
 bool ais_get_ota_ready(void);
-#endif
+
 #endif
 

@@ -61,7 +61,9 @@ typedef struct{
     s16_t trans_level;
 #endif
 
+#ifdef CONFIG_MESH_MODEL_GEN_DEF_TRANS_TIME_SRV
     u8_t tt;
+#endif
 
 #ifdef CONFIG_MESH_MODEL_LIGHTNESS_SRV
     u16_t light_ln_actual[TYPE_NUM];
@@ -125,7 +127,6 @@ typedef struct{
 #endif
 
 #ifdef CONFIG_MESH_MODEL_CTL_SRV
-    //temp
     u16_t ctl_temp_def;
     u16_t ctl_temp_range_min;
     u16_t ctl_temp_range_max;
@@ -137,7 +138,6 @@ typedef struct{
 #endif
 
 #ifdef CONFIG_MESH_MODEL_HSL_SRV
-
     u16_t default_hue;
     u16_t min_hue;
     u16_t max_hue;
@@ -156,6 +156,7 @@ typedef struct{
 
 typedef struct{
     u8_t elem_index;
+    model_message_index_e message_index;
     S_MODEL_STATE state;
     S_MODEL_POWERUP powerup;
     void *user_data;
@@ -267,7 +268,8 @@ void genie_pbadv_start_silent_adv(void);
  * @return
  */
 u16_t genie_indicate_hw_reset_event (void);
-uint8_t elem_state_init(uint8_t state_count, S_ELEM_STATE *p_elem);
+uint8_t genie_elem_state_init(uint8_t state_count, S_ELEM_STATE *p_elem);
+uint8_t genie_restore_user_state(uint8_t state_count,S_ELEM_STATE *p_elem, S_MODEL_POWERUP *p_pup);
 void standart_indication(S_ELEM_STATE *p_elem);
 void genie_sub_list_init(void);
 

@@ -27,12 +27,15 @@
                                                 g_ctl_temp_srv_op, &g_ctl_srv_pub, _user_data)
 #endif
 
+extern BUILD_MODEL_STATE_BIND_HANDLER(B_LIGHT_CTL_LN_ID);
 
 extern struct bt_mesh_model_pub g_ctl_srv_pub;
 extern const struct bt_mesh_model_op g_ctl_srv_op[CTL_OPC_NUM];
 extern const struct bt_mesh_model_op g_ctl_setup_srv_op[CTL_SETUP_OPC_NUM];
 #ifdef CONFIG_MESH_MODEL_CTL_TEMPERATURE_SRV
 extern const struct bt_mesh_model_op g_ctl_temp_srv_op[CTL_TEMP_OPC_NUM];
+
+extern BUILD_MODEL_STATE_BIND_HANDLER(B_LIGHT_CTL_TEMP_ID);
 #endif
 
 

@@ -58,9 +58,9 @@ static ktask_t aos_app_task_obj;
 
 void sys_start(void)
 {
-    printf("%s \r\n\r\n", __func__);
+    //printf("%s \r\n\r\n", __func__);
     aos_init();
-    printf("aos init ok \r\n\r\n");
+    //printf("aos init ok \r\n\r\n");
 
     soc_driver_init();
     printf("soc_driver init ok \r\n\r\n");
@@ -68,6 +68,7 @@ void sys_start(void)
     UINT32 param = ICU_MCU_CLK_SEL_16M;
     sddev_control(ICU_DEV_NAME, CMD_ICU_MCU_CLK_SEL, &param);
 
+    fclk_init(FCLK_PWM_ID, RHINO_CONFIG_TICKS_PER_SECOND);
 
     printf("start sys_init \r\n\r\n");
     //krhino_task_dyn_create(&g_aos_init, "aos-app", 0, AOS_DEFAULT_APP_PRI, 0, AOS_START_STACK, sys_init, 1);

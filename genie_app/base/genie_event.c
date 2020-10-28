@@ -191,7 +191,6 @@ static E_GENIE_EVENT _genie_event_handle_mesh_init(void)
         }
     }
 
-    read_flag = 0;
     BT_DBG("flag %02x", read_flag);
 #if 0
 	if((read_flag & 0x1F) == 0x1F) {
@@ -231,7 +230,6 @@ static E_GENIE_EVENT _genie_event_handle_mesh_init(void)
         aos_reboot();
     } else {
         BT_INFO(">>>unprovisioned<<<");
-        genie_flash_reset_system();
         if (genie_reset_get_flag()) {
             return GENIE_EVT_HW_RESET_START;
         }
@@ -467,52 +465,66 @@ static E_GENIE_EVENT _genie_event_handle_trans_end(S_ELEM_STATE *p_elem)
 
 static E_GENIE_EVENT _genie_event_handle_action_done(S_ELEM_STATE *p_elem)
 {
-#ifdef CONFIG_MESH_MODEL_GEN_ONOFF_SRV
-    BT_DBG("onoff cur(%d) tar(%d)", p_elem->state.onoff[T_CUR], p_elem->state.onoff[T_TAR]);
+    model_message_index_e dest_index = p_elem->message_index;
 
-    if(p_elem->state.onoff[T_CUR] != p_elem->state.onoff[T_TAR]) {
+    BT_DBG("main index (%d)", dest_index);
+
+    //Note that the bound states may change along with the main states
+
+#ifdef CONFIG_MESH_MODEL_GEN_ONOFF_SRV
+    if(p_elem->state.onoff[T_CUR] != p_elem->state.onoff[T_TAR])
+    {
+        BT_DBG("onoff cur(%d) tar(%d)", p_elem->state.onoff[T_CUR], p_elem->state.onoff[T_TAR]);
         p_elem->state.onoff[T_CUR] = p_elem->state.onoff[T_TAR];
     }
 #endif
 
 #ifdef CONFIG_MESH_MODEL_LIGHTNESS_SRV
-    BT_DBG("actual cur(%04x) tar(%04x)", p_elem->state.light_ln_actual[T_CUR], p_elem->state.light_ln_actual[T_TAR]);
-
-    if(p_elem->state.light_ln_actual[T_CUR] != p_elem->state.light_ln_actual[T_TAR]) {
+    if(p_elem->state.light_ln_actual[T_CUR] != p_elem->state.light_ln_actual[T_TAR])
+    {
+        BT_DBG("actual cur(0x%x) tar(0x%x)", p_elem->state.light_ln_actual[T_CUR], p_elem->state.light_ln_actual[T_TAR]);
         p_elem->state.light_ln_actual[T_CUR] = p_elem->state.light_ln_actual[T_TAR];
     }
 #endif
 
 #ifdef CONFIG_MESH_MODEL_CTL_SRV
-    BT_DBG("temp cur(%04x) tar(%04x)", p_elem->state.ctl_temp[T_CUR], p_elem->state.ctl_temp[T_TAR]);
-
-    if(p_elem->state.ctl_lightness[T_CUR] != p_elem->state.ctl_lightness[T_TAR]) {
+    if(p_elem->state.ctl_lightness[T_CUR] != p_elem->state.ctl_lightness[T_TAR])
+    {
+        BT_DBG("lightness cur(0x%x) tar(0x%x)", p_elem->state.ctl_lightness[T_CUR], p_elem->state.ctl_lightness[T_TAR]);
         p_elem->state.ctl_lightness[T_CUR] = p_elem->state.ctl_lightness[T_TAR];
     }
 
-    if(p_elem->state.ctl_temp[T_CUR] != p_elem->state.ctl_temp[T_TAR]) {
+    if(p_elem->state.ctl_temp[T_CUR] != p_elem->state.ctl_temp[T_TAR])
+    {
+        BT_DBG("temp cur(0x%x) tar(0x%x)", p_elem->state.ctl_temp[T_CUR], p_elem->state.ctl_temp[T_TAR]);
         p_elem->state.ctl_temp[T_CUR] = p_elem->state.ctl_temp[T_TAR];
     }
 
-    if(p_elem->state.ctl_UV[T_CUR] != p_elem->state.ctl_UV[T_TAR]) {
+    if(p_elem->state.ctl_UV[T_CUR] != p_elem->state.ctl_UV[T_TAR])
+    {
+        BT_DBG("UV cur(0x%x) tar(0x%x)", p_elem->state.ctl_UV[T_CUR], p_elem->state.ctl_UV[T_TAR]);
         p_elem->state.ctl_UV[T_CUR] = p_elem->state.ctl_UV[T_TAR];
     }
+
 #endif
 
 #ifdef CONFIG_MESH_MODEL_HSL_SRV
-    BT_DBG("temp cur(%04x) tar(%04x)", p_elem->state.ctl_temp[T_CUR], p_elem->state.ctl_temp[T_TAR]);
 
     if(p_elem->state.hsl_lightness[T_CUR] != p_elem->state.hsl_lightness[T_TAR]) {
+        BT_DBG("hsl_lightness cur(0x%x) tar(0x%x)", p_elem->state.hsl_lightness[T_CUR], p_elem->state.hsl_lightness[T_TAR]);
         p_elem->state.hsl_lightness[T_CUR] = p_elem->state.hsl_lightness[T_TAR];
     }
 
     if(p_elem->state.hsl_hue[T_CUR] != p_elem->state.hsl_hue[T_TAR]) {
+        BT_DBG("hsl_hue cur(0x%x) tar(0x%x)", p_elem->state.hsl_hue[T_CUR], p_elem->state.hsl_hue[T_TAR]);
         p_elem->state.hsl_hue[T_CUR] = p_elem->state.hsl_hue[T_TAR];
     }
 
     if(p_elem->state.hsl_sat[T_CUR] != p_elem->state.hsl_sat[T_TAR]) {
+        BT_DBG("hsl_sat cur(0x%x) tar(0x%x)", p_elem->state.hsl_sat[T_CUR], p_elem->state.hsl_sat[T_TAR]);
         p_elem->state.hsl_sat[T_CUR] = p_elem->state.hsl_sat[T_TAR];
     }
+
 #endif
 
 #ifdef CONFIG_MESH_MODEL_VENDOR_SRV
@@ -595,6 +607,12 @@ void genie_event(E_GENIE_EVENT event, void *p_arg)
             ignore_user_event = 1;
             next_event = _genie_event_handle_hw_reset_done();
             break;
+
+#ifdef CONFIG_GENIE_RESET_BY_REPEAT
+        case GENIE_EVT_REPEAT_RESET:
+            next_event = GENIE_EVT_REPEAT_RESET;
+            break;
+#endif
 
         case GENIE_EVT_SDK_MESH_INIT:
             //update p_arg to user_event

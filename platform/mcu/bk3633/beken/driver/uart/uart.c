@@ -33,6 +33,8 @@ static struct uart_callback_des uart_receive_callback[2] = {NULL, NULL};
 static struct uart_callback_des uart_txfifo_needwr_callback[2] = {NULL, NULL};
 static struct uart_callback_des uart_tx_end_callback[2] = {NULL, NULL};
 
+static UINT8 uart_tx_port = UART1_PORT;
+
 #ifndef KEIL_SIMULATOR
 #if CFG_UART_DEBUG_COMMAND_LINE
 UART_S uart[2] =
@@ -127,7 +129,7 @@ void bk_printf(const char *fmt, ...)
     va_start(ap, fmt);
     vsprintf(string, fmt, ap);
     string[127] = 0;
-    bk_send_string(UART2_PORT, string);
+    bk_send_string(uart_tx_port, string);
     va_end(ap);
 #endif
 
@@ -281,7 +283,6 @@ void uart_hw_set_change(UINT8 uport, uart_config_t *uart_config)
           | (stop_bits << 7)
           | ((baud_div & UART_CLK_DIVID_MASK) << UART_CLK_DIVID_POSI);
 
-    width = ((width & UART_DATA_LEN_MASK) << UART_DATA_LEN_POSI);
     REG_WRITE(conf_reg_addr, reg);
 
     reg = ((TX_FIFO_THRD & TX_FIFO_THRESHOLD_MASK) << TX_FIFO_THRESHOLD_POSI)
@@ -519,10 +520,42 @@ void uart_set_tx_stop_end_int(UINT8 uport, UINT8 set)
 		REG_WRITE(REG_UART2_INTR_ENABLE, reg);
 }
 
+#define BASEADDR_UART                                      0x00806300
+#define UART_FIFO_MAX_COUNT  128
+#define POS_UART_REG0X5_RX_FIFO_NEED_READ                   1
+#define POS_UART_REG0X5_UART_RX_STOP_END                    6
+#define POS_UART_REG0X2_FIFO_RD_READY                       21
+#define UART_REG0X2                                         *((volatile unsigned long *) (BASEADDR_UART+0x2*4))
+#define UART_REG0X5                                         *((volatile unsigned long *) (BASEADDR_UART+0x5*4))
+#define UART_REG0X3                                         *((volatile unsigned long *) (BASEADDR_UART+0x3*4))
+
+uint8_t uart_rx_buf[UART_FIFO_MAX_COUNT];
+volatile static uint32_t uart_rx_index = 0;
+volatile static uint8_t  uart_rx_done = 0;
+typedef void (*uart_rx_cb)(uint8_t *buf, uint8_t len);
+static uart_rx_cb rx_isr_cb =  NULL;
+void uart_rx_cb_register(void *rx_cb)
+{
+    rx_isr_cb = rx_cb;
+}
+
+static void uart_rx_data(uint8_t *buf, uint8_t len)
+{
+    for(uint8_t i = 0; i < len; i++)
+    {
+        printf("0x%x ", buf[i]);
+    }
+    printf("\r\n");
+
+    if (rx_isr_cb) {
+        rx_isr_cb(buf, len);
+    }
+}
+
 /*******************************************************************/
 void uart1_isr(void)
 {
-
+#if 0
     UINT32 status;
     UINT32 intr_en;
     UINT32 intr_status;
@@ -557,7 +590,7 @@ void uart1_isr(void)
             void *param = uart_txfifo_needwr_callback[0].param;
 
             uart_txfifo_needwr_callback[0].callback(UART1_PORT, param);
-        } 
+        }
     }
 	
     if(status & RX_FIFO_OVER_FLOW_STA)
@@ -568,7 +601,7 @@ void uart1_isr(void)
     {
         uart_fifo_flush(UART1_PORT);
     }
-	
+
     if(status & UART_RX_STOP_ERR_STA)
     {
     }
@@ -586,7 +619,31 @@ void uart1_isr(void)
 	if(status & UART_RXD_WAKEUP_STA)
     {
     }
+#endif
+
+    uint32_t uart_int_status;	
+    uart_int_status = UART_REG0X5;
+    if ( uart_int_status & ( (1<<POS_UART_REG0X5_RX_FIFO_NEED_READ)|(1<<POS_UART_REG0X5_UART_RX_STOP_END ) ) )
+    {    
+        while(UART_REG0X2 & (1<<POS_UART_REG0X2_FIFO_RD_READY))
+        {
+            uart_rx_buf[uart_rx_index] = (UART_REG0X3>>8);
+            uart_rx_index++;
+            if (uart_rx_index == UART_FIFO_MAX_COUNT)
+            {
+                uart_rx_index = 0;
+            }
+        }
+        if ( uart_int_status & (1<<POS_UART_REG0X5_UART_RX_STOP_END ) )
+        {   
+            uart_rx_data(uart_rx_buf,uart_rx_index); 
+            uart_rx_index=0;
+            uart_rx_done = 1;             
+        }
+    }
+    UART_REG0X5 = uart_int_status;
 }
+
 void uart1_init(void)
 {
     UINT32 ret;
@@ -600,19 +657,27 @@ void uart1_init(void)
 
     intc_service_register(IRQ_UART1, PRI_IRQ_UART1, uart1_isr);
 
-    param = CLK_PWR_DEV_UART;
+    param = CLK_PWR_DEV_UART1;
     sddev_control(ICU_DEV_NAME, CMD_CLK_PWR_UP, &param);
 
     param = GFUNC_MODE_UART1;
     sddev_control(GPIO_DEV_NAME, CMD_GPIO_ENABLE_SECOND, &param);
+
     uart_hw_init(UART1_PORT);
 
-    /*irq enable, Be careful: it is best that irq enable at open routine*/
     intr_status = REG_READ(REG_UART1_INTR_STATUS);
     REG_WRITE(REG_UART1_INTR_STATUS, intr_status);
 
     intc_enable(IRQ_UART1);
-    //intc_init();
+
+    os_printf("\r\n\r\n/*Version Information**************");
+    os_printf("\r\n *        release_version:%s", RELEASE_VERSION);
+    os_printf("\r\n *        release_time:%s", RELEASE_TIME);
+    //os_printf("\r\n *        full_mac_version:%s", FMALL_VERSION);
+    //os_printf("\r\n *        mac_lib_version:%s", FMAC_LIB_VERSON);
+    os_printf("\r\n *        bulid date:%s, time:%s", __DATE__, __TIME__);
+    os_printf("\r\n *Version Over**********************/\r\n\r\n");
+
 }
 
 void uart1_exit(void)
@@ -686,7 +751,17 @@ UINT32 uart1_ctrl(UINT32 cmd, void *parm)
         break;
     }
     case CMD_UART_INIT:
-        uart_hw_set_change(UART1_PORT, parm);
+    {
+        uart_config_t *uart_config = (uart_config_t *)parm;
+        
+        uart_hw_set_change(UART1_PORT, uart_config);
+
+        if(uart_config->mode == MODE_TX || uart_config->mode == MODE_TX_RX)
+        {
+            uart_tx_port = UART1_PORT;
+        }
+        break;
+    }
         break;
     case CMD_UART_SET_RX_CALLBACK:
         if (parm)
@@ -816,12 +891,12 @@ void uart2_isr(void)
 
 #endif
 }
+
 void uart2_init(void)
 {
     UINT32 ret;
     UINT32 param;
     UINT32 intr_status;
-
     ret = uart_sw_init(UART2_PORT);
     ASSERT(UART_SUCCESS == ret);
 
@@ -829,27 +904,19 @@ void uart2_init(void)
 
     intc_service_register(IRQ_UART2, PRI_IRQ_UART2, uart2_isr);
 
-    //param = PWD_UART2_CLK_BIT;
-    //sddev_control(ICU_DEV_NAME, CMD_CLK_PWR_UP, &param);
+    param = CLK_PWR_DEV_UART2;
+    sddev_control(ICU_DEV_NAME, CMD_CLK_PWR_UP, &param);
 
-    //param = GFUNC_MODE_UART2;
-    //sddev_control(GPIO_DEV_NAME, CMD_GPIO_ENABLE_SECOND, &param);
+    param = GFUNC_MODE_UART2;
+    sddev_control(GPIO_DEV_NAME, CMD_GPIO_ENABLE_SECOND, &param);
+
     uart_hw_init(UART2_PORT);
 
     /*irq enable, Be careful: it is best that irq enable at open routine*/
-    //intr_status = REG_READ(REG_UART2_INTR_STATUS);
-    //REG_WRITE(REG_UART2_INTR_STATUS, intr_status);
+    intr_status = REG_READ(REG_UART2_INTR_STATUS);
+    REG_WRITE(REG_UART2_INTR_STATUS, intr_status);
 
-    //param = IRQ_UART2_BIT;
-    //sddev_control(ICU_DEV_NAME, CMD_ICU_INT_ENABLE, &param);
-
-    os_printf("\r\n\r\n/*Version Information**************");
-    os_printf("\r\n *        release_version:%s", RELEASE_VERSION);
-    os_printf("\r\n *        release_time:%s", RELEASE_TIME);
-    os_printf("\r\n *        full_mac_version:%s", FMALL_VERSION);
-    os_printf("\r\n *        mac_lib_version:%s", FMAC_LIB_VERSON);
-    os_printf("\r\n *        bulid date:%s, time:%s", __DATE__, __TIME__);
-    os_printf("\r\n *Version Over**********************/\r\n\r\n");
+    intc_enable(IRQ_UART2);
 }
 
 void uart2_exit(void)
@@ -924,8 +991,17 @@ UINT32 uart2_ctrl(UINT32 cmd, void *parm)
         break;
     }
     case CMD_UART_INIT:
-        uart_hw_set_change(UART2_PORT, parm);
+    {
+        uart_config_t *uart_config = (uart_config_t *)parm;
+
+        uart_hw_set_change(UART2_PORT, uart_config);
+
+        if(uart_config->mode == MODE_TX || uart_config->mode == MODE_TX_RX)
+        {
+            uart_tx_port = UART2_PORT;
+        }
         break;
+    }
     case CMD_UART_SET_RX_CALLBACK:
         if (parm)
         {

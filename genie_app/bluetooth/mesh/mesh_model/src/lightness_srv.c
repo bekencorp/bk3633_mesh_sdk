@@ -79,6 +79,8 @@ static E_MESH_ERROR_TYPE _lightness_analyze(struct bt_mesh_model *p_model,
         return MESH_ANALYZE_SIZE_ERROR;
     }
 
+    p_elem->message_index = MM_INDEX_SRV_LN;
+
     lightness = (s16_t)net_buf_simple_pull_le16(p_buf);
     tid = net_buf_simple_pull_u8(p_buf);
 #ifdef CONFIG_MESH_MODEL_TRANS
@@ -115,12 +117,10 @@ static E_MESH_ERROR_TYPE _lightness_analyze(struct bt_mesh_model *p_model,
     BT_DBG("trans(0x%02x) delay(0x%02x)", p_elem->state.trans, p_elem->state.delay);
 #endif
 
-/*     if(p_elem->state.light_ln_actual[T_CUR] != p_elem->state.light_ln_actual[T_TAR]) {
-#ifdef CONFIG_MESH_MODEL_VENDOR_SRV
-        g_indication_flag |= INDICATION_FLAG_LIGHTNESS;
-#endif
-        model_bind_operation(B_LIGHTNESS_ACTUAL_ID, p_elem, T_TAR);
-    } */
+    if(p_elem->state.light_ln_actual[T_CUR] != p_elem->state.light_ln_actual[T_TAR])
+    {
+        model_bind_operation(B_LIGHTNESS_ACTUAL_ID, B_OPS_END_ID, p_elem);
+    }
     
     return MESH_SUCCESS;
 }
@@ -258,6 +258,8 @@ static E_MESH_ERROR_TYPE _lightness_linear_analyze(struct bt_mesh_model *p_model
         return MESH_ANALYZE_SIZE_ERROR;
     }
 
+    p_elem->message_index = MM_INDEX_SRV_LN_LINEAR;
+
     linear = net_buf_simple_pull_le16(buf);
 
     tid = net_buf_simple_pull_u8(buf);
@@ -279,7 +281,10 @@ static E_MESH_ERROR_TYPE _lightness_linear_analyze(struct bt_mesh_model *p_model
 
     p_state->light_ln_linear[T_TAR] = linear;
 
-    //model_bind_operation(B_LIGHTNESS_LINEAR_ID, p_elem, T_TAR);
+    if(p_state->light_ln_linear[T_CUR] != p_state->light_ln_linear[T_TAR])
+    {
+        model_bind_operation(B_LIGHTNESS_LINEAR_ID, B_OPS_END_ID, p_elem);
+    } 
 
     p_state->trans = l_trans ? l_trans : p_elem->powerup.def_trans;
     p_state->delay = l_delay;
@@ -289,18 +294,6 @@ static E_MESH_ERROR_TYPE _lightness_linear_analyze(struct bt_mesh_model *p_model
 
     BT_DBG("tar_linear(0x%04x) trans(0x%02x) delay(0x%02x)",
         p_state->light_ln_linear[T_TAR], p_state->trans, p_state->delay);
-
-    genie_event(GENIE_EVT_SDK_ANALYZE_MSG, (void *)p_elem);
-
-    if(p_state->trans || p_state->delay) {
-        if(p_state->delay) {
-            genie_event(GENIE_EVT_SDK_DELAY_START, (void *)p_elem);
-        } else {
-            genie_event(GENIE_EVT_SDK_TRANS_START, (void *)p_elem);
-        }
-    } else {
-        genie_event(GENIE_EVT_SDK_ACTION_DONE, (void *)p_elem);
-    }
 
     return MESH_SUCCESS;
 }
@@ -393,15 +386,8 @@ static void _lightness_linear_set(struct bt_mesh_model *p_model,
     BT_DBG("");
 
     if(_lightness_linear_analyze(p_model, ctx->addr, buf) == MESH_SUCCESS) {
-#if 0 // Ethan
-        pub_need = lightness_linear_action(p_model);
+        genie_event(GENIE_EVT_SDK_ANALYZE_MSG, (S_ELEM_STATE *)p_model->user_data);
         _lightness_linear_status(p_model, ctx, 1);
-        if(pub_need && p_model->pub->addr != ctx->addr) {
-            mesh_publication(p_model->p_elem, MESH_PUB_LIGHTNESS);
-        }
-#else
-        _lightness_linear_status(p_model, ctx, 1);
-#endif
     }
 }
 
@@ -418,12 +404,7 @@ static void _lightness_linear_set_unack(struct bt_mesh_model *p_model,
     BT_DBG("");
 
     if(_lightness_linear_analyze(p_model, ctx->addr, buf) == MESH_SUCCESS) {
-#if 0 // Ethan
-        pub_need = lightness_linear_action(p_model);
-        if(pub_need && p_model->pub->addr != ctx->addr) {
-            mesh_publication(p_model->elem, MESH_PUB_LIGHTNESS);
-        }
-#endif
+        genie_event(GENIE_EVT_SDK_ANALYZE_MSG, (S_ELEM_STATE *)p_model->user_data);
     }
 }
 
@@ -536,6 +517,8 @@ static E_MESH_ERROR_TYPE _lightness_default_analyze(struct bt_mesh_model *p_mode
 
     if (!p_model || !p_model->user_data || !buf) return MESH_ANALYZE_ARGS_ERROR;
 
+    p_elem->message_index = MM_INDEX_SRV_LN_DEF;
+
     p_elem = p_model->user_data;
     mesh_powerup = &p_elem->powerup;
 
@@ -559,6 +542,7 @@ static void _lightness_default_set(struct bt_mesh_model *p_model,
     BT_DBG("");
 
     if(_lightness_default_analyze(p_model, ctx->addr, buf) == MESH_SUCCESS) {
+        genie_event(GENIE_EVT_SDK_ANALYZE_MSG, (S_ELEM_STATE *)p_model->user_data);
         _lightness_defatult_status(p_model, ctx);
     }
 }
@@ -569,7 +553,11 @@ static void _lightness_default_set_unack(struct bt_mesh_model *p_model,
 {
     BT_DBG("");
 
-    _lightness_default_analyze(p_model, ctx->addr, buf);
+    E_MESH_ERROR_TYPE ret = _lightness_default_analyze(p_model, ctx->addr, buf);
+
+    if(ret == MESH_SUCCESS) {
+        genie_event(GENIE_EVT_SDK_ANALYZE_MSG, (S_ELEM_STATE *)p_model->user_data);
+    }
 }
 
 static E_MESH_ERROR_TYPE _lightness_range_analyze(struct bt_mesh_model *p_model, u16_t src_addr, struct net_buf_simple *buf)
@@ -580,6 +568,8 @@ static E_MESH_ERROR_TYPE _lightness_range_analyze(struct bt_mesh_model *p_model,
     S_MODEL_POWERUP *mesh_powerup = NULL;
 
     if (!p_model || !buf) return MESH_ANALYZE_ARGS_ERROR;
+
+    p_elem->message_index = MM_INDEX_SRV_LN_RANG;
 
     p_elem = p_model->user_data;
     mesh_powerup = &p_elem->powerup;
@@ -668,7 +658,7 @@ void bind_ln_actual_with_ln_linear(S_ELEM_STATE *p_elem, E_BIND_DIRECT direct)
 {
     S_MODEL_STATE *p_state = &p_elem->state;
 
-    BT_DBG("");
+    BT_DBG("direct %d\r\n", direct);
 
     //FORWARD function performed whenever Light Lightness Linear state changes
     if(direct == BIND_FORWARD)
@@ -686,7 +676,7 @@ void bind_ln_actual_with_ln_range(S_ELEM_STATE *p_elem, E_BIND_DIRECT direct)
 {
     S_MODEL_STATE *p_state = &p_elem->state;
 
-    BT_DBG("");
+    BT_DBG("direct %d\r\n", direct);
 
     //FORWARD function performed whenever Light Lightness Actual state changes
     if(direct == BIND_REVERSE)
@@ -708,7 +698,7 @@ void bind_ln_actual_with_gen_level(S_ELEM_STATE *p_elem, E_BIND_DIRECT direct)
 {
     S_MODEL_STATE *p_state = &p_elem->state;
 
-    BT_DBG("");
+    BT_DBG("direct %d\r\n", direct);
 
     //FORWARD function performed whenever Generic Level state changes
     if(direct == BIND_FORWARD)
@@ -742,7 +732,7 @@ void bind_ln_actual_with_gen_onoff(S_ELEM_STATE *p_elem, E_BIND_DIRECT direct)
 {
     S_MODEL_STATE *p_state = &p_elem->state;
 
-    BT_DBG("");
+    BT_DBG("direct %d\r\n", direct);
 
     //FORWARD function performed whenever Generic OnOff state changes
     if(direct == BIND_FORWARD)
@@ -781,7 +771,7 @@ void bind_ln_actual_with_gen_onpowerup(S_ELEM_STATE *p_elem, E_BIND_DIRECT direc
 {
     S_MODEL_STATE *p_state = &p_elem->state;
 
-    BT_DBG("");
+    BT_DBG("direct %d\r\n", direct);
 
     if(direct == BIND_FORWARD)
     {
@@ -808,7 +798,7 @@ void bind_ln_actual_with_gen_onpowerup(S_ELEM_STATE *p_elem, E_BIND_DIRECT direc
 
 
 
-BUILD_MODEL_STATE_BIND_HANDLER(B_LIGHTNESS_ACTUAL_ID)= {
+BUILD_MODEL_STATE_BIND_HANDLER(B_LIGHTNESS_ACTUAL_ID) = {
     { B_LIGHTNESS_LINEAR_ID,       bind_ln_actual_with_ln_linear,       BIND_REVERSE },
     { B_LIGHTNESS_RANGE_ID,        bind_ln_actual_with_ln_range,        BIND_REVERSE },
 #ifdef CONFIG_MESH_MODEL_GEN_ONOFF_SRV
@@ -826,5 +816,10 @@ BUILD_MODEL_STATE_BIND_HANDLER(B_LIGHTNESS_ACTUAL_ID)= {
 #ifdef CONFIG_MESH_MODEL_HSL_SRV
     { B_HSL_LIGHTNESS_ID,          bind_hsl_lightness_with_ln_actual,    BIND_FORWARD },
 #endif
-    {B_OPS_END_ID,                  NULL,                                BIND_NULL},
+    { B_OPS_END_ID,                  NULL,                                BIND_NULL},
+};
+
+BUILD_MODEL_STATE_BIND_HANDLER(B_LIGHTNESS_LINEAR_ID) = {
+    { B_LIGHTNESS_ACTUAL_ID,       bind_ln_actual_with_ln_linear,        BIND_FORWARD },
+    { B_OPS_END_ID,                  NULL,                                BIND_NULL},
 };

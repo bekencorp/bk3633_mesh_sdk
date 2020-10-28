@@ -38,12 +38,27 @@ int32_t hal_uart_init(uart_dev_t *uart)
     _uart_drv_t *pdrv = &_uart_drv[uart->port];
     UINT32 status;
     DD_HANDLE uart_hdl;
+    UINT8 ret;
 
     if(pdrv->status == _UART_STATUS_CLOSED)
     {
-        rtos_init_semaphore( &pdrv->tx_semphr, 0 );
-        rtos_init_semaphore( &pdrv->rx_semphr, 0 );
-        rtos_init_mutex( &pdrv->tx_mutex );
+        ret = rtos_init_semaphore( &pdrv->tx_semphr, 0 );
+        if(ret != kNoErr)
+        {
+            return -1;
+        }
+
+        ret = rtos_init_semaphore( &pdrv->rx_semphr, 0 );
+        if(ret != kNoErr)
+        {
+            return -1;
+        }
+
+        ret = rtos_init_mutex( &pdrv->tx_mutex );
+        if(ret != kNoErr)
+        {
+            return -1;
+        }
 		
         pdrv->status = _UART_STATUS_OPENED;
     }
@@ -57,7 +72,10 @@ int32_t hal_uart_init(uart_dev_t *uart)
         uart_hdl = ddev_open(UART2_DEV_NAME, &status, 0);
     }
 
-    ddev_control(uart_hdl, CMD_UART_INIT, (void *)&uart->config);
+    if(uart->config.baud_rate != 0)
+    {
+        ddev_control(uart_hdl, CMD_UART_INIT, (void *)&uart->config);
+    }
 
     uart_rx_callback.callback = uart_rx_cb;
     uart_rx_callback.param = NULL;
@@ -87,7 +105,7 @@ int32_t hal_uart_send(uart_dev_t *uart, const void *data, uint32_t size, uint32_
 {
     uint32_t i = 0;
     (void)timeout;
-#if 0
+
     _uart_drv_t *pdrv = &_uart_drv[uart->port];
     UINT32 status, set;
     DD_HANDLE uart_hdl;
@@ -120,8 +138,6 @@ int32_t hal_uart_send(uart_dev_t *uart, const void *data, uint32_t size, uint32_
 	ddev_close(uart_hdl);
 
     rtos_unlock_mutex( &pdrv->tx_mutex );
-#endif
-    uart_write_byte(UART2_PORT, ((uint8_t *)data)[i] );
     return 0;
 }
 

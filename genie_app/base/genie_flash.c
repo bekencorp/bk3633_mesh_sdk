@@ -175,7 +175,7 @@ static E_GENIE_FLASH_ERRCODE _genie_flash_checkflag(hal_partition_t in_partition
     uint32_t flash_flag = 0;
 
     ret = hal_flash_read(in_partition, &offset, (uint8_t *)(&flash_flag), sizeof(flash_flag));
-    BT_DBG("ret(%d) flash_flag(0x%08X)", ret, flash_flag);
+    BT_DBG("partition(%d) flash_flag(0x%08X)", in_partition, flash_flag);
 
     RETURN_WHEN_ERR(ret, GENIE_FLASH_READ_FAIL);
 

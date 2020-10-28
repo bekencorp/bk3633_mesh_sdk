@@ -41,9 +41,9 @@ static DD_INIT_S dd_init_tbl[] =
 
     {GPIO_DEV_NAME,         gpio_init,                  gpio_exit},
     
-    //{UART1_DEV_NAME,        uart1_init,                 uart1_exit},
+    {UART1_DEV_NAME,        uart1_init,                 uart1_exit},
 
-    // {UART2_DEV_NAME,        uart2_init,                 uart2_exit},
+    {UART2_DEV_NAME,        uart2_init,                 uart2_exit},
 
     {FLASH_DEV_NAME,        flash_init,                 flash_exit},
     

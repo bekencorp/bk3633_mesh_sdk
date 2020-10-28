@@ -303,7 +303,7 @@ int aos_kernel_init(kinit_t *kinit)
     krhino_task_cpu_usage_init();
 #endif
 
-    aos_cli_printf("app start \r\n\r\n", __func__);
+    //aos_cli_printf("app start \r\n\r\n", __func__);
     application_start(kinit->argc, kinit->argv);
 #endif
 

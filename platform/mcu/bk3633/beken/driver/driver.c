@@ -9,6 +9,8 @@ UINT32 soc_driver_init(void)
 {    
     drv_model_init();
 
+    intc_init();
+
     g_dd_init();
 
     return 0;

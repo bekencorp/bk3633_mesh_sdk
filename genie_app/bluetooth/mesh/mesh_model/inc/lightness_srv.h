@@ -25,6 +25,7 @@ extern struct bt_mesh_model_pub g_lightness_setup_pub;
 extern const struct bt_mesh_model_op g_lightness_setup_op[LIGHTNESS_SETUP_OPC_NUM];
 
 extern BUILD_MODEL_STATE_BIND_HANDLER(B_LIGHTNESS_ACTUAL_ID);
+extern BUILD_MODEL_STATE_BIND_HANDLER(B_LIGHTNESS_LINEAR_ID);
 
 void lightness_publication(struct bt_mesh_model *p_model);
 

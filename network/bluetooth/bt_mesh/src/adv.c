@@ -127,7 +127,7 @@ static inline void adv_send(struct net_buf *buf)
            buf->len, bt_hex(buf->data, buf->len));
     BT_DBG("count %u interval %ums, %ums, %ums duration %ums",
            BT_MESH_ADV(buf)->count + 1, adv_int, adv_int, BT_MESH_ADV(buf)->adv_int, duration);
-  
+
     ad.type = adv_type[BT_MESH_ADV(buf)->type];
     ad.data_len = buf->len;
     ad.data = buf->data;
@@ -179,11 +179,8 @@ static inline int adv_send_multi(struct net_buf *buf)
 #endif
 
     adv_int = min(adv_int_min, BT_MESH_ADV(buf)->adv_int);
-#ifdef CONFIG_ALI_SIMPLE_MODLE
-        duration = 40;//GENIE_DEFAULT_DURATION;
-#else
-        duration = (BT_MESH_ADV(buf)->count + 1) * (adv_int + 10);
-#endif
+
+    duration = (BT_MESH_ADV(buf)->count + 1) * (adv_int + 10);
 
     BT_DBG("type %u len %u: %s", BT_MESH_ADV(buf)->type,
            buf->len, bt_hex(buf->data, buf->len));

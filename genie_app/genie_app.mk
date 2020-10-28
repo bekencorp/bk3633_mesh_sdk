@@ -36,7 +36,7 @@ endif
 GLOBAL_DEFINES += CONFIG_BT_MESH
 #GLOBAL_DEFINES += CONFIG_GENIE_CLI
 GLOBAL_DEFINES += APP_SDK_VERSION=\"$($(NAME)_VERSION)\"
-#GLOBAL_DEFINES += CONFIG_GENIE_RESET_BY_REPEAT
+GLOBAL_DEFINES += CONFIG_GENIE_RESET_BY_REPEAT
 #GLOBAL_DEFINES += CONFIG_GENIE_RESET_BY_PRESS
 #GLOBAL_DEFINES += AES_CMAC_DECRYPT
 
@@ -81,7 +81,9 @@ endif
 
 ifeq ($(MESH_MODEL_GEN_LEVEL_SRV),1)
 GLOBAL_DEFINES += CONFIG_MESH_MODEL_GEN_LEVEL_SRV
+GLOBAL_DEFINES += CONFIG_MESH_MODEL_GEN_DEF_TRANS_TIME_SRV
 $(NAME)_SOURCES += bluetooth/mesh/mesh_model/src/gen_level_srv.c
+$(NAME)_SOURCES += bluetooth/mesh/mesh_model/src/gen_def_trans_time_srv.c
 endif
 
 ifeq ($(MESH_MODEL_LIGHTNESS_SRV),1)
@@ -116,13 +118,6 @@ GLOBAL_DEFINES += CONFIG_MESH_MODEL_VENDOR_SRV
 $(NAME)_SOURCES += bluetooth/mesh/mesh_model/src/vendor_model_srv.c
 endif
 
-ifeq ($(ALI_SIMPLE_MODLE),1)
-GLOBAL_DEFINES += CONFIG_ALI_SIMPLE_MODLE
-else
-ifeq ($(MESH_MODEL_DIABLE_TRANS),1)
-$(error "MESH_MODEL_DIABLE_TRANS must set to 0")
-endif
-endif
 
 $(NAME)_SOURCES += bluetooth/mesh/mesh_model/src/model_bind_ops.c
 

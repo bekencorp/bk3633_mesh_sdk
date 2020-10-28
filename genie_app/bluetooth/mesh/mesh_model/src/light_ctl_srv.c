@@ -80,6 +80,9 @@ static u8_t _ctl_analyze(struct bt_mesh_model *p_model,
         return MESH_ANALYZE_SIZE_ERROR;
     }
 
+    set_light_board_type(LIGHT_TYPE_CTL);
+    p_elem->message_index = MM_INDEX_SRV_CTL;
+
     //get message info
     lightness = net_buf_simple_pull_le16(p_buf);
     temp = net_buf_simple_pull_le16(p_buf);
@@ -134,25 +137,21 @@ static u8_t _ctl_analyze(struct bt_mesh_model *p_model,
     BT_DBG("trans(0x%02x) delay(0x%02x)", p_elem->state.trans, p_elem->state.delay);
 #endif
 
-/* #ifdef CONFIG_ALI_SIMPLE_MODLE
-    //only check temp when ali simaple model
-    if(p_elem->state.temp[T_CUR] != p_elem->state.temp[T_TAR]) {
-#ifdef CONFIG_MESH_MODEL_VENDOR_SRV
-        g_indication_flag |= INDICATION_FLAG_CTL;
-#endif
-#ifdef CONFIG_ALI_SIMPLE_MODLE
-        //only bind temp when ali_simple_model is enable
-        model_bind_operation(B_LIGHT_CTL_TEMP_ID, p_elem, T_TAR);
-#endif
+    if(p_elem->state.ctl_temp[T_CUR] != p_elem->state.ctl_temp[T_TAR])
+    {
+        model_bind_operation(B_LIGHT_CTL_TEMP_ID, B_OPS_END_ID, p_elem);
     }
-#endif */
+
+    if(p_elem->state.ctl_lightness[T_CUR] != p_elem->state.ctl_lightness[T_TAR])
+    {
+        model_bind_operation(B_LIGHT_CTL_LN_ID, B_OPS_END_ID, p_elem);
+    }
 
     return MESH_SUCCESS;
 }
 
 void ctl_publication(struct bt_mesh_model *p_model)
 {
-#ifndef CONFIG_ALI_SIMPLE_MODLE
     struct net_buf_simple *p_msg = NULL;
     int err;
 
@@ -169,7 +168,7 @@ void ctl_publication(struct bt_mesh_model *p_model)
         }
         BT_DBG("Success!!!");
     }
-#endif
+
 }
 
 static void _ctl_get(struct bt_mesh_model *p_model,
@@ -190,7 +189,6 @@ static void _ctl_set(struct bt_mesh_model *p_model,
     BT_DBG("ret %d", ret);
 
     if(ret == MESH_SUCCESS || ret == MESH_TID_REPEAT) {
-        set_light_board_type(LIGHT_TYPE_CTL);
         genie_event(GENIE_EVT_SDK_ANALYZE_MSG, (S_ELEM_STATE *)p_model->user_data);
         _ctl_status(p_model, p_ctx, 1);
     }
@@ -312,20 +310,6 @@ static E_MESH_ERROR_TYPE _ctl_default_analyze(struct bt_mesh_model *p_model, u16
     BT_DBG("actual(0x%04x) temp(0x%04x) uv(0x%04x)", p_elem->powerup.default_light_ln,
             p_elem->powerup.ctl_temp_def, p_elem->powerup.ctl_uv_def);
 
-    genie_event(GENIE_EVT_SDK_ANALYZE_MSG, p_elem);
-
-    if(p_elem->state.trans || p_elem->state.delay) {
-        if(p_elem->state.delay) {
-            genie_event(GENIE_EVT_SDK_DELAY_START, p_elem);
-        }
-        else {
-            genie_event(GENIE_EVT_SDK_TRANS_START, p_elem);
-        }
-    }
-    else {
-        genie_event(GENIE_EVT_SDK_ACTION_DONE, p_elem);
-    }
-
     return MESH_SUCCESS;
 }
 
@@ -336,6 +320,7 @@ static void _ctl_default_set(struct bt_mesh_model *p_model,
     BT_DBG("");
 
     if(_ctl_default_analyze(p_model, p_ctx->addr, p_buf) == MESH_SUCCESS) {
+        genie_event(GENIE_EVT_SDK_ANALYZE_MSG, (S_ELEM_STATE *)p_model->user_data);
         _ctl_defatult_status(p_model, p_ctx);
     }
 }
@@ -346,7 +331,11 @@ static void _ctl_default_set_unack(struct bt_mesh_model *p_model,
 {
     BT_DBG("");
 
-    _ctl_default_analyze(p_model, p_ctx->addr, p_buf);
+    E_MESH_ERROR_TYPE ret = _ctl_default_analyze(p_model, p_ctx->addr, p_buf);
+
+    if(ret == MESH_SUCCESS) {
+        genie_event(GENIE_EVT_SDK_ANALYZE_MSG, (S_ELEM_STATE *)p_model->user_data);
+    }
 }
 
 static E_MESH_ERROR_TYPE _ctl_temp_range_analyze(struct bt_mesh_model *p_model, u16_t src_addr, struct net_buf_simple *p_buf)
@@ -375,20 +364,6 @@ static E_MESH_ERROR_TYPE _ctl_temp_range_analyze(struct bt_mesh_model *p_model, 
     BT_DBG("ctl_temp_range_min(0x%04x) ctl_temp_range_max(0x%04x)",
             p_elem->powerup.ctl_temp_range_min, p_elem->powerup.ctl_temp_range_max);
 
-    genie_event(GENIE_EVT_SDK_ANALYZE_MSG, p_elem);
-
-    if(p_elem->state.trans || p_elem->state.delay) {
-        if(p_elem->state.delay) {
-            genie_event(GENIE_EVT_SDK_DELAY_START, p_elem);
-        }
-        else {
-            genie_event(GENIE_EVT_SDK_TRANS_START, p_elem);
-        }
-    }
-    else {
-        genie_event(GENIE_EVT_SDK_ACTION_DONE, p_elem);
-    }
-
     return MESH_SUCCESS;
 }
 
@@ -399,6 +374,7 @@ static void _ctl_temp_range_set(struct bt_mesh_model *p_model,
     BT_DBG("");
 
     if(_ctl_temp_range_analyze(p_model, p_ctx->addr, p_buf) == MESH_SUCCESS) {
+        genie_event(GENIE_EVT_SDK_ANALYZE_MSG, (S_ELEM_STATE *)p_model->user_data);
         _ctl_temp_range_status(p_model, p_ctx);
     }
 }
@@ -409,7 +385,11 @@ static void _ctl_temp_range_set_unack(struct bt_mesh_model *p_model,
 {
     BT_DBG("");
 
-    _ctl_temp_range_analyze(p_model, p_ctx->addr, p_buf);
+    E_MESH_ERROR_TYPE ret = _ctl_temp_range_analyze(p_model, p_ctx->addr, p_buf);
+
+    if(ret == MESH_SUCCESS) {
+        genie_event(GENIE_EVT_SDK_ANALYZE_MSG, (S_ELEM_STATE *)p_model->user_data);
+    }
 }
 
 const struct bt_mesh_model_op g_ctl_setup_srv_op[CTL_SETUP_OPC_NUM] = {
@@ -476,6 +456,9 @@ static u8_t _ctl_temp_analyze(struct bt_mesh_model *p_model, u16_t src_addr, str
         return MESH_ANALYZE_SIZE_ERROR;
     }
 
+    set_light_board_type(LIGHT_TYPE_CTL);
+    p_elem->message_index = MM_INDEX_SRV_CTL;
+
     temp = net_buf_simple_pull_le16(p_buf);
     if(temp < CTL_TEMP_MIN || temp > CTL_TEMP_MAX) {
         BT_ERR("MESH_ANALYZE_ARGS_ERROR temp(0x%04x)", temp);
@@ -491,11 +474,11 @@ static u8_t _ctl_temp_analyze(struct bt_mesh_model *p_model, u16_t src_addr, str
     uv = net_buf_simple_pull_le16(p_buf);
 
     tid = net_buf_simple_pull_u8(p_buf);
-/*     if(mesh_check_TID(src_addr, tid) != MESH_SUCCESS)
+    if(mesh_check_tid(src_addr, tid) != MESH_SUCCESS)
     {
         BT_ERR("MESH_TID_REPEAT src_addr(0x%04x) tid(0x%02x)", src_addr, tid);
         return MESH_TID_REPEAT;
-    } */
+    }
 
     if(p_buf->len) {
         trans = net_buf_simple_pull_u8(p_buf);
@@ -508,7 +491,6 @@ static u8_t _ctl_temp_analyze(struct bt_mesh_model *p_model, u16_t src_addr, str
 
     p_elem->state.ctl_temp[T_TAR] = temp;
     p_elem->state.ctl_UV[T_TAR] = uv;
-    //////mesh_state_bound(LIGHT_CTL_TEMP, T_TAR);
 
     p_elem->state.trans = trans?trans:p_elem->powerup.def_trans;
     p_elem->state.delay = delay;
@@ -520,17 +502,10 @@ static u8_t _ctl_temp_analyze(struct bt_mesh_model *p_model, u16_t src_addr, str
             p_elem->state.ctl_temp[T_TAR], p_elem->state.ctl_UV[T_TAR],
             p_elem->state.trans, p_elem->state.delay);
 
-    genie_event(GENIE_EVT_SDK_ANALYZE_MSG, (void *)p_elem);
-
-    if(p_elem->state.trans || p_elem->state.delay) {
-        if(p_elem->state.delay) {
-            genie_event(GENIE_EVT_SDK_DELAY_START, (void *)p_elem);
-        } else {
-            genie_event(GENIE_EVT_SDK_TRANS_START, (void *)p_elem);
-        }
-    } else {
-        genie_event(GENIE_EVT_SDK_ACTION_DONE, (void *)p_elem);
-    }
+    if(p_elem->state.ctl_temp[T_CUR] != p_elem->state.ctl_temp[T_TAR])
+    {
+        model_bind_operation(B_LIGHT_CTL_TEMP_ID, B_OPS_END_ID, p_elem);
+    } 
 
     return MESH_SUCCESS;
 }
@@ -657,15 +632,8 @@ static void _ctl_temp_set(struct bt_mesh_model *p_model,
     BT_DBG("");
 
     if(_ctl_temp_analyze(p_model, p_ctx->addr, p_buf) == MESH_SUCCESS) {
-#if 0
-        pub_need = _ctl_temp_action(p_model);
+        genie_event(GENIE_EVT_SDK_ANALYZE_MSG, (S_ELEM_STATE *)p_model->user_data);
         _ctl_temp_status(p_model, p_ctx, 1);
-        if(pub_need && p_model->pub->addr != p_ctx->addr) {
-            mesh_publication(p_model->elem, MESH_PUB_CTL_TEMP);
-        }
-#else
-        _ctl_temp_status(p_model, p_ctx, 1);
-#endif
     }
 }
 
@@ -678,12 +646,7 @@ static void _ctl_temp_set_unack(struct bt_mesh_model *p_model,
     BT_DBG("");
 
     if(_ctl_temp_analyze(p_model, p_ctx->addr, p_buf) == MESH_SUCCESS) {
-#if 0
-        pub_need = _ctl_temp_action(p_model);
-        if(pub_need && p_model->pub->addr != p_ctx->addr) {
-            mesh_publication(p_model->elem, MESH_PUB_CTL_TEMP);
-        }
-#endif
+        genie_event(GENIE_EVT_SDK_ANALYZE_MSG, (S_ELEM_STATE *)p_model->user_data);
     }
 }
 
@@ -804,26 +767,17 @@ void bind_ctl_lightness_with_ln_actual(S_ELEM_STATE *p_elem, E_BIND_DIRECT direc
 }
 #endif
 
-u16_t ctl_temp_bound_states_op(S_ELEM_STATE *p_elem)
-{
-    BT_DBG("");
-
+BUILD_MODEL_STATE_BIND_HANDLER(B_LIGHT_CTL_TEMP_ID)= {
 #ifdef CONFIG_MESH_MODEL_GEN_LEVEL_SRV
-    bind_ctl_temp_with_gen_level(p_elem, BIND_REVERSE);
+    {B_GEN_LEVEL_ID,                bind_ctl_temp_with_gen_level,        BIND_REVERSE},
 #endif
+    {B_LIGHT_CTL_TEMP_RANGE_ID,     bind_ctl_temp_with_ctl_temp_range,   BIND_REVERSE},
+    {B_OPS_END_ID,                  NULL,                                BIND_NULL},
+};
 
-    bind_ctl_temp_with_ctl_temp_range(p_elem, BIND_REVERSE);
-
-    return 0;
-}
-
-u16_t ctl_lightness_bound_states_op(S_ELEM_STATE *p_elem)
-{
-    BT_DBG("");
-
+BUILD_MODEL_STATE_BIND_HANDLER(B_LIGHT_CTL_LN_ID)= {
 #ifdef CONFIG_MESH_MODEL_LIGHTNESS_SRV
-    bind_ctl_lightness_with_ln_actual(p_elem, BIND_REVERSE);
+    {B_LIGHTNESS_ACTUAL_ID,         bind_ctl_lightness_with_ln_actual,   BIND_REVERSE},
 #endif
-
-    return 0;
-}
+    {B_OPS_END_ID,                  NULL,                                BIND_NULL},
+};

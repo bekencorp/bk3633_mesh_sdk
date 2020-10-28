@@ -62,7 +62,6 @@ static E_MESH_ERROR_TYPE _gen_onoff_analyze(struct bt_mesh_model *p_model,
 {
     u8_t onoff = 0;
     u8_t tid = 0;
-    
     u8_t trans = 0;
     u8_t delay = 0;
     S_ELEM_STATE *p_elem = p_model->user_data;
@@ -74,6 +73,8 @@ static E_MESH_ERROR_TYPE _gen_onoff_analyze(struct bt_mesh_model *p_model,
         BT_ERR("MESH_ANALYZE_SIZE_ERROR buf->len(%d)", p_buf->len);
         return MESH_ANALYZE_SIZE_ERROR;
     }
+
+    p_elem->message_index = MM_INDEX_SRV_ONOFF;
 
     //get message info
     onoff = net_buf_simple_pull_u8(p_buf);
@@ -210,7 +211,7 @@ u16_t gen_onoff_bound_states_op(S_ELEM_STATE *p_elem)
 
 BUILD_MODEL_STATE_BIND_HANDLER(B_GEN_ONOFF_ID)= {
 #ifdef CONFIG_MESH_MODEL_LIGHTNESS_SRV
-    {B_LIGHTNESS_ACTUAL_ID,         bind_ln_actual_with_gen_onoff,       BIND_FORWARD},
+    //{B_LIGHTNESS_ACTUAL_ID,         bind_ln_actual_with_gen_onoff,       BIND_FORWARD},
 #endif
     {B_OPS_END_ID,           NULL,                                BIND_NULL},
 };

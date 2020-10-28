@@ -75,10 +75,7 @@ enum
 #define IRQ_I2S_PCM_BIT                      (1 << 7)
 #define IRQ_SPI_BIT                          (1 << 6)
 #define IRQ_UART1_BIT                        (1 << 5)
-#define IRQ_PWM4_BIT                         (1 << 4)
-#define IRQ_PWM3_BIT                         (1 << 3)
-#define IRQ_PWM2_BIT                         (1 << 2)
-#define IRQ_PWM1_BIT                         (1 << 1)
+
 
 /* CMD_ICU_GLOBAL_INT_DISABLE CMD_ICU_GLOBAL_INT_ENABLE */
 #define GINTR_FIQ_BIT                        (1 << 1)
@@ -93,7 +90,8 @@ enum
 	CLK_PWR_DEV_PWM3,
 	CLK_PWR_DEV_PWM4,
 	CLK_PWR_DEV_PWM5,
-	CLK_PWR_DEV_UART,
+    CLK_PWR_DEV_UART1,
+	CLK_PWR_DEV_UART2,
 	CLK_PWR_DEV_WDT,
 	CLK_PWR_DEV_I2S_PCM,
 };

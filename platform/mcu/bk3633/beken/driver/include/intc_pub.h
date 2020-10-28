@@ -10,8 +10,6 @@
 #define FIQ_BTDM                         (22)
 #define FIQ_PWM0                         (0)
 
-#define IRQ_UART2                        (16)
-
 
 #define IRQ_RTC                          (12)
 
@@ -19,7 +17,8 @@
 #define IRQ_ADC                          (8)
 #define IRQ_I2S_PCM                      (7)
 #define IRQ_SPI                          (6)
-#define IRQ_UART1                        (5)
+#define IRQ_UART2                        (5)
+#define IRQ_UART1                        (4)
 
 #define IRQ_PWM0                         (0)
 #define IRQ_PWM1                         (1)

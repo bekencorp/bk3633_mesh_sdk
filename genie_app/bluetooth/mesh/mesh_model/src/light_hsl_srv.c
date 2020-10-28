@@ -74,6 +74,8 @@ static u8_t _hsl_analyze(struct bt_mesh_model *p_model,
         BT_ERR("MESH_ANALYZE_SIZE_ERROR p_buf->len(%d)", p_buf->len);
         return MESH_ANALYZE_SIZE_ERROR;
     }
+    set_light_board_type(LIGHT_TYPE_HSL);
+    p_elem->message_index = MM_INDEX_SRV_HSL;
 
     //get message info
     lightness = net_buf_simple_pull_le16(p_buf);
@@ -101,12 +103,9 @@ static u8_t _hsl_analyze(struct bt_mesh_model *p_model,
     }
     
     p_elem->state.hsl_lightness[T_TAR] = lightness;
-    //p_elem->powerup.last_hsl_temp = p_elem->state.lightness;
-    BT_DBG("temp cur(%04x) tar(%04x)", p_elem->state.ctl_temp[T_CUR], p_elem->state.ctl_temp[T_TAR]);
-
     p_elem->state.hsl_hue[T_TAR] = hue;
     p_elem->state.hsl_sat[T_TAR] = sat;
-    BT_DBG("actual cur(%04x) tar(%04x)", p_elem->state.light_ln_actual[T_CUR], p_elem->state.light_ln_actual[T_TAR]);
+
 #ifdef CONFIG_MESH_MODEL_TRANS
     p_elem->state.trans = trans;
     p_elem->state.delay = delay;
@@ -117,18 +116,20 @@ static u8_t _hsl_analyze(struct bt_mesh_model *p_model,
     BT_DBG("trans(0x%02x) delay(0x%02x)", p_elem->state.trans, p_elem->state.delay);
 #endif
 
-/* #ifdef CONFIG_ALI_SIMPLE_MODLE
-    //only check temp when ali simaple model
-    if(p_elem->state.temp[T_CUR] != p_elem->state.temp[T_TAR]) {
-#ifdef CONFIG_MESH_MODEL_VENDOR_SRV
-        g_indication_flag |= INDICATION_FLAG_HSL;
-#endif
-#ifdef CONFIG_ALI_SIMPLE_MODLE
-        //only bind temp when ali_simple_model is enable
-        model_bind_operation(B_LIGHT_HSL_TEMP_ID, p_elem, T_TAR);
-#endif
+    if(p_elem->state.hsl_hue[T_CUR] != p_elem->state.hsl_hue[T_TAR])
+    {
+        model_bind_operation(B_HSL_HUE_ID, B_OPS_END_ID, p_elem);
     }
-#endif */
+
+    if(p_elem->state.hsl_sat[T_CUR] != p_elem->state.hsl_sat[T_TAR])
+    {
+        model_bind_operation(B_HSL_SAT_ID, B_OPS_END_ID, p_elem);
+    }
+
+    if(p_elem->state.hsl_lightness[T_CUR] != p_elem->state.hsl_lightness[T_TAR])
+    {
+        model_bind_operation(B_HSL_LIGHTNESS_ID, B_OPS_END_ID, p_elem);
+    } 
 
     return MESH_SUCCESS;
 }
@@ -188,7 +189,6 @@ static void _hsl_set(struct bt_mesh_model *p_model,
     BT_DBG("ret %d", ret);
 
     if(ret == MESH_SUCCESS || ret == MESH_TID_REPEAT) {
-        set_light_board_type(LIGHT_TYPE_HSL);
         //light_hsl_publication(p_model);
         genie_event(GENIE_EVT_SDK_ANALYZE_MSG, (S_ELEM_STATE *)p_model->user_data);
         _hsl_status(p_model, p_ctx, 1, 0);
@@ -276,10 +276,8 @@ const struct bt_mesh_model_op g_hsl_srv_op[HSL_OPC_NUM] = {
         { BT_MESH_MODEL_LIGHT_HSL_SET, 7, _hsl_set },
         { BT_MESH_MODEL_LIGHT_HSL_SET_UNACK, 7, _hsl_set_unack },
         { BT_MESH_MODEL_LIGHT_HSL_TGT_GET, 0, _hsl_tgt_get },
-#ifndef CONFIG_ALI_SIMPLE_MODLE
         { BT_MESH_MODEL_LIGHT_HSL_RANGE_GET, 0, _hsl_range_get },
         { BT_MESH_MODEL_LIGHT_HSL_DEF_GET, 0, _hsl_default_get },
-#endif
         BT_MESH_MODEL_OP_END,
 };
 #endif //CONFIG_MESH_MODEL_HSL_SRV
@@ -302,6 +300,9 @@ static E_MESH_ERROR_TYPE _hsl_default_analyze(struct bt_mesh_model *p_model, u16
         BT_ERR("MESH_ANALYZE_SIZE_ERROR p_buf->len(%d)", p_buf->len);
         return MESH_ANALYZE_SIZE_ERROR;
     }
+
+    set_light_board_type(LIGHT_TYPE_HSL);
+    p_elem->message_index = MM_INDEX_SRV_HSL;
 
     lightness = net_buf_simple_pull_le16(p_buf);
     hue = net_buf_simple_pull_le16(p_buf);
@@ -326,20 +327,6 @@ static E_MESH_ERROR_TYPE _hsl_default_analyze(struct bt_mesh_model *p_model, u16
     BT_DBG("lightness(0x%04x) hue(0x%04x) sat(0x%04x)", p_elem->powerup.default_light_ln,
             p_elem->powerup.default_hue, p_elem->powerup.default_sat);
 
-    genie_event(GENIE_EVT_SDK_ANALYZE_MSG, p_elem);
-
-    if(p_elem->state.trans || p_elem->state.delay) {
-        if(p_elem->state.delay) {
-            genie_event(GENIE_EVT_SDK_DELAY_START, p_elem);
-        }
-        else {
-            genie_event(GENIE_EVT_SDK_TRANS_START, p_elem);
-        }
-    }
-    else {
-        genie_event(GENIE_EVT_SDK_ACTION_DONE, p_elem);
-    }
-
     return MESH_SUCCESS;
 }
 
@@ -350,6 +337,7 @@ static void _hsl_default_set(struct bt_mesh_model *p_model,
     BT_DBG("");
 
     if(_hsl_default_analyze(p_model, p_ctx->addr, p_buf) == MESH_SUCCESS) {
+        genie_event(GENIE_EVT_SDK_ANALYZE_MSG, (S_ELEM_STATE *)p_model->user_data);
         _hsl_defatult_status(p_model, p_ctx);
     }
 }
@@ -360,7 +348,11 @@ static void _hsl_default_set_unack(struct bt_mesh_model *p_model,
 {
     BT_DBG("");
 
-    _hsl_default_analyze(p_model, p_ctx->addr, p_buf);
+    E_MESH_ERROR_TYPE ret = _hsl_default_analyze(p_model, p_ctx->addr, p_buf);
+
+    if(ret == MESH_SUCCESS) {
+        genie_event(GENIE_EVT_SDK_ANALYZE_MSG, (S_ELEM_STATE *)p_model->user_data);
+    }
 }
 
 static E_MESH_ERROR_TYPE _hsl_range_analyze(struct bt_mesh_model *p_model, u16_t src_addr, struct net_buf_simple *p_buf)
@@ -375,6 +367,9 @@ static E_MESH_ERROR_TYPE _hsl_range_analyze(struct bt_mesh_model *p_model, u16_t
         BT_ERR("MESH_ANALYZE_SIZE_ERROR p_buf->len(%d)", p_buf->len);
         return MESH_ANALYZE_SIZE_ERROR;
     }
+
+    set_light_board_type(LIGHT_TYPE_HSL);
+    p_elem->message_index = MM_INDEX_SRV_HSL;
 
     min_hue = net_buf_simple_pull_le16(p_buf);
     max_hue = net_buf_simple_pull_le16(p_buf);
@@ -396,20 +391,6 @@ static E_MESH_ERROR_TYPE _hsl_range_analyze(struct bt_mesh_model *p_model, u16_t
     BT_DBG("min_hue(0x%04x) max_hue(0x%04x) min_sat(0x%04x) max_sat(0x%04x)",
             p_elem->powerup.min_hue, p_elem->powerup.max_hue, p_elem->powerup.min_sat, p_elem->powerup.max_sat);
 
-    genie_event(GENIE_EVT_SDK_ANALYZE_MSG, p_elem);
-
-    if(p_elem->state.trans || p_elem->state.delay) {
-        if(p_elem->state.delay) {
-            genie_event(GENIE_EVT_SDK_DELAY_START, p_elem);
-        }
-        else {
-            genie_event(GENIE_EVT_SDK_TRANS_START, p_elem);
-        }
-    }
-    else {
-        genie_event(GENIE_EVT_SDK_ACTION_DONE, p_elem);
-    }
-
     return MESH_SUCCESS;
 }
 
@@ -420,6 +401,7 @@ static void _hsl_range_set(struct bt_mesh_model *p_model,
     BT_DBG("");
 
     if(_hsl_range_analyze(p_model, p_ctx->addr, p_buf) == MESH_SUCCESS) {
+        genie_event(GENIE_EVT_SDK_ANALYZE_MSG, (S_ELEM_STATE *)p_model->user_data);
         _hsl_range_status(p_model, p_ctx);
     }
 }
@@ -430,7 +412,11 @@ static void _hsl_range_set_unack(struct bt_mesh_model *p_model,
 {
     BT_DBG("");
 
-    _hsl_range_analyze(p_model, p_ctx->addr, p_buf);
+    E_MESH_ERROR_TYPE ret = _hsl_range_analyze(p_model, p_ctx->addr, p_buf);
+
+    if(ret == MESH_SUCCESS) {
+        genie_event(GENIE_EVT_SDK_ANALYZE_MSG, (S_ELEM_STATE *)p_model->user_data);
+    }
 }
 
 
@@ -510,11 +496,11 @@ static u8_t _hsl_hue_analyze(struct bt_mesh_model *p_model,
     }
 
     tid = net_buf_simple_pull_u8(p_buf);
-/*     if(mesh_check_TID(src_addr, tid) != MESH_SUCCESS)
+    if(mesh_check_tid(src_addr, tid) != MESH_SUCCESS)
     {
         BT_ERR("MESH_TID_REPEAT src_addr(0x%04x) tid(0x%02x)", src_addr, tid);
         return MESH_TID_REPEAT;
-    } */
+    }
 
     if(p_buf->len) {
         trans = net_buf_simple_pull_u8(p_buf);
@@ -527,7 +513,10 @@ static u8_t _hsl_hue_analyze(struct bt_mesh_model *p_model,
 
     p_elem->state.hsl_hue[T_TAR] = hue;
 
-    //mesh_state_bound(LIGHT_HSL_HUE, T_TAR);
+    if(p_elem->state.hsl_hue[T_CUR] != p_elem->state.hsl_hue[T_TAR])
+    {
+        model_bind_operation(B_HSL_HUE_ID, B_OPS_END_ID, p_elem);
+    }
 
     p_elem->state.trans = trans?trans:p_elem->powerup.def_trans;
     p_elem->state.delay = delay;
@@ -537,18 +526,6 @@ static u8_t _hsl_hue_analyze(struct bt_mesh_model *p_model,
 
     BT_DBG("hue(0x%04x) trans(0x%02x) delay(0x%02x)",
             p_elem->state.hsl_hue[T_TAR], p_elem->state.trans, p_elem->state.delay);
-
-    genie_event(GENIE_EVT_SDK_ANALYZE_MSG, (void *)p_elem);
-
-    if(p_elem->state.trans || p_elem->state.delay) {
-        if(p_elem->state.delay) {
-            genie_event(GENIE_EVT_SDK_DELAY_START, (void *)p_elem);
-        } else {
-            genie_event(GENIE_EVT_SDK_TRANS_START, (void *)p_elem);
-        }
-    } else {
-        genie_event(GENIE_EVT_SDK_ACTION_DONE, (void *)p_elem);
-    }
 
     return MESH_SUCCESS;
 }
@@ -572,6 +549,7 @@ static void _hsl_hue_set(struct bt_mesh_model *p_model,
     BT_DBG("");
 
     if(_hsl_hue_analyze(p_model, p_ctx->addr, p_buf) == MESH_SUCCESS) {
+        genie_event(GENIE_EVT_SDK_ANALYZE_MSG, (S_ELEM_STATE *)p_model->user_data);
         _hsl_hue_status(p_model, p_ctx, 1);
     }
 }
@@ -584,7 +562,11 @@ static void _hsl_hue_set_unack(struct bt_mesh_model *p_model,
 
     BT_DBG("");
 
-    _hsl_hue_analyze(p_model, p_ctx->addr, p_buf);
+    E_MESH_ERROR_TYPE ret = _hsl_hue_analyze(p_model, p_ctx->addr, p_buf);
+
+    if(ret == MESH_SUCCESS) {
+        genie_event(GENIE_EVT_SDK_ANALYZE_MSG, (S_ELEM_STATE *)p_model->user_data);
+    }
 }
 
 const struct bt_mesh_model_op g_hsl_hue_srv_op[HSL_HUE_OPC_NUM] = {
@@ -659,11 +641,11 @@ static u8_t _hsl_sat_analyze(struct bt_mesh_model *p_model, u16_t src_addr, stru
     }
 
     tid = net_buf_simple_pull_u8(p_buf);
-/*     if(mesh_check_TID(src_addr, tid) != MESH_SUCCESS)
+    if(mesh_check_tid(src_addr, tid) != MESH_SUCCESS)
     {
         BT_ERR("MESH_TID_REPEAT src_addr(0x%04x) tid(0x%02x)", src_addr, tid);
         return MESH_TID_REPEAT;
-    } */
+    }
 
     if(p_buf->len) {
         trans = net_buf_simple_pull_u8(p_buf);
@@ -676,7 +658,10 @@ static u8_t _hsl_sat_analyze(struct bt_mesh_model *p_model, u16_t src_addr, stru
 
     p_elem->state.hsl_sat[T_TAR] = sat;
 
-    //mesh_state_bound(LIGHT_HSL_HUE, T_TAR);
+    if(p_elem->state.hsl_sat[T_CUR] != p_elem->state.hsl_sat[T_TAR])
+    {
+        model_bind_operation(B_HSL_SAT_ID, B_OPS_END_ID, p_elem);
+    }
 
     p_elem->state.trans = trans?trans:p_elem->powerup.def_trans;
     p_elem->state.delay = delay;
@@ -686,18 +671,6 @@ static u8_t _hsl_sat_analyze(struct bt_mesh_model *p_model, u16_t src_addr, stru
 
     BT_DBG("sat(0x%04x) trans(0x%02x) delay(0x%02x)",
             p_elem->state.hsl_sat[T_TAR], p_elem->state.trans, p_elem->state.delay);
-
-    genie_event(GENIE_EVT_SDK_ANALYZE_MSG, (void *)p_elem);
-
-    if(p_elem->state.trans || p_elem->state.delay) {
-        if(p_elem->state.delay) {
-            genie_event(GENIE_EVT_SDK_DELAY_START, (void *)p_elem);
-        } else {
-            genie_event(GENIE_EVT_SDK_TRANS_START, (void *)p_elem);
-        }
-    } else {
-        genie_event(GENIE_EVT_SDK_ACTION_DONE, (void *)p_elem);
-    }
 
     return MESH_SUCCESS;
 }
@@ -722,6 +695,7 @@ static void _hsl_sat_set(struct bt_mesh_model *p_model,
     BT_DBG("");
 
     if(_hsl_sat_analyze(p_model, p_ctx->addr, p_buf) == MESH_SUCCESS) {
+        genie_event(GENIE_EVT_SDK_ANALYZE_MSG, (S_ELEM_STATE *)p_model->user_data);
         _hsl_sat_status(p_model, p_ctx, 1);
     }
 }
@@ -734,7 +708,11 @@ static void _hsl_sat_set_unack(struct bt_mesh_model *p_model,
 
     BT_DBG("");
 
-    _hsl_sat_analyze(p_model, p_ctx->addr, p_buf);
+    E_MESH_ERROR_TYPE ret = _hsl_sat_analyze(p_model, p_ctx->addr, p_buf);
+
+    if(ret == MESH_SUCCESS) {
+        genie_event(GENIE_EVT_SDK_ANALYZE_MSG, (S_ELEM_STATE *)p_model->user_data);
+    }
 }
 
 const struct bt_mesh_model_op g_hsl_sat_srv_op[HSL_SAT_OPC_NUM] = {

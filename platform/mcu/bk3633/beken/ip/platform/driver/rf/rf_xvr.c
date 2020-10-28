@@ -68,7 +68,7 @@
 	#include "icu.h"
 	#include "rwip_config.h" // stack configuration
 #endif
-// #include "debug_uart.h"
+#include "uart_pub.h"
 /**
  ****************************************************************************************
  * DEFINES
