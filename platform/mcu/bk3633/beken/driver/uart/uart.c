@@ -520,6 +520,7 @@ void uart_set_tx_stop_end_int(UINT8 uport, UINT8 set)
 		REG_WRITE(REG_UART2_INTR_ENABLE, reg);
 }
 
+#if 0
 #define BASEADDR_UART                                      0x00806300
 #define UART_FIFO_MAX_COUNT  128
 #define POS_UART_REG0X5_RX_FIFO_NEED_READ                   1
@@ -551,11 +552,12 @@ static void uart_rx_data(uint8_t *buf, uint8_t len)
         rx_isr_cb(buf, len);
     }
 }
+#endif
 
 /*******************************************************************/
 void uart1_isr(void)
 {
-#if 0
+#if 1
     UINT32 status;
     UINT32 intr_en;
     UINT32 intr_status;
@@ -619,7 +621,8 @@ void uart1_isr(void)
 	if(status & UART_RXD_WAKEUP_STA)
     {
     }
-#endif
+#else
+
 
     uint32_t uart_int_status;	
     uart_int_status = UART_REG0X5;
@@ -642,6 +645,7 @@ void uart1_isr(void)
         }
     }
     UART_REG0X5 = uart_int_status;
+#endif
 }
 
 void uart1_init(void)

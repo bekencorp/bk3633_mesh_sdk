@@ -1310,7 +1310,8 @@ void genie_mesh_init(void)
 
     // genie_tri_tuple_load();
 
-    prov.uuid = dev_uuid;//genie_tri_tuple_get_uuid();
+    //prov.uuid = dev_uuid;//genie_tri_tuple_get_uuid();
+	prov.uuid = genie_tri_tuple_get_uuid();
 #ifdef GENIE_OLD_AUTH
     prov.static_val = genie_tri_tuple_get_auth();
     prov.static_val_len = STATIC_OOB_LENGTH;
