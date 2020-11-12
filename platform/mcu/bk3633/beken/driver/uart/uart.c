@@ -520,44 +520,10 @@ void uart_set_tx_stop_end_int(UINT8 uport, UINT8 set)
 		REG_WRITE(REG_UART2_INTR_ENABLE, reg);
 }
 
-#if 0
-#define BASEADDR_UART                                      0x00806300
-#define UART_FIFO_MAX_COUNT  128
-#define POS_UART_REG0X5_RX_FIFO_NEED_READ                   1
-#define POS_UART_REG0X5_UART_RX_STOP_END                    6
-#define POS_UART_REG0X2_FIFO_RD_READY                       21
-#define UART_REG0X2                                         *((volatile unsigned long *) (BASEADDR_UART+0x2*4))
-#define UART_REG0X5                                         *((volatile unsigned long *) (BASEADDR_UART+0x5*4))
-#define UART_REG0X3                                         *((volatile unsigned long *) (BASEADDR_UART+0x3*4))
-
-uint8_t uart_rx_buf[UART_FIFO_MAX_COUNT];
-volatile static uint32_t uart_rx_index = 0;
-volatile static uint8_t  uart_rx_done = 0;
-typedef void (*uart_rx_cb)(uint8_t *buf, uint8_t len);
-static uart_rx_cb rx_isr_cb =  NULL;
-void uart_rx_cb_register(void *rx_cb)
-{
-    rx_isr_cb = rx_cb;
-}
-
-static void uart_rx_data(uint8_t *buf, uint8_t len)
-{
-    for(uint8_t i = 0; i < len; i++)
-    {
-        printf("0x%x ", buf[i]);
-    }
-    printf("\r\n");
-
-    if (rx_isr_cb) {
-        rx_isr_cb(buf, len);
-    }
-}
-#endif
-
 /*******************************************************************/
 void uart1_isr(void)
 {
-#if 1
+
     UINT32 status;
     UINT32 intr_en;
     UINT32 intr_status;
@@ -592,7 +558,7 @@ void uart1_isr(void)
             void *param = uart_txfifo_needwr_callback[0].param;
 
             uart_txfifo_needwr_callback[0].callback(UART1_PORT, param);
-        }
+        } 
     }
 	
     if(status & RX_FIFO_OVER_FLOW_STA)
@@ -603,7 +569,7 @@ void uart1_isr(void)
     {
         uart_fifo_flush(UART1_PORT);
     }
-
+	
     if(status & UART_RX_STOP_ERR_STA)
     {
     }
@@ -621,33 +587,7 @@ void uart1_isr(void)
 	if(status & UART_RXD_WAKEUP_STA)
     {
     }
-#else
-
-
-    uint32_t uart_int_status;	
-    uart_int_status = UART_REG0X5;
-    if ( uart_int_status & ( (1<<POS_UART_REG0X5_RX_FIFO_NEED_READ)|(1<<POS_UART_REG0X5_UART_RX_STOP_END ) ) )
-    {    
-        while(UART_REG0X2 & (1<<POS_UART_REG0X2_FIFO_RD_READY))
-        {
-            uart_rx_buf[uart_rx_index] = (UART_REG0X3>>8);
-            uart_rx_index++;
-            if (uart_rx_index == UART_FIFO_MAX_COUNT)
-            {
-                uart_rx_index = 0;
-            }
-        }
-        if ( uart_int_status & (1<<POS_UART_REG0X5_UART_RX_STOP_END ) )
-        {   
-            uart_rx_data(uart_rx_buf,uart_rx_index); 
-            uart_rx_index=0;
-            uart_rx_done = 1;             
-        }
-    }
-    UART_REG0X5 = uart_int_status;
-#endif
 }
-
 void uart1_init(void)
 {
     UINT32 ret;

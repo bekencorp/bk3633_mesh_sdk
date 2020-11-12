@@ -1277,8 +1277,6 @@ static void _prov_reset(void)
 
 }
 
-static uint8_t label_uuid[16] = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xFF, 0x00};
-static uint16_t vir_addr = 0x9779;
 static void _genie_mesh_ready(int err)
 {
     if (err) {
@@ -1296,12 +1294,10 @@ static void _genie_mesh_ready(int err)
     vendor_timer_init(_vendor_timer_event);
 #endif
 
-    bt_mesh_label_uuid_set(label_uuid, vir_addr);
     //send event
     genie_event(GENIE_EVT_SDK_MESH_INIT, NULL);
 }
 
-static uint8_t dev_uuid[16] = {0x00, 0x1B, 0xDC, 0x08, 0x10, 0x21, 0x0B, 0x0E, 0x0A, 0x0C, 0x00, 0x0B, 0x0E, 0x0A, 0x0C, 0x00};
 void genie_mesh_init(void)
 {
     int ret;
@@ -1310,8 +1306,7 @@ void genie_mesh_init(void)
 
     // genie_tri_tuple_load();
 
-    //prov.uuid = dev_uuid;//genie_tri_tuple_get_uuid();
-	prov.uuid = genie_tri_tuple_get_uuid();
+    prov.uuid = genie_tri_tuple_get_uuid();
 #ifdef GENIE_OLD_AUTH
     prov.static_val = genie_tri_tuple_get_auth();
     prov.static_val_len = STATIC_OOB_LENGTH;

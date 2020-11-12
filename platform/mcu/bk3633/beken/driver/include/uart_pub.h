@@ -145,7 +145,5 @@ extern UINT8 uart_is_tx_fifo_empty(UINT8 uport);
 extern UINT8 uart_is_tx_fifo_full(UINT8 uport);
 extern int uart_read_byte(int uport);
 extern int uart_write_byte(int uport, char c);
-
-void uart_rx_cb_register(void *rx_cb);
 #endif // _UART_PUB_H
 

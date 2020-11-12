@@ -179,17 +179,12 @@ static void _light_lighten(light_channel_e channel, uint16_t state)
 {
     uint32_t led_pwm_count = 16000000/LIGHT_PERIOD;
     uint32_t high_count;
-    #if 0
     uint16_t state_cal = LN_RATIO(state);
-	#else   ///for test led onoff state 200928
-	uint16_t state_cal = 0;
-    if(state==0){
-        state_cal=0;
-	}
-    else{  
-		state_cal= LN_RATIO(state);
-	}
-	#endif
+
+    if (channel >= LED_CHANNEL_MAX)
+    {
+        return;
+    }
 
     high_count = led_pwm_count * state_cal / LIGHTNESS_MAX;
 

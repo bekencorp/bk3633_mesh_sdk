@@ -3462,27 +3462,6 @@ u8_t *bt_mesh_label_uuid_get(u16_t addr)
 
     return NULL;
 }
-
-int bt_mesh_label_uuid_set(u8_t *uuid, u16_t addr)
-{
-    int i;
-
-    if (uuid == NULL) {
-        BT_WARN("Invalid uuid value(NULL).");
-        return -1;
-    }
-
-    for (i = 0; i < ARRAY_SIZE(labels); i++) {
-        if (labels[i].addr == 0) {
-            memcpy(labels[i].uuid, uuid, sizeof(labels[i].uuid));
-            labels[i].addr = addr;
-            return 0;
-        }
-    }
-
-    return -1;
-}
-
 void lpn_send_hb(void)
 {
     struct bt_mesh_subnet *sub = bt_mesh_subnet_get(conf->hb_pub.net_idx);

@@ -315,7 +315,7 @@ void ble_handler(void *arg)
      ***************************************************************************
      */
 	UART_PRINTF("ble driver start!\r\n");
-	fclk_init(FCLK_PWM_ID, RHINO_CONFIG_TICKS_PER_SECOND);
+	
     krhino_add_mm_region(g_kmm_head, 
                         (void *)(REG_EM_ET_BASE_ADDR + EM_BLE_END + 1), (size_t)(EM_BT_SIZE -  EM_BLE_END - 4));
 

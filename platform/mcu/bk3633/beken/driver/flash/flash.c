@@ -396,6 +396,7 @@ void flash_read_data(UINT8 *buffer, UINT32 address, UINT32 len)
     REG_FLASH_OPERATE_SW = FLASH_ADDR_FIX ;
     for (i = 0; i < 8; i++)
         REG_FLASH_DATA_SW_FLASH = 0xffffffff; */
+        
 }
 
 void flash_wp_256k( void)
@@ -408,7 +409,7 @@ void flash_wp_256k( void)
             break;
         case XTX_FLASH_1:			   //XTX xx
             flash_write_sr( 1, 0xAC );
-            break;
+            break;   
 
         case GD_FLASH_1:			  //QD xx ,
         case BY25Q80:
@@ -416,7 +417,7 @@ void flash_wp_256k( void)
             flash_write_sr( 2, 0x00ac );
             break;
         case GD_MD25D40:
-        case GD_GD25WD40:
+        case GD_GD25WD40:    
         default:
             flash_write_sr( 1, 0x98 );
             break;
@@ -597,19 +598,17 @@ void flash_exit(void)
 
 UINT32 flash_read(char *user_buf, UINT32 count, UINT32 address)
 {
-#if 1
     GLOBAL_INT_DISABLE();
 
     flash_read_data(user_buf, address, count);
 
     GLOBAL_INT_RESTORE();
-#endif
+
     return FLASH_SUCCESS;
 }
 
 UINT32 flash_write(char *user_buf, UINT32 count, UINT32 address)
 {
-#if 1
     GLOBAL_INT_DISABLE();
 
     if(4 == flash_current_config->line_mode)
@@ -627,7 +626,6 @@ UINT32 flash_write(char *user_buf, UINT32 count, UINT32 address)
     }
 
     GLOBAL_INT_RESTORE();
-#endif
     return FLASH_SUCCESS;
 }
 

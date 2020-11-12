@@ -18,7 +18,6 @@
 #include <api/mesh.h>
 #include <uuid.h>
 
-#define CONFIG_BT_MESH_DEBUG_PROV 1
 #define BT_DBG_ENABLED IS_ENABLED(CONFIG_BT_MESH_DEBUG_PROV)
 #include "common/log.h"
 
