@@ -20,19 +20,14 @@ typedef enum {
     HAL_PARTITION_ERROR = -1,
     HAL_PARTITION_BOOTLOADER,
     HAL_PARTITION_APPLICATION,
-    HAL_PARTITION_ATE,
     HAL_PARTITION_OTA_TEMP,
-    HAL_PARTITION_RF_FIRMWARE,
     HAL_PARTITION_PARAMETER_1,
     HAL_PARTITION_PARAMETER_2,
     HAL_PARTITION_PARAMETER_3,
-    HAL_PARTITION_PARAMETER_4,
     HAL_PARTITION_BT_FIRMWARE,
-    HAL_PARTITION_SPIFFS,
     HAL_PARTITION_CUSTOM_1,
     HAL_PARTITION_CUSTOM_2,
-    HAL_PARTITION_RECOVERY,
-    HAL_PARTITION_MAC,
+    HAL_PARTITION_STATIC_PARA,
     HAL_PARTITION_MAX,
     HAL_PARTITION_NONE,
 } hal_partition_t;
@@ -123,7 +118,7 @@ int32_t hal_flash_erase_write(hal_partition_t in_partition, uint32_t *off_set,
  *
  * @return  0 : On success, EIO : If an error occurred with any step
  */
-int32_t hal_flash_read(hal_partition_t in_partition, uint32_t *off_set,
+int32_t hal_flash_read(hal_partition_t in_partition, int32_t *off_set,
                        void *out_buf, uint32_t in_buf_len);
 
 /**

@@ -807,6 +807,13 @@ static int provisioner_check_net_key_full(void)
     return -ENOMEM;
 }
 
+#ifdef CONFIG_BT_MESH_PROVISIONER   //add_provisioner_supported
+static inline int bt_mesh_app_id(const u8_t app_key[16], u8_t app_id[1])
+{
+	return bt_mesh_k4(app_key, app_id);
+}
+#endif
+
 int bt_mesh_provisioner_local_app_key_add(const u8_t app_key[16], u16_t net_idx, u16_t *app_idx)
 {
     struct bt_mesh_app_key  *key  = NULL;

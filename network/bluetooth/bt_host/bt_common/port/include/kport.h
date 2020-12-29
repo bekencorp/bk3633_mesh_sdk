@@ -173,6 +173,9 @@ struct k_mutex
     sys_dlist_t poll_events;
 };
 
+/* init lock*/
+void aos_mutex_lock_init(void);
+
 #include <k_api.h>
 
 typedef void (*k_timer_handler_t)(void *timer, void *args);

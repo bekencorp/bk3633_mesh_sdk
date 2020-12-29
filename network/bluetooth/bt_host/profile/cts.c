@@ -26,7 +26,7 @@ static struct bt_gatt_ccc_cfg ct_ccc_cfg[BT_GATT_CCC_MAX] = {};
 static u8_t ct[10];
 static u8_t ct_update;
 
-static void ct_ccc_cfg_changed(const struct bt_gatt_attr *attr, u16_t value)
+static void ct_ccc_cfg_changed(const struct bt_gatt_attr *attr, struct bt_conn *conn,  u16_t value)
 {
 	/* TODO: Handle value */
 }

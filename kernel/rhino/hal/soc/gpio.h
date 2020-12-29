@@ -38,6 +38,8 @@ typedef enum {
     IRQ_TRIGGER_RISING_EDGE  = 0x1, /* Interrupt triggered at input signal's rising edge  */
     IRQ_TRIGGER_FALLING_EDGE = 0x2, /* Interrupt triggered at input signal's falling edge */
     IRQ_TRIGGER_BOTH_EDGES   = IRQ_TRIGGER_RISING_EDGE | IRQ_TRIGGER_FALLING_EDGE,
+    IRQ_TRIGGER_HIGH         = 0x4,
+    IRQ_TRIGGER_LOW          = 0x8,
 } gpio_irq_trigger_t;
 
 /*

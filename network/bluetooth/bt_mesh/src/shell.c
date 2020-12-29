@@ -25,6 +25,19 @@
 #include "net.h"
 #include "transport.h"
 #include "foundation.h"
+#include "gen_battery_cli.h"
+#include "gen_level_cli.h"
+#include "gen_def_trans_time_cli.h"
+#include "gen_power_onoff_cli.h"
+#include "gen_power_level_cli.h"
+#include "gen_location_cli.h"
+#include "gen_prop_cli.h"
+#include "scene_cli.h"
+#include "scheduler_cli.h"
+#include "light_lightness_cli.h"
+#include "light_ctl_cli.h"
+#include "light_hsl_cli.h"
+#include "light_lc_cli.h"
 
 #define CID_NVAL   0xffff
 #define CID_LOCAL  0x01a8
@@ -117,9 +130,12 @@ static struct bt_mesh_model root_models[] = {
 #ifdef CONFIG_BT_MESH_HEALTH_CLI
         BT_MESH_MODEL_HEALTH_CLI(&health_cli),
 #endif
+#if 0
+#ifdef	CONFIG_BT_MESH_ALI_TMALL_GENIE
 #ifdef CONFIG_BT_MESH_GEN_ONOFF_CLI
-	MESH_MODEL_GEN_ONOFF_CLI(),
+	MESH_MODEL_GEN_ONOFF_CLI(NULL, NULL),
 #endif
+#endif	/* CONFIG_BT_MESH_ALI_TMALL_GENIE*/
 #ifdef CONFIG_BT_MESH_GEN_BATTERY_CLI
 	MESH_MODEL_GEN_BATTERY_CLI(),
 #endif
@@ -167,6 +183,7 @@ static struct bt_mesh_model root_models[] = {
 #endif
 #ifdef CONFIG_BT_MESH_LIGHT_LC_CLI
         MESH_MODEL_LIGHT_LC_CLI(),
+#endif
 #endif
 };
 #if 0
@@ -374,13 +391,13 @@ static struct bt_mesh_prov prov = {
 	.reset = prov_reset,
 	//.static_val = NULL,
 	//.static_val_len = 0,
-	.output_size = 6,
-	.output_actions = (BT_MESH_DISPLAY_NUMBER | BT_MESH_DISPLAY_STRING),
-	.output_number = output_number,
-	.output_string = output_string,
-	.input_size = 6,
-	.input_actions = (BT_MESH_ENTER_NUMBER | BT_MESH_ENTER_STRING),
-	.input = input,
+	//.output_size = 6,
+	//.output_actions = (BT_MESH_DISPLAY_NUMBER | BT_MESH_DISPLAY_STRING),
+	//.output_number = output_number,
+	//.output_string = output_string,
+	//.input_size = 6,
+	//.input_actions = (BT_MESH_ENTER_NUMBER | BT_MESH_ENTER_STRING),
+	//.input = input,
 };
 
 #if CONFIG_BT_MESH_PROVISIONER
@@ -483,7 +500,7 @@ static int provisioner_output_num(bt_mesh_input_action_t act, u8_t size)
 	}
 	
 	bt_mesh_prov_output_data(temp, size, output_num_flag);
-	
+
 	return 0;
 
 }
@@ -671,8 +688,8 @@ static void bt_ready(int err)
         int ret;
 
         if (err) {
-                printk("Bluetooth init failed (err %d)\n", err);
-                return;
+            printk("Bluetooth init failed (err %d)\n", err);
+            return;
         }
 
         printk("Bluetooth initialized\n");
@@ -684,9 +701,11 @@ static void bt_ready(int err)
 #endif
 
         if (ret) {
-                printk("Mesh initialization failed (err %d)\n", ret);
+            printk("Mesh initialization failed (err %d)\n", ret);
+            return;
         }
 
+        bt_mesh_prov_enable(BT_MESH_PROV_GATT | BT_MESH_PROV_ADV);
         printk("Mesh initialized\n");
         printk("Use \"pb-adv on\" or \"pb-gatt on\" to enable advertising\n");
 
@@ -695,7 +714,7 @@ static void bt_ready(int err)
 #endif
 
 #ifdef CONFIG_BT_MESH_PROV
-	cmd_pb2(prov_bear, "on");
+	// cmd_pb2(prov_bear, "on");
 #endif
 }
 
@@ -1415,6 +1434,98 @@ static int cmd_app_key_add(int argc, char *argv[])
 
 	return 0;
 }
+
+#ifdef CONFIG_BT_MESH_PROVISIONER   //add_provisioner_supported
+void user_comp_data_get(u16_t net_idx, u16_t dst)
+{
+	u8_t status, page = 0x00;
+	int err;
+	struct net_buf_simple *comp = NET_BUF_SIMPLE(47); ///NET_BUF_SIMPLE(_size),change the size
+
+	net_buf_simple_init(comp, 0);
+	err = bt_mesh_cfg_comp_data_get(net_idx, dst, page,
+					&status, comp);
+	if (err) {
+		printk("Getting composition failed (err %d)\n", err);
+		return 0;
+	}
+
+	if (status != 0x00) {
+		printk("Got non-success status 0x%02x\n", status);
+		return 0;
+	}
+
+}
+
+void user_app_key_add(u16_t net_idx, u16_t dst)
+{
+       u8_t key_val[16];
+	u16_t key_net_idx, key_app_idx = 0;
+	u8_t status;
+	int err;
+
+       memcpy(key_val, default_key, sizeof(key_val));
+       err = bt_mesh_cfg_app_key_add(net_idx,dst, key_net_idx,
+				      key_app_idx, key_val, &status);
+	if (err) {
+		printk("Unable to send App Key Add (err %d)\n", err);
+		return 0;
+	}
+
+	if (status) {
+		printk("AppKeyAdd failed with status 0x%02x\n", status);
+	} else {
+		printk("AppKey added, NetKeyIndex 0x%04x AppKeyIndex 0x%04x\n",
+		       key_net_idx, key_app_idx);
+	}
+}
+
+int user_mod_app_bind(u16_t net_idx, u16_t dst)
+{
+       u16_t elem_addr, mod_app_idx, mod_id, cid;
+	u8_t status;
+	int err;
+
+       err = bt_mesh_cfg_mod_app_bind(net_idx, dst, 0x02,
+					       0x00, 0x1000, &status);
+       if (err) {
+		printk("Unable to send Model App Bind (err %d)\n", err);
+		return 0;
+	}
+
+	if (status) {
+		printk("Model App Bind failed with status 0x%02x\n", status);
+	} else {
+		printk("AppKey successfully bound\n");
+	}
+       
+}
+
+int user_mod_sub_add(u16_t net_idx, u16_t dst)
+{
+       u16_t elem_addr, sub_addr, mod_id, cid;
+	u8_t status;
+	int err;
+
+       {
+		err = bt_mesh_cfg_mod_sub_add(net_idx, dst, /*elem_addr*/0x02,
+					      /*sub_addr*/0xc000, /*mod_id*/0x1000, &status);
+	}
+
+	if (err) {
+		printk("Unable to send Model Subscription Add (err %d)\n", err);
+		return 0;
+	}
+
+	if (status) {
+		printk("Model Subscription Add failed with status 0x%02x\n",
+		       status);
+	} else {
+		printk("Model subscription was successful\n");
+	}
+	return 0;
+}
+#endif
 
 static int cmd_app_key_del(int argc, char *argv[])
 {
@@ -2403,7 +2514,6 @@ static int cmd_beacon_kr(int argc, char *argv[])
 	return 0;
 }
 
-
 #if defined(CONFIG_BT_MESH_PROV)
 static int cmd_pb(bt_mesh_prov_bearer_t bearer, int argc, char *argv[])
 {
@@ -2833,7 +2943,6 @@ static int cmd_health_pub(int argc, char *argv[])
 
 }
 
-
 static void print_all_help(struct mesh_shell_cmd *cmds)
 {
 	while (cmds->cmd_name != NULL) {
@@ -2908,7 +3017,7 @@ static void cmd_pb2(bt_mesh_prov_bearer_t bearer, const char *s)
 static int cmd_bunch_pb_adv(int argc, char *argv[])
 {
 	cmd_uuid(argc, argv);
-        prov_bear = BT_MESH_PROV_ADV;
+    prov_bear = BT_MESH_PROV_ADV;
 	cmd_init(0, NULL);
 	return 0;
 }
@@ -2916,7 +3025,7 @@ static int cmd_bunch_pb_adv(int argc, char *argv[])
 static int cmd_bunch_pb_gatt(int argc, char *argv[])
 {
 	cmd_uuid(argc, argv);
-        prov_bear = BT_MESH_PROV_GATT;
+    prov_bear = BT_MESH_PROV_GATT;
 	cmd_init(0, NULL);
 	return 0;
 }

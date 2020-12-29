@@ -15,24 +15,9 @@
 #include <stddef.h>     // standard definition
 #include "BK3633_RegList.h"
 #include "gpio.h"
-#include "timer.h"      // timer definition
 
-#include "rwip.h"       // SW interface
-//#include "h4tl.h"
-//#include "nvds.h"       // NVDS
-
-//#include "dbg.h"
-#include "icu.h"
-//#include "rf.h"
-#include "app.h"
-//#include "app_task.h"
-#include "uart.h"
-#include "user_config.h"
-
-#include "icu_pub.h"
 #include "intc_pub.h"
 #include "gpio_pub.h"
-#include "drv_model_pub.h"
 
 
 static SDD_OPERATIONS gpio_op =
@@ -312,8 +297,9 @@ void gpio_int_enable(UINT32 index, UINT32 mode, void (*p_Int_Handler)(unsigned c
     //param = IRQ_GPIO_BIT;
     //sddev_control(ICU_DEV_NAME, CMD_ICU_INT_ENABLE, &param);
 
-    mode &= 0x01;
-    if(mode == 1)
+    intc_enable(IRQ_GPIO);
+
+    if(mode&0x01 == 1)
     {
         gpio_config(index, INPUT, PULL_HIGH);
     }
@@ -322,7 +308,15 @@ void gpio_int_enable(UINT32 index, UINT32 mode, void (*p_Int_Handler)(unsigned c
         gpio_config(index, INPUT, PULL_LOW);
     }
 
-    REG_APB5_GPIO_WUATOD_TYPE = (REG_APB5_GPIO_WUATOD_TYPE & (~(0x01 << idx))) | (mode << idx);
+    if(idx <= 15)
+    {
+        REG_APB5_GPIO_WUATOD_TYPE_LOW = (REG_APB5_GPIO_WUATOD_TYPE_LOW & (~(0x11 << idx*2))) | (mode << idx);
+    }
+    else
+    {
+        REG_APB5_GPIO_WUATOD_TYPE_HIGH = (REG_APB5_GPIO_WUATOD_TYPE_HIGH & (~(0x11 << (idx-16)*2))) | (mode << (idx-16)*2);
+    }
+
     REG_APB5_GPIO_WUATOD_ENABLE |= (0x01 << idx);
 }
 

@@ -42,7 +42,7 @@ endif
 
 
 
-# en_bt_smp ?= 1
+en_bt_smp ?= 1
 ifeq ($(en_bt_smp),1)
 GLOBAL_DEFINES += CONFIG_BT_SMP
 $(NAME)_SOURCES += host/smp.c

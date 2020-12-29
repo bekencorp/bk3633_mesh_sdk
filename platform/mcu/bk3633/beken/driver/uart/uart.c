@@ -119,7 +119,7 @@ void bk_printf(const char *fmt, ...)
      * length. */
     length = rt_vsnprintf(rt_log_buf, sizeof(rt_log_buf) - 1, fmt, args);
     if (length > RT_CONSOLEBUF_SIZE - 1)
-        length = RT_CONSOLEBUF_SIZE - 1;    
+        length = RT_CONSOLEBUF_SIZE - 1;
     rt_kprintf("%s", rt_log_buf);
     va_end(args);
 #else
@@ -127,7 +127,7 @@ void bk_printf(const char *fmt, ...)
     char string[128];
 
     va_start(ap, fmt);
-    vsprintf(string, fmt, ap);
+    vsnprintf(string, sizeof(string), fmt, ap);
     string[127] = 0;
     bk_send_string(uart_tx_port, string);
     va_end(ap);
@@ -621,7 +621,6 @@ void uart1_init(void)
     //os_printf("\r\n *        mac_lib_version:%s", FMAC_LIB_VERSON);
     os_printf("\r\n *        bulid date:%s, time:%s", __DATE__, __TIME__);
     os_printf("\r\n *Version Over**********************/\r\n\r\n");
-
 }
 
 void uart1_exit(void)
@@ -764,7 +763,6 @@ UINT32 uart1_ctrl(UINT32 cmd, void *parm)
 
     return ret;
 }
-
 
 void uart2_isr(void)
 {
@@ -991,7 +989,6 @@ UINT32 uart2_ctrl(UINT32 cmd, void *parm)
 	case CMD_SET_STOP_END:
 		uart_set_tx_stop_end_int(UART2_PORT, *(UINT8 *)parm);
 		break;
-        
 	case CMD_SET_TX_FIFO_NEEDWR_INT:
 		uart_set_tx_fifo_needwr_int(UART2_PORT, *(UINT8 *)parm);
 		break;

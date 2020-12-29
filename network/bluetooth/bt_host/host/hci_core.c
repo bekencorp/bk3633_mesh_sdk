@@ -1744,7 +1744,7 @@ static void hci_cmd_done(u16_t opcode, u8_t status, struct net_buf *buf)
         BT_WARN("OpCode 0x%04x completed instead of expected 0x%04x", opcode,
                 cmd(buf)->opcode);
     }
-
+    
     if (cmd(buf)->sync) {
         cmd(buf)->status = status;
         cmd(buf)->sync = SYNC_TX_DONE;
@@ -1758,14 +1758,14 @@ static void hci_cmd_complete(struct net_buf *buf)
     u8_t                            status;//, ncmd = evt->ncmd;
 
     BT_DBG("opcode 0x%04x", opcode);
-
+    
     net_buf_pull(buf, sizeof(*evt));
 
     /* All command return parameters have a 1-byte status in the
      * beginning, so we can safely make this generalization.
      */
     status = buf->data[0];
-
+    
     hci_cmd_done(opcode, status, buf);
 }
 
@@ -1777,7 +1777,7 @@ static void hci_cmd_status(struct net_buf *buf)
     BT_DBG("opcode 0x%04x", opcode);
 
     net_buf_pull(buf, sizeof(*evt));
-
+    
     hci_cmd_done(opcode, evt->status, buf);
 }
 
@@ -3740,11 +3740,21 @@ int bt_pub_key_gen(struct bt_pub_key_cb *new_cb)
 
 const u8_t *bt_pub_key_get(void)
 {
+#ifdef CONFIG_BT_MESH_PROVISIONER   //add_provisioner_supported
+    while(!atomic_test_bit(bt_dev.flags, BT_DEV_HAS_PUB_KEY))
+    {
+        aos_msleep(500);
+        BT_ERR("%s, generate public key!\r\n", __func__);
+    }
+    BT_ERR(" %s, pub_key's flag get done!\r\n", __func__);
+    return pub_key;
+#else
     if (atomic_test_bit(bt_dev.flags, BT_DEV_HAS_PUB_KEY)) {
         return pub_key;
     }
-
+    
     return NULL;
+#endif
 }
 
 int bt_dh_key_gen(const u8_t remote_pk[64], bt_dh_key_cb_t cb)

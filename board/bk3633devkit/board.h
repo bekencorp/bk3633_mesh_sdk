@@ -1,15 +1,9 @@
-/*
- * Copyright (C) 2015-2017 Alibaba Group Holding Limited
- */
-
 #include "uart_pub.h"
-
-#define HARDWARE_REVISION   "V1.0"
-#define MODEL               "BK3633"
 
 #define STDIO_UART_PORT     UART1_PORT
 #define STDIO_UART_BUADRATE 1000000
 
-#define BK_UART_PORT        1       ///first uart
-#define BK_UART_BUADRATE    115200  ///bps
+#define PARTITION_STACK_CRC_ADDR        ((PARTITION_STACK_CPU_ADDR)*0x22/0x20)      //0x20F0
+#define PARTITION_APP_CRC_ADDR          ((PARTITION_APP_CPU_ADDR)*0x22/0x20)        //0x170B0
+#define PARTITION_OTA_TEMP_CRC_ADDR     0x49000
 

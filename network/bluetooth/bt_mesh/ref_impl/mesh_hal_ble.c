@@ -128,6 +128,8 @@ int bt_mesh_gatt_service_unregister(struct bt_mesh_gatt_service *svc)
         return 0;
     }
 
+    node->msvc = NULL;
+    
     ret = bt_gatt_service_unregister(&(node->svc));
 
     return ret;

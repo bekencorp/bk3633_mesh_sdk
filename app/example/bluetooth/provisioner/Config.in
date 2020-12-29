@@ -1,0 +1,11 @@
+menuconfig AOS_APP_BLEMESH_PROVISIONER
+    bool "blemesh_provisioner"
+    select AOS_COMP_BT_MESH_PROFILE
+    select AOS_COMP_BT
+    select AOS_COMP_CLI
+    select AOS_COMP_YLOOP
+    help
+
+if AOS_APP_BLEMESH_PROVISIONER
+# Configurations for app blemesh_provisioner
+endif

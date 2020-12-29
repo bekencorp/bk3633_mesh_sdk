@@ -112,6 +112,14 @@ int32_t hal_gpio_enable_irq(gpio_dev_t *gpio, gpio_irq_trigger_t trigger,
 	{
 		int_struct.mode = GPIO_INT_LEVEL_FALLING;
 	}
+	else if(trigger == IRQ_TRIGGER_HIGH)
+	{
+		int_struct.mode = GPIO_INT_LEVEL_HIGH;
+	}
+	else if(trigger == IRQ_TRIGGER_LOW)
+	{
+		int_struct.mode = GPIO_INT_LEVEL_LOW;
+	}
 	else
 	{
 		ret = -1;

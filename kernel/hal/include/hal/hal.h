@@ -9,7 +9,7 @@
 #include <stddef.h>
 
 #include <hal/base.h>
-#include <hal/ota.h>
+#include <hal/hal_ota.h>
 #include <hal/trace.h>
 #include <hal/wifi.h>
 #include <hal/atcmd.h>

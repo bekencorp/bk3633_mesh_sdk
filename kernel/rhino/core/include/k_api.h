@@ -46,6 +46,9 @@ extern "C" {
 #include <k_bitmap.h>
 #include <k_dftdbg_config.h>
 
+#include "uart_pub.h"
+#define printf os_printf
+
 #ifdef __cplusplus
 }
 #endif

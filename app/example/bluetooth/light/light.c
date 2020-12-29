@@ -67,8 +67,9 @@ static struct bt_mesh_model root_models[] = {
     MESH_MODEL_HSL_SRV(&g_elem_state[0]),
     MESH_MODEL_HSL_SETUP_SRV(&g_elem_state[0]),
 #endif
-    			MESH_MODEL_HSL_HUE_SRV(&g_elem_state[0]),
-    			MESH_MODEL_HSL_SAT_SRV(&g_elem_state[0]),
+	MESH_MODEL_HSL_HUE_SRV(&g_elem_state[0]),
+	MESH_MODEL_HSL_SAT_SRV(&g_elem_state[0]),
+
 };
 
 static struct bt_mesh_model vnd_models[] = {
@@ -97,7 +98,7 @@ struct bt_mesh_elem elements[] = {
 
 static void light_state_store(struct k_work *work)
 {
-    uint8_t *p_read = aos_malloc(sizeof(g_powerup));
+    uint8_t *p_read = aos_zalloc(sizeof(g_powerup));
 
     LIGHT_DBG("");
 
@@ -111,7 +112,7 @@ static void light_state_store(struct k_work *work)
     aos_free(p_read);
 
 #if CONFIG_GENIE_OTA
-    if (g_powerup[0].last_onoff == 0 && ais_get_ota_ready() == 1) {
+    if (g_powerup[0].last_onoff == 0 && ota_update_complete_get() == 1) {
         //Means have ota, wait for reboot while light off
         aos_reboot();
     }
@@ -130,9 +131,6 @@ void mesh_sub_init(u16_t *p_sub)
     p_sub[0] = DEFAULT_MESH_GROUP1;
     p_sub[1] = DEFAULT_MESH_GROUP2;
 }
-
-/* functions in light_ctl_board.c */
-static void _led_init(void);
 
 #ifdef CONFIG_GENIE_OTA
 bool ota_check_reboot(void)
@@ -491,13 +489,6 @@ void _led_flash(uint8_t times, uint8_t reset)
 static void _user_init(void)
 {
     k_delayed_work_init(&light_state_store_work, light_state_store);
-
-#ifdef CONFIG_GENIE_OTA
-    // check ota flag
-    if(ais_get_ota_indicat()) {
-        g_indication_flag |= INDICATION_FLAG_VERSION;
-    }
-#endif
 }
 
 void user_event(E_GENIE_EVENT event, void *p_arg)

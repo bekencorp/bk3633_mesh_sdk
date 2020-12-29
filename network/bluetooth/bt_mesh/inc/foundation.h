@@ -94,6 +94,10 @@
 #define OP_VND_MOD_APP_GET                 BT_MESH_MODEL_OP_2(0x80, 0x4d)
 #define OP_VND_MOD_APP_LIST                BT_MESH_MODEL_OP_2(0x80, 0x4e)
 
+#ifdef CONFIG_BT_MESH_PROVISIONER	//add_provisioner_supported
+#define BLE_MESH_MODEL_OP_GEN_ONOFF_SET    BT_MESH_MODEL_OP_2(0x82, 0x02)
+#endif
+
 #define STATUS_SUCCESS                     0x00
 #define STATUS_INVALID_ADDRESS             0x01
 #define STATUS_INVALID_MODEL               0x02

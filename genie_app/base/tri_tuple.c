@@ -18,6 +18,7 @@
 
 #include "genie_app.h"
 #include "tri_tuple_default.h"
+#include "static_partition.h"
 
 #define RETURN_WHEN_ERR(result, err_code) { if(result != 0) { BT_ERR("%s[%d] error ret(%d)", __func__, __LINE__, result); return err_code; } }
 
@@ -74,12 +75,15 @@ uint8_t *genie_tri_tuple_get_uuid(void)
     uint32_t off_set = 0x000;
     uint8_t addr[6] = {0};
     uint8_t dummy_addr[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
-    if((hal_flash_read(HAL_PARTITION_MAC, &off_set, addr, sizeof(addr)) == 0) &&
-       memcmp(addr, dummy_addr, sizeof(addr)) != 0) {
+    if(static_partition_read(STATIC_SECTION_MAC, addr, sizeof(addr)) == 0 &&
+       memcmp(addr, dummy_addr, sizeof(addr)) != 0)
+    {
         memcpy(g_mac, addr, 6);
+        printf("read sec, addr:%02x : %02x: %02x : %02x : %02x: %02x\n",
+           addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
     }
-
-    if ((memcmp(addr, dummy_addr, 6) == 0)) {
+    else
+    {
         memcpy(addr, DEFAULT_MAC, 6);
         memcpy(g_mac, DEFAULT_MAC, 6);
         printf("-----------------\n");

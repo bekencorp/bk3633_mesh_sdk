@@ -653,7 +653,7 @@ __STATIC void display_add_config(void)
 
 void rwip_init(uint32_t error)
 {
-    UART_PRINTF("%s\r\n", __func__);
+    //UART_PRINTF("%s\r\n", __func__);
     // IP power up
     SET_RWBT_POWER_UP;
     // IP initialization
@@ -684,7 +684,7 @@ void rwip_init(uint32_t error)
     // Memory allocated for kernel messages
     // ke_mem_init(KE_MEM_KE_MSG,        (uint8_t*)rwip_heap_msg,     RWIP_CALC_HEAP_LEN_IN_BYTES(RWIP_HEAP_MSG_SIZE));
     ke_mem_init(KE_MEM_NON_RETENTION, (uint8_t *)(REG_EM_ET_BASE_ADDR + EM_BLE_END + 1), 16 * 1024 -  EM_BLE_END - 4);
-    UART_PRINTF("++++ EM_BLE_END 0x%x, len %d ++++, end 0x%x\n", 
+    //UART_PRINTF("++++ EM_BLE_END 0x%x, len %d ++++, end 0x%x\n", 
                EM_BLE_END, 16 * 1024 -  EM_BLE_END - 4,
                REG_EM_ET_BASE_ADDR + (16 * 1024 -  4));
     // Non Retention memory block
@@ -723,10 +723,10 @@ void rwip_init(uint32_t error)
 
     #if (H4TL_NB_CHANNEL > 1)
     h4tl_init(1, rwip_eif_get(1));
-    UART_PRINTF("h4tl_init ok\r\n");
+    //UART_PRINTF("h4tl_init ok\r\n");
     #endif // (H4TL_NB_CHANNEL > 1)
     h4tl_init(0, rwip_eif_get(0));
-    UART_PRINTF("h4tl_init-1 ok\r\n");
+    //UART_PRINTF("h4tl_init-1 ok\r\n");
     #endif // (BLE_HOST_PRESENT)
     #endif //(H4TL_SUPPORT)
     #endif //(H4TL_SUPPORT)
@@ -734,19 +734,19 @@ void rwip_init(uint32_t error)
     #if (HCI_PRESENT)
     // Initialize the HCI
     hci_init(false);
-    UART_PRINTF("hci_init ok\r\n");
+    //UART_PRINTF("hci_init ok\r\n");
     #endif //HCI_PRESENT
 
     #if (AHI_TL_SUPPORT)
     // Initialize the Application Host Interface
     ahi_init();
-    UART_PRINTF("ahi_init ok\r\n");
+    //UART_PRINTF("ahi_init ok\r\n");
     #endif //AHI_TL_SUPPORT
 
     #if (BLE_HOST_PRESENT)
     // Initialize BLE Host stack
     //rwble_hl_init();
-    UART_PRINTF("rwble_hl_init ok\r\n");
+    //UART_PRINTF("rwble_hl_init ok\r\n");
     #endif //BLE_HOST_PRESENT
 
     #if (BT_EMB_PRESENT)
@@ -758,13 +758,13 @@ void rwip_init(uint32_t error)
     #if (BLE_EMB_PRESENT)
     // Initialize BLE
     rwble_init(false);
-    UART_PRINTF("rwble_init ok\r\n");
+    //UART_PRINTF("rwble_init ok\r\n");
     #endif //BLE_EMB_PRESENT
 
     // Initialize AES
     #if (BT_DUAL_MODE || BLE_STD_MODE)
     //aes_init(false);
-    UART_PRINTF("aes_init ok\r\n");
+    //UART_PRINTF("aes_init ok\r\n");
     #endif //(BT_DUAL_MODE || BLE_STD_MODE)
 
     #if (BT_EMB_PRESENT || BLE_EMB_PRESENT)
@@ -778,19 +778,19 @@ void rwip_init(uint32_t error)
 
     // Initialize IP core driver
     rwip_driver_init(false);
-    UART_PRINTF("rwip_driver_init ok\r\n");
+    //UART_PRINTF("rwip_driver_init ok\r\n");
 
     #if (BT_EMB_PRESENT || BLE_EMB_PRESENT)
     #if (RW_WLAN_COEX)
     rwip_wlcoex_set(1);
-    UART_PRINTF("rwip_wlcoex_set ok\r\n");
+    //UART_PRINTF("rwip_wlcoex_set ok\r\n");
     #endif //(RW_WLAN_COEX)
     #endif //(BT_EMB_PRESENT || BLE_EMB_PRESENT)
     #if (BT_EMB_PRESENT || (BLE_EMB_PRESENT && !BLE_HOST_PRESENT))
     // If FW initializes due to FW reset, send the message to Host
     if(error != RESET_NO_ERROR)
     {
-        uart_printf("@@error(%x)\r\n",error);
+        //uart_printf("@@error(%x)\r\n",error);
         if(error == RESET_TO_ROM || error == RESET_AND_LOAD_FW)
         {
             // Send platform reset command complete if requested by user
@@ -823,7 +823,7 @@ void rwip_init(uint32_t error)
     // Initialize APP
     if(rom_env.appm_init)
     	rom_env.appm_init();
-    UART_PRINTF("appm_init ok\r\n");
+    //UART_PRINTF("appm_init ok\r\n");
     #endif //BLE_APP_PRESENT
 }
 
@@ -987,6 +987,7 @@ void rwip_isr(void)
 {
     DBG_SWDIAG(ISR, RWIP, 1);
 
+    GLOBAL_INT_DISABLE();
     // Check interrupt status and call the appropriate handlers
     uint32_t irq_stat      = ip_intstat1_get();
 
@@ -1108,6 +1109,7 @@ void rwip_isr(void)
         DBG_SWDIAG(IP_ISR, SWINT, 0);
     }
 
+    GLOBAL_INT_RESTORE();
     DBG_SWDIAG(ISR, RWIP, 0);
 }
 

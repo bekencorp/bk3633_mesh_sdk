@@ -46,7 +46,7 @@
 #define BT_MESH_PROXY_SRV_DATA_LEN2 0x11
 
 /* 3 transmissions, 20ms interval */
-#define PROV_XMIT_COUNT        2
+#define PROV_XMIT_COUNT        6    //old state is 2.
 #define PROV_XMIT_INT          20
 
 #define AUTH_METHOD_NO_OOB     0x00
@@ -1000,9 +1000,9 @@ static void free_segments(int id)
         /** Change by Espressif. Add this to avoid buf->ref is 2 which will
          *  cause lack of buf.
          */
-        if (buf->ref > 1) {
-            buf->ref = 1;
-        }
+        // if (buf->ref > 1) {
+        //     buf->ref = 1;
+        // }    // advoid free active buffer.
         net_buf_unref(buf);
     }
 }
@@ -1134,7 +1134,7 @@ static int bearer_ctl_send(int i, u8_t op, void *data, u8_t data_len)
     struct net_buf *buf;
 
     BT_DBG("op 0x%02x data_len %u", op, data_len);
-
+    
     prov_clear_tx(i);
 
     buf = adv_buf_create();
@@ -1229,7 +1229,7 @@ static int prov_send_adv(struct net_buf_simple *msg)
 
     prov_clear_tx(i);
 
-    start = adv_buf_create();
+    start = adv_buf_create();  
     if (!start) {
         return -ENOBUFS;
     }
@@ -1506,8 +1506,8 @@ static void prov_capabilities(const u8_t *data)
     prov_input_size = auth_size;
 #endif
 
-    auth_action = (u8_t)OUTPUT_OOB_NUMBER;
-    auth_size   = 4;
+    //auth_action = (u8_t)OUTPUT_OOB_NUMBER;    //add_provisioner_supported
+    //auth_size   = 4;                          //add_provisioner_supported
     prov_input_size = auth_size;
 
     /* Store provisioning capbilities value in conf_inputs */
@@ -1866,7 +1866,7 @@ static void send_pub_key(u8_t oob)
             return;
         }
 
-        BT_DBG("Local Public Key: %s", bt_hex(key, 64));
+        BT_ERR("Local Public Key: %s", bt_hex(key, 64));
 
         /** For provisioner, once public key is generated, just store
          *  public key in prov_ctx, and no need to generate the public
@@ -2526,13 +2526,17 @@ static void gen_prov_cont(struct prov_rx *rx, struct net_buf_simple *buf)
         return;
     }
 
-    if (rx->xact_id != link[i].rx.id) {
+    if ((rx->xact_id != link[i].rx.id) && (link[i].rx.id != 0)) {
         BT_ERR("Data for unknown transaction (%u != %u)",
                rx->xact_id, link[i].rx.id);
         /** If provisioner receives a unknown tranaction id,
          *  currently we close the link.
          */
         goto fail;
+    }
+    else if (link[i].rx.id == 0) {
+        BT_ERR("Not recv start packet, so not handle.");
+        return;
     }
 
     if (seg > link[i].rx.last_seg) {
@@ -2963,8 +2967,6 @@ void provisioner_unprov_beacon_recv(struct net_buf_simple *buf)
     u16_t oob_info;
     int i, res;
 
-    BT_DBG("recv unprov beacon");
-
     if (buf->len != 0x12 && buf->len != 0x16) {
         BT_ERR("Unprovisioned device beacon with wrong length");
         return;
@@ -2977,7 +2979,7 @@ void provisioner_unprov_beacon_recv(struct net_buf_simple *buf)
 
     dev_uuid = buf->data;
     if (provisioner_dev_uuid_match(dev_uuid)) {
-        BT_DBG("%s: dev_uuid not match", __func__);
+        //BT_DBG("%s: dev_uuid not match", __func__);
         return;
     }
 
@@ -3006,13 +3008,17 @@ void provisioner_unprov_beacon_recv(struct net_buf_simple *buf)
     for (i = 0; i < BT_MESH_PROV_SAME_TIME; i++) {
         if (atomic_test_bit(link[i].flags, LINK_ACTIVE)) {
             if (!memcmp(link[i].uuid, dev_uuid, 16)) {
-                BT_DBG("This device is currently being provisioned");
+                //BT_DBG("This device is currently being provisioned");
                 return;
             }
         }
     }
 
     if (prov_ctx.prov_after_match == false) {
+
+        BT_ERR("RUN prov_ctx.prov_after_match == false 200811\n");  //
+        prov_ctx.prov_after_match = true;                           //add_provisioner_supported
+    
         addr = bt_mesh_pba_get_addr();
 
         res = provisioner_dev_find(addr, dev_uuid, &i);
@@ -3094,13 +3100,13 @@ bool provisioner_flags_match(struct net_buf_simple *buf)
     u8_t flags;
 
     if (buf->len != 1) {
-        BT_DBG("%s: Unexpected flags length", __func__);
+        //BT_DBG("%s: Unexpected flags length", __func__);
         return false;
     }
 
     flags = net_buf_simple_pull_u8(buf);
 
-    BT_DBG("Received adv pkt with flags: 0x%02x", flags);
+    //BT_DBG("Received adv pkt with flags: 0x%02x", flags);
 
     /* Flags context will not be checked curently */
 
@@ -3118,7 +3124,7 @@ u16_t provisioner_srv_uuid_recv(struct net_buf_simple *buf)
 
     uuid = net_buf_simple_pull_le16(buf);
 
-    BT_DBG("Received adv pkt with service UUID: %d", uuid);
+    //BT_DBG("Received adv pkt with service UUID: %d", uuid);
 
     if ((uuid != BT_UUID_MESH_PROV_VAL) && (uuid != BT_UUID_MESH_PROXY_VAL)) {
         return false;
@@ -3140,18 +3146,20 @@ void provisioner_srv_data_recv(struct net_buf_simple *buf, const bt_addr_le_t *a
 
     uuid_type = net_buf_simple_pull_le16(buf);
     if (uuid_type != uuid) {
-        BT_DBG("Received adv pkt with service data uuid: %d", uuid_type);
+        //BT_DBG("Received adv pkt with service data uuid: %d", uuid_type);
         return;
     }
 
     switch (uuid) {
     case BT_UUID_MESH_PROV_VAL:
+        #if 0   //add_provisioner_supported
         if (buf->len != BT_MESH_PROV_SRV_DATA_LEN) {
             BT_ERR("Received adv pkt with prov service data len: %d", buf->len);
             return;
         }
         BT_DBG("Start to deal with provisioning service adv data");
         provisioner_prov_srv_data_recv(buf, addr);
+        #endif
         break;
 
     case BT_UUID_MESH_PROXY_VAL:
@@ -3160,7 +3168,7 @@ void provisioner_srv_data_recv(struct net_buf_simple *buf, const bt_addr_le_t *a
             BT_ERR("Received adv pkt with proxy service data len: %d", buf->len);
             return;
         }
-        BT_DBG("Start to deal with proxy service adv data");
+        //BT_DBG("Start to deal with proxy service adv data");
         provisioner_proxy_srv_data_recv(buf, addr);
         break;
 

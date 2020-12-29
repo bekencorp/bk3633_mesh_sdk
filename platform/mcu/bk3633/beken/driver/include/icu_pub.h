@@ -58,7 +58,10 @@ enum
 
 /* CMD_ICU_MCU_CLK_SEL */
 #define ICU_MCU_CLK_SEL_16M                  (1)
-#define ICU_MCU_CLK_SEL_64M                  (2)
+#define ICU_MCU_CLK_SEL_32M                  (2)
+#define ICU_MCU_CLK_SEL_48M                  (3)
+#define ICU_MCU_CLK_SEL_64M                  (4)
+#define ICU_MCU_CLK_SEL_80M                  (5)
 
 /* CMD_CLK_32K_SRC_SEL */
 #define CLK_32K_SRC_SEL_EXTERNAL             (0)

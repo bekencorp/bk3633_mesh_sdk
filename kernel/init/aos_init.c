@@ -232,7 +232,7 @@ void cli_service_init(kinit_t *kinit)
 
 int aos_kernel_init(kinit_t *kinit)
 {
-    aos_cli_printf("%s \r\n\r\n", __func__);
+    printf("%s \r\n\r\n", __func__);
 #ifdef AOS_VFS
     vfs_init();
     vfs_device_init();
@@ -303,7 +303,7 @@ int aos_kernel_init(kinit_t *kinit)
     krhino_task_cpu_usage_init();
 #endif
 
-    //aos_cli_printf("app start \r\n\r\n", __func__);
+    printf("app start \r\n\r\n");
     application_start(kinit->argc, kinit->argv);
 #endif
 

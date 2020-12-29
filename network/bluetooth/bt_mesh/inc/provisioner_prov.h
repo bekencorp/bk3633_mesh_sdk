@@ -30,13 +30,13 @@
 #if !defined(CONFIG_BT_MESH_PB_ADV)
 #define CONFIG_BT_MESH_PBA_SAME_TIME 0
 #else
-#define CONFIG_BT_MESH_PBA_SAME_TIME 5
+#define CONFIG_BT_MESH_PBA_SAME_TIME 2     //5
 #endif /* !CONFIG_BT_MESH_PB_ADV */
 
 #if !defined(CONFIG_BT_MESH_PB_GATT)
 #define CONFIG_BT_MESH_PBG_SAME_TIME 0
 #else
-#define CONFIG_BT_MESH_PBG_SAME_TIME 5
+#define CONFIG_BT_MESH_PBG_SAME_TIME 2     //5
 #endif /* !CONFIG_BT_MESH_PB_GATT */
 
 #define BT_DATA_FLAGS         0x01

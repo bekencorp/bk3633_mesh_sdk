@@ -21,7 +21,7 @@
 const char *bt_hex(const void *buf, size_t len)
 {
 	static const char hex[] = "0123456789abcdef";
-	static char hexbufs[4][129];
+	static char hexbufs[4][256];
 	static u8_t curbuf;
 	const u8_t *b = buf;
 	unsigned int mask;

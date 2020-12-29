@@ -38,6 +38,10 @@
 /// define the FIQ handler attribute for this compiler
 #define __FIQ __attribute__((__interrupt__("FIQ")))
 //#define __FIQ                      __irq
+
+// define which's code can run into the cache
+#define __ATTR_ARM __attribute__((section("BLE_FIQ")))
+
 /// define size of an empty array (used to declare structure with an array size not defined)
 #define __ARRAY_EMPTY
 

@@ -59,7 +59,7 @@ static const struct bt_mesh_le_adv_param slow_adv_param = {
 static const struct bt_mesh_le_adv_param fast_adv_param = {
     .options = (BT_MESH_LE_ADV_OPT_CONNECTABLE | BT_MESH_LE_ADV_OPT_ONE_TIME),
     .interval_min = BT_MESH_GAP_ADV_FAST_INT_MIN_2,
-    .interval_max = BT_MESH_GAP_ADV_FAST_INT_MAX_2,
+    .interval_max = BT_MESH_GAP_ADV_FAST_INT_MIN_2,
 };
 
 static bool proxy_adv_enabled;
@@ -651,6 +651,71 @@ static struct bt_mesh_gatt_attr prov_attrs[] = {
 
 static struct bt_mesh_gatt_service prov_svc = BT_MESH_GATT_SERVICE(prov_attrs);
 
+#ifdef CONFIG_BT_MESH_TELINK
+static ssize_t telink_proxy_ccc_write(bt_mesh_conn_t conn,
+                               const struct bt_mesh_gatt_attr *attr,
+                               const void *buf, u16_t len,
+                               u16_t offset, u8_t flags)
+{
+    struct bt_mesh_proxy_client *client;
+    u16_t value;
+
+    BT_DBG("len %u: %s", len, bt_hex(buf, len));
+
+    if (len != sizeof(value)) {
+        return BT_MESH_GATT_ERR(BT_MESH_ATT_ERR_INVALID_ATTRIBUTE_LEN);
+    }
+
+    value = sys_get_le16(buf);
+    if (value != BT_MESH_GATT_CCC_NOTIFY) {
+        BT_WARN("Client wrote 0x%04x instead enabling notify", value);
+        return len;
+    }
+
+    /* If a connection exists there must be a client */
+    client = find_client(conn);
+    __ASSERT(client, "No client for connection");
+
+    if (client->filter_type == NONE) {
+        client->filter_type = WHITELIST;
+        k_work_submit(&client->send_beacons);
+    }
+
+    return len;
+}
+
+static ssize_t telink_proxy_ccc_read(bt_mesh_conn_t conn,
+                              const struct bt_mesh_gatt_attr *attr,
+                              void *buf, u16_t len, u16_t offset)
+{
+    u16_t *value = attr->user_data;
+
+    return bt_mesh_gatt_attr_read(conn, attr, buf, len, offset, value,
+                                   sizeof(*value));
+}
+static u16_t telink_proxy_ccc_val;
+/* Telink Mesh Proxy Service Declaration */
+static struct bt_mesh_gatt_attr telink_proxy_attrs[] = {
+    BT_MESH_GATT_PRIMARY_SERVICE(BT_MESH_UUID_MESH_TELINK),
+
+    BT_MESH_GATT_CHARACTERISTIC(BT_MESH_UUID_MESH_PROXY_DATA_IN,
+    BT_MESH_GATT_CHRC_WRITE_WITHOUT_RESP),
+    BT_MESH_GATT_DESCRIPTOR(BT_MESH_UUID_MESH_PROXY_DATA_IN, BT_MESH_GATT_PERM_WRITE,
+    NULL, proxy_recv, NULL),
+
+    BT_MESH_GATT_CHARACTERISTIC(BT_MESH_UUID_MESH_PROXY_DATA_OUT,
+    BT_MESH_GATT_CHRC_NOTIFY),
+    BT_MESH_GATT_DESCRIPTOR(BT_MESH_UUID_MESH_PROXY_DATA_OUT, BT_MESH_GATT_PERM_NONE,
+    NULL, NULL, NULL),
+    /* Add custom CCC as clients need to be tracked individually */
+    BT_MESH_GATT_DESCRIPTOR(BT_MESH_UUID_GATT_CCC,
+    BT_MESH_GATT_PERM_READ | BT_MESH_GATT_PERM_WRITE,
+    telink_proxy_ccc_read, telink_proxy_ccc_write, &telink_proxy_ccc_val),
+};
+
+static struct bt_mesh_gatt_service telink_proxy_svc = BT_MESH_GATT_SERVICE(telink_proxy_attrs);
+#endif /* CONFIG_BT_MESH_TELINK */
+
 int bt_mesh_proxy_prov_enable(void)
 {
     int i;
@@ -658,6 +723,9 @@ int bt_mesh_proxy_prov_enable(void)
     BT_DBG("");
 
     bt_mesh_gatt_service_register(&prov_svc);
+#ifdef CONFIG_BT_MESH_TELINK
+    bt_mesh_gatt_service_register(&telink_proxy_svc);
+#endif /* CONFIG_BT_MESH_TELINK */
     gatt_svc = MESH_GATT_PROV;
     prov_fast_adv = true;
 
@@ -677,7 +745,9 @@ int bt_mesh_proxy_prov_disable(void)
 
     BT_DBG("");
 
+#ifndef CONFIG_BT_MESH_TELINK
     bt_mesh_gatt_service_unregister(&prov_svc);
+#endif /* CONFIG_BT_MESH_TELINK */
     gatt_svc = MESH_GATT_NONE;
 
     for (i = 0; i < ARRAY_SIZE(clients); i++) {
@@ -764,7 +834,10 @@ int bt_mesh_proxy_gatt_enable(void)
 
     BT_DBG("%s", __func__);
 
+#ifndef CONFIG_BT_MESH_TELINK
     bt_mesh_gatt_service_register(&proxy_svc);
+#endif /* CONFIG_BT_MESH_TELINK */
+
     gatt_svc = MESH_GATT_PROXY;
 
     for (i = 0; i < ARRAY_SIZE(clients); i++) {
@@ -800,7 +873,13 @@ int bt_mesh_proxy_gatt_disable(void)
 
     bt_mesh_proxy_gatt_disconnect();
 
+#ifdef CONFIG_BT_MESH_TELINK
+    bt_mesh_gatt_service_unregister(&prov_svc);
+    bt_mesh_gatt_service_unregister(&telink_proxy_svc);
+#else
     bt_mesh_gatt_service_unregister(&proxy_svc);
+#endif /* CONFIG_BT_MESH_TELINK */
+
     gatt_svc = MESH_GATT_NONE;
 
     return 0;
@@ -889,9 +968,15 @@ static int proxy_send(bt_mesh_conn_t conn, const void *data, u16_t len)
     BT_DBG("%u bytes: %s", len, bt_hex(data, len));
 
 #if defined(CONFIG_BT_MESH_GATT_PROXY)
+#ifdef CONFIG_BT_MESH_TELINK
+    if (gatt_svc == MESH_GATT_PROXY) {
+        return bt_mesh_gatt_notify(conn, &telink_proxy_attrs[4], data, len);
+    }
+#else
     if (gatt_svc == MESH_GATT_PROXY) {
         return bt_mesh_gatt_notify(conn, &proxy_attrs[4], data, len);
     }
+#endif /* CONFIG_BT_MESH_TELINK */
 #endif
 
 #if defined(CONFIG_BT_MESH_PB_GATT)
@@ -1141,7 +1226,7 @@ static s32_t gatt_proxy_advertise(struct bt_mesh_subnet *sub)
 
     if (conn_count == CONFIG_BT_MAX_CONN) {
         BT_WARN("Connectable advertising deferred (max connections)");
-        return remaining;
+        return remaining;   
     }
 
     if (!sub) {

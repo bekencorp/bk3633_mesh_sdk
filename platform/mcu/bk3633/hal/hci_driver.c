@@ -23,7 +23,7 @@
 
 extern const uint16_t stack_support_flash;
 
-//static uint8_t ble_bd_addr[6] = { 0x78, 0xda, 0x07, 0xc1, 0x1c, 0xa8 };
+
 extern uint8_t g_mac[];
 static uint8_t *ble_bd_addr = g_mac;
 
@@ -396,21 +396,6 @@ static int hci_driver_open(void)
         printf("ready semaphore create error:0x%x\r\n", err);
         return -ENOMEM;
     }
-
-    ///get bd address from flash
-	struct bd_addr_t bd_addr={0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
-#if 0
-	if(stack_support_flash == 8) ///check support flash type
-		flash_read(&bd_addr, sizeof(struct bd_addr_t), 0xFB000); ///for 8Mb flash
-	else
-		flash_read(&bd_addr, sizeof(struct bd_addr_t), 0x7B000); ///for 4Mb flash
-#endif
-
-	if((bd_addr.addr[0]!=0xFF)&&(bd_addr.addr[0]!=0xFF)&&(bd_addr.addr[0]!=0xFF)&&
-		(bd_addr.addr[0]!=0xFF)&&(bd_addr.addr[0]!=0xFF)&&(bd_addr.addr[0]!=0xFF))
-	{
-		memcpy(ble_bd_addr, &bd_addr, sizeof(struct bd_addr_t));
-	}
 
 	g_ble_hdr_arg.public_addr  = ble_bd_addr;
     g_ble_hdr_arg.hci_hdr      = &ble_hci_hdr;

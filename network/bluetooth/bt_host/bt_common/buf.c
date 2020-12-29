@@ -155,19 +155,19 @@ struct net_buf *net_buf_alloc(struct net_buf_pool *pool, s32_t timeout)
 		if (pool->uninit_count < pool->buf_count) {
 			buf = k_lifo_get(&pool->free, K_NO_WAIT);
 			if (buf) {
-				irq_unlock(key);
+				//irq_unlock(key);
 				goto success;
 			}
 		}
 
 		uninit_count = pool->uninit_count--;
-		irq_unlock(key);
+		//irq_unlock(key);
 
 		buf = pool_get_uninit(pool, uninit_count);
 		goto success;
 	}
 
-	irq_unlock(key);
+	//irq_unlock(key);
 
 #if defined(CONFIG_NET_BUF_LOG) && SYS_LOG_LEVEL >= SYS_LOG_LEVEL_WARNING
 	if (timeout == K_FOREVER) {
@@ -200,6 +200,7 @@ struct net_buf *net_buf_alloc(struct net_buf_pool *pool, s32_t timeout)
 #endif
 	if (!buf) {
 		NET_BUF_ERR("%s():%d: Failed to get free buffer", func, line);
+        irq_unlock(key);
 		return NULL;
 	}
 
@@ -215,7 +216,7 @@ success:
 	pool->avail_count--;
 	NET_BUF_ASSERT(pool->avail_count >= 0);
 #endif
-
+    irq_unlock(key);
 	return buf;
 }
 
@@ -227,11 +228,13 @@ struct net_buf *net_buf_get(struct k_fifo *fifo, s32_t timeout)
 #endif
 {
 	struct net_buf *buf, *frag;
+    unsigned int key;
 
 	NET_BUF_DBG("%s():%d: fifo %p timeout %d", func, line, fifo, timeout);
-
+    key = irq_lock();
 	buf = k_fifo_get(fifo, timeout);
 	if (!buf) {
+        irq_unlock(key);
 		return NULL;
 	}
 
@@ -248,7 +251,7 @@ struct net_buf *net_buf_get(struct k_fifo *fifo, s32_t timeout)
 
 	/* Mark the end of the fragment list */
 	frag->frags = NULL;
-
+    irq_unlock(key);
 	return buf;
 }
 
@@ -346,6 +349,11 @@ void net_buf_unref(struct net_buf *buf)
 			return;
 		}
 #endif
+		if (!buf->ref) {		//avoid buf double free.
+			NET_BUF_ERR("buf %p double free!! \r\n", buf);
+			return;
+		}
+		
 		NET_BUF_DBG("buf %p ref %u pool_id %u frags %p", buf, buf->ref,
 			    buf->pool_id, buf->frags);
 

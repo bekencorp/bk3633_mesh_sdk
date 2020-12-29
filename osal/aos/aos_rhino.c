@@ -18,7 +18,7 @@
 static unsigned int used_bitmap;
 
 extern void hal_reboot(void);
-void        aos_reboot(void)
+void aos_reboot(void)
 {
     hal_reboot();
 }

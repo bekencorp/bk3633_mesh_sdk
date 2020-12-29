@@ -29,7 +29,7 @@ struct bt_mesh_cfg_cli {
 extern const struct bt_mesh_model_op bt_mesh_cfg_cli_op[];
 
 /* Helper macro to define the Configuration Client Model. */
-#define BT_MESH_MODEL_CFG_CLI(cli_data)                              \
+#define BT_MESH_MODEL_CFG_CLI(cli_data)                                      \
 		BT_MESH_MODEL(BT_MESH_MODEL_ID_CFG_CLI,                      \
 			      bt_mesh_cfg_cli_op, NULL, cli_data)
 

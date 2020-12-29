@@ -63,11 +63,14 @@ static struct seg_tx {
 	u64_t                    seq_auth;
 	u16_t                    dst;
 	u8_t                     seg_n:5,       /* Last segment index */
-				 new_key:1;     /* New/old key */
+				             new_key:1,     /* New/old key */
+							 working:1,		/* seg unack timer working */
+							 acking:1;		/* tans recv acking */
 	u8_t                     nack_count;    /* Number of unacked segs */
 	const struct bt_mesh_send_cb *cb;
 	void                    *cb_data;
 	struct k_delayed_work    retransmit;    /* Retransmit timer */
+	struct k_sem             work_sem;		/* seg unack timer working sem */
 } seg_tx[CONFIG_BT_MESH_TX_SEG_MSG_COUNT];
 
 static struct seg_rx {
@@ -179,6 +182,10 @@ static void seg_tx_reset(struct seg_tx *tx)
 	}
 
 	tx->nack_count = 0;
+	tx->working = 0;
+	tx->acking = 0;
+
+	k_sem_delete(&tx->work_sem);
 
 	if (bt_mesh.pending_update) {
 		BT_DBG("Proceding with pending IV Update");
@@ -264,7 +271,16 @@ static void seg_retransmit(struct k_work *work)
 {
 	struct seg_tx *tx = CONTAINER_OF(work, struct seg_tx, retransmit);
 
+	if (tx) {
+		tx->working = 1;
+	}
+
 	seg_tx_send_unacked(tx);
+
+	if (tx->acking) {
+		k_sem_give(&tx->work_sem);
+	}
+	tx->working = 0;
 }
 
 static int send_seg(struct bt_mesh_net_tx *net_tx, struct net_buf_simple *sdu,
@@ -316,6 +332,9 @@ static int send_seg(struct bt_mesh_net_tx *net_tx, struct net_buf_simple *sdu,
 	tx->new_key = net_tx->sub->kr_flag;
 	tx->cb = cb;
 	tx->cb_data = cb_data;
+    tx->working = 0;
+	tx->acking = 0;
+	k_sem_init(&tx->work_sem, 0, 1);
 
 	seq_zero = tx->seq_auth & 0x1fff;
 
@@ -794,6 +813,13 @@ static int trans_ack(struct bt_mesh_net_rx *rx, u8_t hdr,
 
 	k_delayed_work_cancel(&tx->retransmit);
 
+    tx->acking = 1;
+	if (tx->working == 1) {
+        k_sem_take(&tx->work_sem, -1);
+	}
+
+	tx->acking = 0;
+	
 	while ((bit = find_lsb_set(ack))) {
 		if (tx->seg[bit - 1]) {
 			BT_DBG("seg %u/%u acked", bit - 1, tx->seg_n);

@@ -25,8 +25,8 @@ extern void  _app_data_flash_end;
 
 static DD_OPERATIONS flash_op =
 {
-    NULL,
-    NULL,
+    flash_open,
+    flash_close,
     flash_read,
     flash_write,
     flash_ctrl
@@ -111,8 +111,8 @@ uint8_t flash_identify(uint32_t* id, void (*callback)(void))
     
     *id =  REG_FLASH_RDID_DATA_FLASH ;
 
-     printf("identify:0x%x\r\n",*id);
-     return 0;
+    printf("identify:0x%x\r\n",*id);
+    return 0;
 }
 
 uint32_t flash_get_id(void)
@@ -326,26 +326,36 @@ static UINT32 flash_read_mid(void)
 	return REG_FLASH_RDID_DATA_FLASH ;
 }
 
-static void flash_erase_sector(UINT32 address)
+static void flash_erase(UINT32 cmd, UINT32 address)
 {
     UINT32 value;
+    UINT32 type;
+
+    switch(cmd)
+    {
+        case CMD_FLASH_ERASE_SECTOR:
+            type = FLASH_OPCODE_SE;
+            break;
+        case CMD_FLASH_ERASE_BLOCK1:
+            type = FLASH_OPCODE_BE1;
+            break;
+        case CMD_FLASH_ERASE_BLOCK2:
+            type = FLASH_OPCODE_BE2;
+            break;
+        default:
+            return;
+    }
 
     GLOBAL_INT_DISABLE();
-
-    flash_wp_256k();
-
     while(REG_FLASH_OPERATE_SW & FLASH_BUSY_BIT);
 
     value = REG_FLASH_OPERATE_SW;
     value = ((address << BIT_ADDRESS_SW)
-             | (FLASH_OPCODE_SE << BIT_OP_TYPE_SW)
+             | (type << BIT_OP_TYPE_SW)
              | (0x1 << BIT_OP_SW));
     REG_FLASH_OPERATE_SW = value;
 
     while(REG_FLASH_OPERATE_SW & FLASH_BUSY_BIT);
-
-    flash_wp_ALL();
-
     GLOBAL_INT_RESTORE();
 }
 
@@ -456,6 +466,7 @@ void flash_write_data(UINT8 *buffer, UINT32 address, UINT32 len)
     uint32_t buf[8];
     uint8_t *pb = (uint8_t *)&buf[0];
 
+
     if (len == 0)
         return;
 /*     if (address<0x40000)
@@ -471,8 +482,6 @@ void flash_write_data(UINT8 *buffer, UINT32 address, UINT32 len)
     }
 
     while(REG_FLASH_OPERATE_SW & FLASH_BUSY_BIT);
-    
-    flash_wp_256k();
 
     while(len)
     {
@@ -508,8 +517,6 @@ void flash_write_data(UINT8 *buffer, UINT32 address, UINT32 len)
         addr += 32;
         memset(pb, 0xFF, 32);
     }
-
-    flash_wp_ALL();
 
 /*     REG_FLASH_OPERATE_SW=FLASH_ADDR_FIX;
 
@@ -582,9 +589,9 @@ void flash_init(void)
 {
     flash_mid = flash_get_id();
     flash_get_current_flash_config();
-    
+
     flash_set_dual_mode();
-    set_flash_clk(0x08);
+    set_flash_clk(0x01);
 
     ddev_register_dev(FLASH_DEV_NAME, &flash_op);
     
@@ -594,6 +601,16 @@ void flash_init(void)
 void flash_exit(void)
 {
     ddev_unregister_dev(FLASH_DEV_NAME);
+}
+
+UINT32 flash_open(UINT32 op_flag)
+{
+    flash_wp_256k();
+}
+
+UINT32 flash_close(void)
+{
+    flash_wp_ALL();
 }
 
 UINT32 flash_read(char *user_buf, UINT32 count, UINT32 address)
@@ -696,15 +713,17 @@ UINT32 flash_ctrl(UINT32 cmd, void *parm)
         break;
 
     case CMD_FLASH_ERASE_SECTOR:
+    case CMD_FLASH_ERASE_BLOCK1:
+    case CMD_FLASH_ERASE_BLOCK2:
         address = (*(UINT32 *)parm);
-        flash_erase_sector(address);
+        flash_erase(cmd, address);
         break;
 
     case CMD_FLASH_SET_HPM:
         break;
 	case CMD_FLASH_SET_PROTECT:
 		reg =  (*(UINT32 *)parm);
-		// flash_protection_op(FLASH_XTX_16M_SR_WRITE_DISABLE, reg);
+		//flash_protection_op(FLASH_XTX_16M_SR_WRITE_DISABLE, reg);
 		break;
     default:
         ret = FLASH_FAILURE;

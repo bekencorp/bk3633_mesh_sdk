@@ -6,7 +6,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#define BT_ATT_DEFAULT_LE_MTU	250
+#define BT_ATT_DEFAULT_LE_MTU	23    //250
 
 #if BT_L2CAP_RX_MTU < CONFIG_BT_L2CAP_TX_MTU
 #define BT_ATT_MTU BT_L2CAP_RX_MTU

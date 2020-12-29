@@ -105,7 +105,7 @@ void rwble_init(bool reset)
 
     // Initialize buffer management system
     ble_util_buf_init(reset);
-    UART_PRINTF("rwble_init reset\r\n");
+    //UART_PRINTF("rwble_init reset\r\n");
 
     #if (BLE_ISO_PRESENT)
     // Initialize ISO descriptor management system
@@ -114,17 +114,17 @@ void rwble_init(bool reset)
 
     // Initialize the Link Layer Driver
     lld_init(reset);
-    UART_PRINTF("lld_init OK\r\n");
+    //UART_PRINTF("lld_init OK\r\n");
 
     #if(BLE_CENTRAL || BLE_PERIPHERAL)
     // Initialize the Link Layer Controller
     llc_init(reset);
-    UART_PRINTF("llc_init OK\r\n");
+    //UART_PRINTF("llc_init OK\r\n");
     #endif // (BLE_CENTRAL || BLE_PERIPHERAL)
 
     // Initialize the Link Layer Manager
     llm_init(reset);
-    UART_PRINTF("llm_init OK\r\n");
+    //UART_PRINTF("llm_init OK\r\n");
     
     #if (BLE_ISO_PRESENT)
     // Initialize the Link Layer ISO
@@ -135,7 +135,7 @@ void rwble_init(bool reset)
     {
         // Turn on BLE Core
         ble_rwblecntl_rwble_en_setf(1);
-        UART_PRINTF("Turn on BLE Core OK\r\n");
+        //UART_PRINTF("Turn on BLE Core OK\r\n");
     }
 }
 
@@ -157,7 +157,7 @@ __BLEIRQ void rwble_isr(void)
     {
         // Check BLE interrupt status and call the appropriate handlers
         uint32_t irq_stat      = ble_intstat0_get();
-        UART_PRINTF("%s irq_stat(%x) \r\n",__func__, irq_stat );  	
+        //UART_PRINTF("%s irq_stat(%x) \r\n",__func__, irq_stat );  	
 
         if (irq_stat == 0)
             break;
@@ -167,7 +167,7 @@ __BLEIRQ void rwble_isr(void)
         {
             // Clear the interrupt
             ble_intack0_errorintack_clearf(1);
-            UART_PRINTF("err:%x \r\n",ble_errortypestat_get());  
+            //UART_PRINTF("err:%x \r\n",ble_errortypestat_get());  
             ASSERT_INFO(0, ble_errortypestat_get(), (ble_errortypestat_get()>>16));
         }
     }

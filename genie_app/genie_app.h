@@ -12,7 +12,7 @@
 #endif
 
 #ifdef CONFIG_GENIE_OTA
-#include "bluetooth/host/profile/ais_srv/ais_service.h"
+#include "bluetooth/host/profile/ota_srv/ota_service.h"
 #endif
 
 #include "bluetooth/mesh/genie_mesh.h"

@@ -5,6 +5,6 @@
 #ifndef _ALI_MODEL_GEN_ONOFF_CLI_H_
 #define _ALI_MODEL_GEN_ONOFF_CLI_H_
 
-#define MESH_MODEL_GEN_ONOFF_CLI() BT_MESH_MODEL(BT_MESH_MODEL_ID_GEN_ONOFF_CLI, \
-                                                NULL, NULL, NULL)
+#define MESH_MODEL_GEN_ONOFF_CLI(cli_pub, cli_data) BT_MESH_MODEL(BT_MESH_MODEL_ID_GEN_ONOFF_CLI, \
+                                                NULL, cli_pub, cli_data)
 #endif

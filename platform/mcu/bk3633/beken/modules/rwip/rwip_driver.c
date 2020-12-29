@@ -80,7 +80,7 @@ struct rwip_param_api      rwip_param;
 struct rwip_env_tag        rwip_env;
 #if 1//(BLE_EMB_PRESENT || BT_EMB_PRESENT)
 /// Local supported commands
-const struct rwip_prio rwip_priority[RWIP_PRIO_IDX_MAX]={
+struct rwip_prio rwip_priority[RWIP_PRIO_IDX_MAX]={
     #if (BT_EMB_PRESENT)
     {RWIP_PRIO_ACL_DFT,        RWIP_INCR_ACL_DFT},
     {RWIP_PRIO_ACL_ACT,        RWIP_INCR_ACL_ACT},
@@ -496,7 +496,7 @@ void rwip_wakeup_end(void)
  */
 
 #endif // (BLE_EMB_PRESENT || BT_EMB_PRESENT)
-rwip_time_t rwip_time_get(void)
+inline rwip_time_t rwip_time_get(void)
 {
     rwip_time_t res;
 
@@ -816,7 +816,7 @@ void rwip_aes_encrypt(const uint8_t *key, const uint8_t* val)
     ip_aescntl_aes_start_setf(1);
 }
 
-void rwip_sw_int_req(void)
+__ATTR_ARM void rwip_sw_int_req(void)
 {
     // enable SW interrupt (and clear a previous interrupt if needed)
     ip_intack1_swintack_clearf(1);

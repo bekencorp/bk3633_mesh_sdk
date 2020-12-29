@@ -365,7 +365,7 @@ extern struct rwip_param_api rwip_param;
 
 #if (BLE_EMB_PRESENT || BT_EMB_PRESENT)
 /// API for dual mode priority
-extern const struct rwip_prio rwip_priority[RWIP_PRIO_IDX_MAX];
+extern struct rwip_prio rwip_priority[RWIP_PRIO_IDX_MAX];
 #endif //#if (BLE_EMB_PRESENT || BT_EMB_PRESENT)
 /// IP reset state variable
 extern uint8_t rwip_rst_state;

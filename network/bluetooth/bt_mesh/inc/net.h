@@ -36,11 +36,11 @@ struct bt_mesh_app_key {
 struct bt_mesh_subnet {
 	u32_t beacon_sent;        /* Timestamp of last sent beacon */
 	u8_t  beacons_last;       /* Number of beacons during last
-				               * observation window
-				               */
+				   * observation window
+				   */
 	u8_t  beacons_cur;        /* Number of beaconds observed during
-				               * currently ongoing window.
-				               */
+				   * currently ongoing window.
+				   */
 
 	u8_t  beacon_cache[21];   /* Cached last authenticated beacon */
 

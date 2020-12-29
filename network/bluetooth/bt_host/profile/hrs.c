@@ -27,7 +27,7 @@ static u8_t simulate_hrm;
 static u8_t heartrate = 90;
 static u8_t hrs_blsc;
 
-static void hrmc_ccc_cfg_changed(const struct bt_gatt_attr *attr,
+static void hrmc_ccc_cfg_changed(const struct bt_gatt_attr *attr, struct bt_conn *conn, 
 				 u16_t value)
 {
 	simulate_hrm = (value == BT_GATT_CCC_NOTIFY) ? 1 : 0;

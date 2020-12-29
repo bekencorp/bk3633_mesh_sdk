@@ -45,7 +45,8 @@
 
 #define REG_APB5_GPIO_WUATOD_STAT               addAON_GPIO_Reg0x35
 #define REG_APB5_GPIO_WUATOD_ENABLE             addAON_GPIO_Reg0x33
-#define REG_APB5_GPIO_WUATOD_TYPE               addAON_GPIO_Reg0x30
+#define REG_APB5_GPIO_WUATOD_TYPE_LOW           addAON_GPIO_Reg0x30
+#define REG_APB5_GPIO_WUATOD_TYPE_HIGH          addAON_GPIO_Reg0x31
 
 #define setf_GPIO_2nd_Fun_Ena(p)            ((*(volatile unsigned long *)p) |= (1<<GPIO_2FUN_EN))
 #define get_GPIO_Input_Monitor(p)           (((*(volatile unsigned long *)p) & 0x80) >> 7)

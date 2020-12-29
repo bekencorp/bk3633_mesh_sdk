@@ -112,7 +112,7 @@ static ssize_t read_report(struct bt_conn *conn,
 				 sizeof(struct hids_report));
 }
 
-static void input_ccc_changed(const struct bt_gatt_attr *attr, u16_t value)
+static void input_ccc_changed(const struct bt_gatt_attr *attr, struct bt_conn *conn,  u16_t value)
 {
 	simulate_input = (value == BT_GATT_CCC_NOTIFY) ? 1 : 0;
 }

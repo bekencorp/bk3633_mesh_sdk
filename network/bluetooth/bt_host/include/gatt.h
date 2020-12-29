@@ -506,7 +506,7 @@ struct _bt_gatt_ccc {
 	size_t			cfg_len;
 	u16_t			value;
 	void			(*cfg_changed)(const struct bt_gatt_attr *attr,
-					       u16_t value);
+							 struct bt_conn *conn, u16_t value);
 };
 
 /** @brief Read Client Characteristic Configuration Attribute helper.

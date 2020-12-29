@@ -14,6 +14,8 @@
 #define UART_CMD_MAX_ARG_LEN    5
 #define UART_CMD_MAX_ARG_NUM    5
 
+#define UART_TEST_TASK_PRIO     (AOS_DEFAULT_APP_PRI + 2)
+
 #define UART_TEST_INBUF_SIZE    (UART_CMD_MAX_NAME_LEN + 1 + \
                     (UART_CMD_MAX_ARG_LEN + 1) * UART_CMD_MAX_ARG_NUM + 2)
 

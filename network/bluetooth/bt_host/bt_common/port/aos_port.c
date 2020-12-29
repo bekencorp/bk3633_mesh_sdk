@@ -169,10 +169,19 @@ int k_yield(void)
     return 0;
 }
 
+static kmutex_t g_mutex;   //add mutex lock.
+
+void aos_mutex_lock_init(void)
+{
+    k_mutex_init(&g_mutex);
+    BT_DBG("add mutex lock!");
+}
+
 unsigned int irq_lock(void)
 {
     CPSR_ALLOC();
     RHINO_CPU_INTRPT_DISABLE();
+    k_mutex_lock(&g_mutex, K_FOREVER);
     return cpsr;
 }
 
@@ -181,6 +190,7 @@ void irq_unlock(unsigned int key)
     CPSR_ALLOC();
     cpsr = key;
     RHINO_CPU_INTRPT_ENABLE();
+    k_mutex_unlock(&g_mutex);
 }
 
 void _SysFatalErrorHandler(unsigned int reason, const void *pEsf){};

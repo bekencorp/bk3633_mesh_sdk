@@ -115,7 +115,7 @@ static kstat_t task_create(ktask_t *task, const name_t *name, void *arg,
 
     if (autorun > 0u) {
         ready_list_add_tail(&g_ready_queue, task);
-        /* if system is not start,not call core_sched */
+        /* if system is not start, not call core_sched */
         if (g_sys_stat == RHINO_RUNNING) {
             RHINO_CRITICAL_EXIT_SCHED();
             return RHINO_SUCCESS;

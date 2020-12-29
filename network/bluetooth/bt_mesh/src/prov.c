@@ -1089,7 +1089,9 @@ static void prov_data(const u8_t *data)
     BT_DBG("net_idx %u iv_index 0x%08x, addr 0x%04x",
            net_idx, iv_index, addr);
 
+#ifdef CONFIG_BT_MESH_ALI_TMALL_GENIE
     genie_event(GENIE_EVT_SDK_MESH_PROV_DATA, &addr);
+#endif  /* CONFIG_BT_MESH_ALI_TMALL_GENIE */
 
     prov_buf_init(msg, PROV_COMPLETE);
     prov_send(msg);
@@ -1224,7 +1226,9 @@ static void link_open(struct prov_rx *rx, struct net_buf_simple *buf)
 
     bearer_ctl_send(LINK_ACK, NULL, 0);
 
+#ifdef CONFIG_BT_MESH_ALI_TMALL_GENIE
     genie_event(GENIE_EVT_SDK_MESH_PROV_START, &rx->link_id);
+#endif  /* CONFIG_BT_MESH_ALI_TMALL_GENIE */
 
     link.expect = PROV_INVITE;
 }

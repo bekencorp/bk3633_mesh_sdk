@@ -13,6 +13,8 @@
 extern wdg_dev_t wdg;
 
 #define SECTOR_SIZE 0x1000 /* 4 K/sector */
+#define BLOCK1_SIZE 0x8000
+#define BLOCK2_SIZE 0x10000
 
 extern void  _app_data_flash_end;
 extern const uint16_t stack_support_flash;
@@ -89,7 +91,7 @@ int32_t hal_flash_erase(hal_partition_t in_partition, uint32_t off_set, uint32_t
         return -1;
 
     start_addr = (partition_info->partition_start_addr + off_set) & (~0xFFF);
-    end_addr = (partition_info->partition_start_addr + off_set + size  - 1) & (~0xFFF);
+    end_addr = ((partition_info->partition_start_addr + off_set + size  - 1) & (~0xFFF)) + 0x1000;
 
     if(start_addr <= ((uint32_t)&_app_data_flash_end|(SECTOR_SIZE-1)))
     {
@@ -98,13 +100,36 @@ int32_t hal_flash_erase(hal_partition_t in_partition, uint32_t off_set, uint32_t
     }
 
 	flash_hdl = ddev_open(FLASH_DEV_NAME, &status, 0);
-    for(addr = start_addr; addr <= end_addr; addr += SECTOR_SIZE)
+
+    addr = start_addr;
+    uint32_t erase_size, cmd;
+    while(addr < end_addr)
     {
+        if(addr%BLOCK1_SIZE || end_addr - addr < BLOCK1_SIZE)
+        {
+            cmd = CMD_FLASH_ERASE_SECTOR;
+            erase_size = SECTOR_SIZE;
+        }
+        else if(end_addr - addr >= BLOCK2_SIZE && !addr%BLOCK2_SIZE)
+        {
+            cmd = CMD_FLASH_ERASE_BLOCK2;
+            erase_size = BLOCK2_SIZE;
+        }
+        else
+        {
+            cmd = CMD_FLASH_ERASE_BLOCK1;
+            erase_size = BLOCK1_SIZE;
+        }
+
         hal_wdg_reload(&wdg);
         hal_flash_lock();
-        ddev_control(flash_hdl, CMD_FLASH_ERASE_SECTOR, (void *)&addr);
+        ddev_control(flash_hdl, cmd, (void *)&addr);
         hal_flash_unlock();
+        
+        addr += erase_size;
     }
+
+
     hal_wdg_reload(&wdg);
 	ddev_close(flash_hdl);
     
@@ -153,7 +178,7 @@ int32_t hal_flash_write(hal_partition_t in_partition, uint32_t *off_set, const v
     return 0;
 }
 
-int32_t hal_flash_read(hal_partition_t in_partition, uint32_t *off_set, void *out_buf, uint32_t out_buf_len)
+int32_t hal_flash_read(hal_partition_t in_partition, int32_t *off_set, void *out_buf, uint32_t out_buf_len)
 {
     uint32_t start_addr;
     hal_logic_partition_t *partition_info;

@@ -17,6 +17,7 @@
 #include <stdint.h>               // standard integer functions
 #include "BK3633_RegList.h"
 
+
 #define AHB_FLASH_BASE			        BASEADDR_FLASH
 #define REG_FLASH_OPERATE_SW            (addFLASH_Reg0x0)
 #define REG_FLASH_DATA_SW_FLASH         (addFLASH_Reg0x1)
@@ -72,12 +73,7 @@
 #define LINE_MODE_FOUR                       4
 
 
-#define FLASH_MAIN_SIZE              0x00040000
-
 /// Common for EMBED BEKEN FLASH Family
-
-#define FLASH_SECT_SIZE2         0x00001000  //  4 KByte
-#define FLASH_BOUNDARY256B       0x00000100  // 256 Byte
 
 #define FLASH_PAGE_SIZE                                    (256)
 #define FLASH_PAGE_MASK                                   (FLASH_PAGE_SIZE - 1)
@@ -102,20 +98,7 @@
 
 
 
-
-#define FLASH_LINE_1  1
-#define FLASH_LINE_2  2
-#define FLASH_LINE_4  4
-
-#define DEFAULT_LINE_MODE  FLASH_LINE_4
-
 #define FLASH_ADDR_FIX  0X7D000
-#define FLASH_WRITE_ENABLE1  0XA6
-#define FLASH_WRITE_ENABLE2  0XB3
-#define FLASH_WRITE_ENABLE3  0XC2
-#define FLASH_WRITE_ENABLE4  0XD1
-#define FLASH_ERASE_ENABLE1  0XAB
-#define FLASH_ERASE_ENABLE2  0XBC
 
 
 #define MAX(x, y)                  (((x) > (y)) ? (x) : (y))
@@ -197,23 +180,6 @@ uint8_t flash_identify(uint32_t* id, void (*callback)(void));
 
 /**
  ****************************************************************************************
- * @brief   Erase a flash section.
- *
- * This function is used to erase a part of the flash memory.
- * 
- * Note: callback parameter is not used
- *
- * @param[in]    flash_type  Flash type
- * @param[in]    offset      Starting offset from the beginning of the flash device
- * @param[in]    size        Size of the portion of flash to erase
- * @param[in]    callback    Callback for end of erase
- * @return       status      0 if operation can start successfully
- ****************************************************************************************
- */
-uint8_t flash_erase(uint32_t flash_id, uint32_t offset, uint32_t size, void (*callback)(void));
-
-/**
- ****************************************************************************************
  * @brief   Write a flash section.
  *
  * This function is used to write a part of the flash memory.
@@ -247,6 +213,10 @@ UINT32 flash_write(char *user_buf, UINT32 count, UINT32 address);
  ****************************************************************************************
  */
 UINT32 flash_read(char *user_buf, UINT32 count, UINT32 address);
+
+UINT32 flash_open(UINT32 op_flag);
+
+UINT32 flash_close(void);
 
 
 

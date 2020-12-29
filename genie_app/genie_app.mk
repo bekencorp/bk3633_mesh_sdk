@@ -18,7 +18,8 @@ $(NAME)_INCLUDES += ../network/bluetooth/bt_mesh/inc \
 					../network/bluetooth/bt_mesh/inc \
 					../utility/crc \
 					../genie_app/bluetooth/mesh/mesh_model	\
-					../genie_app
+					../genie_app \
+					../genie_app/bluetooth/mesh/mesh_model/inc	
 
 $(NAME)_SOURCES  += genie_app.c \
 					base/genie_cmds.c \
@@ -44,7 +45,7 @@ GLOBAL_DEFINES += CONFIG_GENIE_RESET_BY_REPEAT
 ####### ota config #######
 ifeq ($(genie_ota),1)
 GLOBAL_DEFINES += CONFIG_GENIE_OTA
-$(NAME)_SOURCES  += bluetooth/host/profile/ais_srv/ais_service.c
+$(NAME)_SOURCES  += bluetooth/host/profile/ota_srv/ota_service.c
 ifeq ($(HOST_ARCH), tc32)
 GLOBAL_DEFINES += CONFIG_GENIE_OTA_PINGPONG
 endif

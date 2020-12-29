@@ -20,10 +20,10 @@ static void _gen_level_prepear_buf(struct bt_mesh_model *model, struct net_buf_s
 
     //prepear buff
     bt_mesh_model_msg_init(msg, BT_MESH_MODEL_OP_GEN_LEVEL_STATUS);
-
+    
     net_buf_simple_add_le16(msg, elem->state.gen_level[T_CUR]);
 
-    if(remain_byte){
+    if(remain_byte) {
         net_buf_simple_add_le16(msg, elem->state.gen_level[T_TAR]);
         net_buf_simple_add_u8(msg, remain_byte);
     }
@@ -113,6 +113,7 @@ void gen_level_publication(struct bt_mesh_model *model)
 
     if (model->pub->addr != BT_MESH_ADDR_UNASSIGNED) {
         _gen_level_prepear_buf(model, msg, 0);
+        
         err = bt_mesh_model_publish(model);
         if (err) {
             BT_ERR("bt_mesh_model_publish err %d\n", err);

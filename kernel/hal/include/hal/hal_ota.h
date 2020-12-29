@@ -14,38 +14,16 @@ extern "C" {
 #include <stdint.h>
 #include "base.h"
 
-typedef enum {
-    OTA_KERNEL,
-    OTA_APP,
-    OTA_ALL
-} OTA_ENUM_UPDATE_TYPE;
-
-typedef enum {
-    OTA_FINISH,
-    OTA_BREAKPOINT
-} OTA_ENUM_RESULT_TYPE;
-
 enum ota_parti_e {
-    OTA_PARTITION_KERNEL,
+    OTA_PARTITION_DEFAULT = 0,
     OTA_PARTITION_APP,
-    OTA_PARTITION_DEFAULT,
+    OTA_PARTITION_STACK,
 };
 
-typedef enum {
-    OTA_RAW,
-    OTA_DIFF,
-} OTA_ENUM_FIRMWARE_TYPE;
-
-typedef struct  {
-    OTA_ENUM_UPDATE_TYPE update_type;
-    OTA_ENUM_RESULT_TYPE result_type;
-    OTA_ENUM_FIRMWARE_TYPE  firmware_type;
-    uint32_t splict_size;
-    uint8_t diff_version;
-    uint8_t boot_count;
-} ota_finish_param_t;
-
-
+typedef enum  {
+    OTA_TERMI_FINISH = 0,
+    OTA_TERMI_BREAKPOINT,
+} ota_terminate_type_e;
 
 typedef struct {
     uint32_t start_address; /* the address of the bin saved on flash. */
@@ -57,6 +35,13 @@ typedef struct {
     uint8_t  reserved[4];
 } boot_table_t;
 
+typedef struct
+{
+    uint16_t ver;
+    uint16_t rom_ver;
+    uint16_t size;
+}ota_img_tag_t;
+
 typedef struct hal_ota_module_s hal_ota_module_t;
 
 typedef int hal_stat_t;
@@ -65,13 +50,15 @@ struct hal_ota_module_s {
     hal_module_base_t base;
 
     /* Link to HW */
-    int (*init)(hal_ota_module_t *m, void *something);
-    int (*ota_write)(hal_ota_module_t *m, volatile uint32_t *off_set,
-                     uint8_t *in_buf , uint32_t in_buf_len);
-    int (*ota_read)(hal_ota_module_t *m,  volatile uint32_t *off_set,
-                    uint8_t *out_buf , uint32_t out_buf_len);
-    int (*ota_set_boot)(hal_ota_module_t *m, void *something);
-    int (*ota_rollback)(hal_ota_module_t *m, void *something);
+    int (*init)(void *something);
+    int (*deinit)(void *something);
+    int (*ota_save)(uint8_t *in_buf , uint32_t in_buf_len);
+    int (*ota_read)(volatile uint32_t *off_set, uint8_t *out_buf , uint32_t out_buf_len);
+    int (*ota_set_boot)(void *something);
+    int (*ota_rollback)(void *something);
+    int (*ota_tag_check)(uint32_t ota_type, uint16_t ver, uint16_t rom_ver, uint32_t size);
+    int (*ota_tag_get)(void *something);
+    int (*ota_tag_init)(uint16_t ver, uint16_t rom_ver);
 };
 
 /**
@@ -90,20 +77,24 @@ void hal_ota_register_module(hal_ota_module_t *module);
 hal_stat_t hal_ota_init(void *something);
 
 /**
- * Write data to an area on ota partition
+ * deinit ota partition
+ *
+ * @param  something  extra info for ota deinit
+ *
+ * @return  0 : On success, 1 : If an error occurred with any step
+ */
+hal_stat_t hal_ota_deinit(void *something);
+
+/**
+ * Save data to an area on ota partition
  *
  * @param  m           Refer the ota module which will be used,default module will be used if value is NULL
- * @param  off_set     Point to the start address that the data is written to, and
- *                     point to the last unwritten address after this function is
- *                     returned, so you can call this function serval times without
- *                     update this start address.
  * @param  inbuf       point to the data buffer that will be written to flash
  * @param  in_buf_len  The length of the buffer
  *
  * @return  0 : On success, 1 : If an error occurred with any step
  */
-hal_stat_t hal_ota_write(hal_ota_module_t *m, volatile uint32_t *off_set,
-                         uint8_t *in_buf , uint32_t in_buf_len);
+hal_stat_t hal_ota_save(hal_ota_module_t *m, uint8_t *in_buf , uint32_t in_buf_len);
 
 /**
  * Read data from an area on ota Flash to data buffer in RAM
@@ -132,14 +123,16 @@ hal_stat_t hal_ota_read(hal_ota_module_t *m, volatile uint32_t *off_set,
 hal_stat_t hal_ota_set_boot(hal_ota_module_t *m, void *something);
 
 /**
- * Set rollback when failed to boot
+ * Check the validity of received tag information with local data
+ * The parameter list could be altered according the implemet
  *
  * @param  m          Refer the ota module which will be used,default module will be used if value is NULL
- * @param  something  boot parms
  *
  * @return  kNoErr : On success. kGeneralErr : If an error occurred with any step
  */
-hal_stat_t hal_ota_rollback(hal_ota_module_t *m, void *something);
+hal_stat_t hal_ota_tag_check(hal_ota_module_t *m, uint32_t ota_type, uint16_t ver, uint16_t rom_ver, uint32_t size);
+
+hal_stat_t hal_ota_tag_get(hal_ota_module_t *m, void *something);
 
 /**
  * Get the default ota module

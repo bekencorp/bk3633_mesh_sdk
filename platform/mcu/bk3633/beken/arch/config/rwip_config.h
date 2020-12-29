@@ -161,7 +161,7 @@
 //   	<i> enable Host Controller Interface Support
 //   </e>
 #if ( 1 )
-  #define CFG_HCITL
+#define CFG_HCITL
 #endif
 
 #define CFG_ECC_P256_ACC     0
@@ -598,7 +598,6 @@
 #else
 #define HZ32000                                     0
 #endif
- 
 
 /// Time to wake-up Radio Module (in us)
 #define SLEEP_RM_WAKEUP_DELAY                       2000 //625

@@ -8,6 +8,7 @@
 
 #include "drv_model_pub.h"
 
+extern volatile uint32_t XVR_ANALOG_REG_BAK[32];
 
 static SDD_OPERATIONS icu_op =
 {
@@ -22,27 +23,13 @@ void icu_init(void)
 
     sddev_register_dev(ICU_DEV_NAME, &icu_op);
 
-/* 	REG_AHB0_ICU_FLASH &= ~(0xff << 16);
-	REG_AHB0_ICU_FLASH |= (0x15 << 16); 
-	REG_AHB0_ICU_CPU_STATUS  = 0x771;  // spi vol       hh
-
-    //REG_AHB0_ICU_LPO_CLK_ON |= (0x01 << 4);
-    
-    REG_AHB0_ICU_DIGITAL_PWD = REG_AHB0_ICU_DIGITAL_PWD & (~0X02);
-
-    REG_AHB0_ICU_CORECLKCON = 0X00;
-
-    REG_AHB0_ICU_CLKSRCSEL = 0X000001F9; //usr 16m
-
-    REG_AHB0_ICU_ANA_CTL &= ~(0X01 << 6); */
+    clrf_SYS_Reg0x0_jtag_mode;   ///close JTAG
 
     set_SYS_Reg0x2_core_sel(0x01);
-    set_SYS_Reg0x2_core_div(0x01);///16M CLK
-    setf_SYS_Reg0x17_CLK96M_PWD;
-    clrf_SYS_Reg0xd_PLL_PWR_sel;
-    setf_SYS_Reg0xb_pwd_on_boostsel;
-    addSYS_Reg0x17 = 0x82;
+    set_SYS_Reg0x2_core_div(0x0);///16M CLK
 
+    setf_SYS_Reg0xb_pwd_on_boostsel;
+    addSYS_Reg0x17 = 0x80;
 }
 
 void icu_exit(void)
@@ -54,7 +41,7 @@ UINT32 icu_ctrl(UINT32 cmd, void *param)
 {
     UINT32 ret, reg;
     UINT8  dev, posi;
-    //os_printf("%s cmd %d\r\n", __func__, cmd);
+
     ret = ICU_SUCCESS;
 
     switch(cmd)
@@ -73,40 +60,61 @@ UINT32 icu_ctrl(UINT32 cmd, void *param)
         break;
 
     case CMD_ICU_MCU_CLK_SEL:
-    	//if(*(UINT32 *)param == ICU_MCU_CLK_SEL_16M)
-    	{
-/* 			REG_AHB0_ICU_FLASH &= ~(0xff << 16);
-			REG_AHB0_ICU_FLASH |= (0x15 << 16);
-			REG_AHB0_ICU_CPU_STATUS  = 0x611;  // spi vol
-
-            REG_AHB0_ICU_DIGITAL_PWD = REG_AHB0_ICU_DIGITAL_PWD & (~0X02);
-
-            REG_AHB0_ICU_CORECLKCON = 0X00;
-
-            REG_AHB0_ICU_CLKSRCSEL = 0X000001F9; //usr 16m
-
-            REG_AHB0_ICU_ANA_CTL |= (0X01 << 6); */
-            set_SYS_Reg0x2_core_sel(0x01);
-            set_SYS_Reg0x2_core_div(0x01);///16M CLK
-            setf_SYS_Reg0xb_pwd_on_boostsel;
-            addSYS_Reg0x17 = 0x82;
-
-    	}
-/*     	else if(*(UINT32 *)param == ICU_MCU_CLK_SEL_64M)
-    	{
-			REG_AHB0_ICU_FLASH &= ~(0xff << 16);
-			REG_AHB0_ICU_FLASH |= (0x15 << 16);
-			REG_AHB0_ICU_CPU_STATUS  = 0x611;  // spi vol
-
-			REG_AHB0_ICU_DIGITAL_PWD = REG_AHB0_ICU_DIGITAL_PWD & (~0X02);
-
-			REG_AHB0_ICU_CORECLKCON = 0X00; //clk div 1
-
-			REG_AHB0_ICU_CLKSRCSEL = 0X000005FB; //usr PLL CLK SELT 64M
-
-			REG_AHB0_ICU_ANA_CTL |= (0X01 << 6);
-
-    	} */
+        switch(*(UINT32 *)param) {
+            case ICU_MCU_CLK_SEL_16M: {
+                set_SYS_Reg0x2_core_sel(0x01);
+                set_SYS_Reg0x2_core_div(0x1);
+                setf_SYS_Reg0x17_CLK96M_PWD;
+                clrf_SYS_Reg0xd_PLL_PWR_sel;
+                break;
+            }
+            case ICU_MCU_CLK_SEL_32M: {
+                XVR_ANALOG_REG_BAK[9]|= (0x01 << 20);
+                XVR_ANALOG_REG_BAK[9]&= ~(0x01 << 17);
+                XVR_ANALOG_REG_BAK[9]|= (0x01 << 16);
+                addXVR_Reg0x9 = XVR_ANALOG_REG_BAK[9];
+                clrf_SYS_Reg0x17_CLK96M_PWD;
+                setf_SYS_Reg0xd_PLL_PWR_sel;
+                set_SYS_Reg0x2_core_div(0x2);            
+                set_SYS_Reg0x2_core_sel(0x03);
+                break;
+            }
+            case ICU_MCU_CLK_SEL_48M: {
+                XVR_ANALOG_REG_BAK[9]|= (0x01 << 20);
+                XVR_ANALOG_REG_BAK[9]|= (0x01 << 17);
+                XVR_ANALOG_REG_BAK[9]|= (0x01 << 16);
+                addXVR_Reg0x9 = XVR_ANALOG_REG_BAK[9];
+                clrf_SYS_Reg0x17_CLK96M_PWD;
+                setf_SYS_Reg0xd_PLL_PWR_sel;
+                set_SYS_Reg0x2_core_div(0x2);         
+                set_SYS_Reg0x2_core_sel(0x03);
+                break;
+            }
+            case ICU_MCU_CLK_SEL_64M: {
+                XVR_ANALOG_REG_BAK[9]|= (0x01 << 20);
+                XVR_ANALOG_REG_BAK[9]&= ~(0x01 << 17);
+                XVR_ANALOG_REG_BAK[9]|= (0x01 << 16);
+                addXVR_Reg0x9 = XVR_ANALOG_REG_BAK[9];
+                clrf_SYS_Reg0x17_CLK96M_PWD;
+                setf_SYS_Reg0xd_PLL_PWR_sel;
+                set_SYS_Reg0x2_core_div(0x1);            
+                set_SYS_Reg0x2_core_sel(0x03);
+                break;
+            }
+            case ICU_MCU_CLK_SEL_80M: {
+                XVR_ANALOG_REG_BAK[9]&= ~(0x01 << 20);
+                XVR_ANALOG_REG_BAK[9]&= ~(0x01 << 17);
+                XVR_ANALOG_REG_BAK[9]&= ~(0x01 << 16);
+                addXVR_Reg0x9 = XVR_ANALOG_REG_BAK[9];
+                clrf_SYS_Reg0x17_CLK96M_PWD;
+                setf_SYS_Reg0xd_PLL_PWR_sel;
+                set_SYS_Reg0x2_core_div(0x1);            
+                set_SYS_Reg0x2_core_sel(0x03);
+                break;
+            }
+            default:
+                break;
+        }
     	break;
 
 /*     case CMD_ICU_CLK_32K_SRC_SEL:
@@ -157,9 +165,8 @@ UINT32 icu_ctrl(UINT32 cmd, void *param)
                 break;
             default:
                 break;
-    	}
+        }
         break;
-
     case CMD_CLK_PWR_DOWN:
     	dev = *(UINT8 *)param;
     	switch(dev)

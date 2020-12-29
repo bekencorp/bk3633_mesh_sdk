@@ -35,7 +35,7 @@
 #endif
 
 static struct k_thread ecc_thread_data;
-static BT_STACK_NOINIT(ecc_thread_stack, 484);
+static BT_STACK_NOINIT(ecc_thread_stack, 284);  //484, for reduce thread size.
 
 /* based on Core Specification 4.2 Vol 3. Part H 2.3.5.6.1 */
 static const u32_t debug_private_key[8] = {
@@ -283,7 +283,7 @@ static void le_p256_pub_key(struct net_buf *buf)
         k_sem_give(&cmd_sem);
         status = BT_HCI_ERR_SUCCESS;
     }
-
+    
     send_cmd_status(BT_HCI_OP_LE_P256_PUBLIC_KEY, status);
 }
 

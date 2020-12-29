@@ -289,12 +289,16 @@ void genie_sub_list_init(void);
 #ifdef CONFIG_MESH_MODEL_VENDOR_SRV
 #include "bluetooth/mesh/mesh_model/inc/vendor_model_srv.h"
 #endif
-
+#ifdef CONFIG_MESH_MODEL_GEN_DEF_TRANS_TIME_SRV
 #include "bluetooth/mesh/mesh_model/inc/gen_def_trans_time_srv.h"
+#endif
+#ifdef CONFIG_MESH_MODEL_GEN_ONPOWERUP_SRV
 #include "bluetooth/mesh/mesh_model/inc/gen_onpowerup_srv.h"
+#endif
+#ifdef CONFIG_MESH_MODEL_HSL_SRV
 #include "bluetooth/mesh/mesh_model/inc/light_hsl_srv.h"
+#endif
 
-#include "bluetooth/host/profile/ais_srv/ais_service.h"
 
 void genie_mesh_init(void);
 

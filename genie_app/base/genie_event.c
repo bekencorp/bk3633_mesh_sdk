@@ -12,7 +12,7 @@
 #include "common/log.h"
 
 #ifndef CONFIG_MESH_SEQ_COUNT_INT
-#define CONFIG_MESH_SEQ_COUNT_INT 10000
+#define CONFIG_MESH_SEQ_COUNT_INT 30
 #endif
 extern void user_event(E_GENIE_EVENT event, void *p_arg);
 extern S_ELEM_STATE g_elem_state[];
@@ -23,6 +23,8 @@ const char *genie_event_str[] = {
     "SW_RESET",
     "HW_RESET_START",
     "HW_RESET_DONE",
+
+    "SDK->REPEAT_RESET",
 
     "SDK->MESH_INIT",
     "SDK->PBADV_START",
@@ -126,7 +128,6 @@ static E_GENIE_EVENT _genie_event_handle_hw_reset_done(void)
 
 static E_GENIE_EVENT _genie_event_handle_mesh_init(void)
 {
-
     //check provsioning status
     uint16_t addr;
     uint32_t seq;
@@ -137,7 +138,7 @@ static E_GENIE_EVENT _genie_event_handle_mesh_init(void)
     BT_DBG("\r\n");
 
 #ifdef CONFIG_GENIE_OTA
-    ais_check_ota_change();
+    ////ais_check_ota_change();
 #endif
 
 #if defined(CONFIG_GENIE_DEBUG_CMD)
@@ -198,7 +199,7 @@ static E_GENIE_EVENT _genie_event_handle_mesh_init(void)
     if((read_flag & 0x1F) == 0x1D) {            ////(0x1F)
 #endif
         BT_INFO(">>>proved<<<");
-#if 1
+#if 0
         seq += CONFIG_MESH_SEQ_COUNT_INT;
 #endif
         bt_mesh_provision(netkey.key, netkey.net_index, netkey.flag, netkey.ivi, seq, addr, devkey);
@@ -206,7 +207,7 @@ static E_GENIE_EVENT _genie_event_handle_mesh_init(void)
         genie_appkey_register(appkey.net_index, appkey.key_index, appkey.key, appkey.flag);
 
 #ifdef CONFIG_GENIE_OTA
-        ais_service_register();
+        ota_service_register();
 #endif
         /* check hb */
         mesh_hb_para_t hb_para = {.count = 0};
@@ -234,9 +235,10 @@ static E_GENIE_EVENT _genie_event_handle_mesh_init(void)
             return GENIE_EVT_HW_RESET_START;
         }
 #ifdef CONFIG_GENIE_OTA
-        ais_service_register();
+        ota_service_register();
 #endif
         bt_mesh_prov_enable(BT_MESH_PROV_GATT | BT_MESH_PROV_ADV);
+
         return GENIE_EVT_SDK_MESH_PBADV_START;
     }
     return GENIE_EVT_SDK_MESH_INIT;
@@ -376,12 +378,12 @@ static E_GENIE_EVENT _genie_event_handle_hb_set(mesh_hb_para_t *p_para)
 static E_GENIE_EVENT _genie_event_handle_seq_update(void)
 {
     uint32_t seq = bt_mesh.seq;
-#if 1
+#if 0
     if (seq % CONFIG_MESH_SEQ_COUNT_INT == 0) {
         genie_flash_write_seq(&seq);
     }
 #else
-    // genie_flash_write_seq(&seq);
+    genie_flash_write_seq(&seq);
 #endif
     return GENIE_EVT_SDK_SEQ_UPDATE;
 }

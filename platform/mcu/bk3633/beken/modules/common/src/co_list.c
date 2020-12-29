@@ -33,7 +33,7 @@
  * FUNCTION DEFINTIONS
  ****************************************************************************************
  */
-void co_list_init(struct co_list *list)
+inline void co_list_init(struct co_list *list)
 {
     list->first = NULL;
     list->last = NULL;
@@ -78,8 +78,7 @@ void co_list_pool_init(struct co_list *list,
     #endif //KE_PROFILING
 }
 
-void co_list_push_back(struct co_list *list,
-                       struct co_list_hdr *list_hdr)
+__ATTR_ARM void co_list_push_back(struct co_list *list, struct co_list_hdr *list_hdr)
 {
     // Sanity check
     ASSERT_ERR(list_hdr != NULL);
@@ -175,7 +174,7 @@ void co_list_push_front(struct co_list *list,
     #endif //KE_PROFILING
 }
 
-struct co_list_hdr *co_list_pop_front(struct co_list *list)
+__ATTR_ARM struct co_list_hdr *co_list_pop_front(struct co_list *list)
 {
     struct co_list_hdr *element;
 
@@ -329,7 +328,7 @@ void co_list_extract_sublist(struct co_list *list, struct co_list_hdr *ref_hdr, 
     }
 }
 
-bool co_list_find(struct co_list *list,
+inline bool co_list_find(struct co_list *list,
                   struct co_list_hdr *list_hdr)
 {
     struct co_list_hdr *tmp_list_hdr;

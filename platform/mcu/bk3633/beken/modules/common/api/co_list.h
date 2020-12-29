@@ -118,7 +118,7 @@ void co_list_pool_init(struct co_list *list,
  *
  ****************************************************************************************
  */
-void co_list_push_back(struct co_list *list, struct co_list_hdr *list_hdr);
+inline void co_list_push_back(struct co_list *list, struct co_list_hdr *list_hdr);
 
 /**
  ****************************************************************************************
@@ -131,7 +131,7 @@ void co_list_push_back(struct co_list *list, struct co_list_hdr *list_hdr);
  * @param last_hdr       Pointer to the last element to append
  ****************************************************************************************
  */
-void co_list_push_back_sublist(struct co_list *list, struct co_list_hdr *first_hdr, struct co_list_hdr *last_hdr);
+inline void co_list_push_back_sublist(struct co_list *list, struct co_list_hdr *first_hdr, struct co_list_hdr *last_hdr);
 
 /**
  ****************************************************************************************

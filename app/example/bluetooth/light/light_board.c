@@ -46,13 +46,6 @@ int led_startup(void)
 {
     _led_init();
     _init_light_para();
-#if defined(CONFIG_GENIE_OTA)
-    uint8_t ota_flag = ais_get_ota_indicat();
-    if (!(ota_flag && g_powerup[0].last_onoff == 0)) {
-        _led_flash(1, 0);
-        //g_elem_state[0].state.onoff[T_CUR] = g_elem_state[0].state.onoff[T_TAR] = 1;
-    }
-#endif //CONFIG_GENIE_OTA
 }
 
 void set_light_board_type(light_type_e type)

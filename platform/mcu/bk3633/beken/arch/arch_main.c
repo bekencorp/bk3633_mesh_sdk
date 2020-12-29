@@ -75,6 +75,7 @@
 //#include "rf_test.h"
 #include "fake_clock_pub.h"
 #include "em_map.h"
+#include "icu_pub.h"
 
 /**
  ****************************************************************************************
@@ -288,6 +289,9 @@ void ble_handler(void *arg)
     // Initialize RW SW stack
     rwip_func.rwip_init(0);
 
+    // Set the CPU default clock to 80M Hz.
+    UINT32 param = ICU_MCU_CLK_SEL_80M;
+    sddev_control(ICU_DEV_NAME, CMD_ICU_MCU_CLK_SEL, &param);
     //flash_init();
 
     if(hdr_arg->public_addr)

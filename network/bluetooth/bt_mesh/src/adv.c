@@ -127,7 +127,7 @@ static inline void adv_send(struct net_buf *buf)
            buf->len, bt_hex(buf->data, buf->len));
     BT_DBG("count %u interval %ums, %ums, %ums duration %ums",
            BT_MESH_ADV(buf)->count + 1, adv_int, adv_int, BT_MESH_ADV(buf)->adv_int, duration);
-
+  
     ad.type = adv_type[BT_MESH_ADV(buf)->type];
     ad.data_len = buf->len;
     ad.data = buf->data;
@@ -146,7 +146,7 @@ static inline void adv_send(struct net_buf *buf)
     }
 
     BT_DBG("Advertising started. Sleeping %u ms", duration);
- 
+    
     k_sleep(duration);
 
 exit:
@@ -319,7 +319,7 @@ static void adv_thread(void *p1, void *p2, void *p3)
         } else {
             buf = net_buf_get(&adv_queue, K_FOREVER);
         }
-        
+
         if (!buf) {
             continue;
         }
@@ -329,7 +329,7 @@ static void adv_thread(void *p1, void *p2, void *p3)
             BT_MESH_ADV(buf)->busy = 0;
             adv_send(buf);
         } else {
-             // unref it even if it is canceled.
+            // unref it even if it is canceled.
             net_buf_unref(buf);
         }
 #endif
@@ -386,6 +386,11 @@ void bt_mesh_adv_send(struct net_buf *buf, const struct bt_mesh_send_cb *cb,
 {
     BT_DBG("type 0x%02x len %u: %s", BT_MESH_ADV(buf)->type, buf->len,
            bt_hex(buf->data, buf->len));
+
+    if (!buf->ref) {
+        BT_ERR("ref is zero, so return.");
+        return;
+    }
 
     BT_MESH_ADV(buf)->cb = cb;
     BT_MESH_ADV(buf)->cb_data = cb_data;

@@ -111,7 +111,7 @@ static void exit_uart_test_cmd(char *buf, int len, int argc, char **argv)
 int uart_test_task_create(void)
 {
    return krhino_task_create(&uart_test_task_obj, "uart_test_cmd", NULL,
-    		                 AOS_DEFAULT_APP_PRI, 0, uart_test_task,
+    		                 UART_TEST_TASK_PRIO, 0, uart_test_task,
     		                 sizeof(uart_test_task) / sizeof(cpu_stack_t),
                              (task_entry_t)uart_test_main, 1);
 }
@@ -141,6 +141,8 @@ int uart_test_init(void)
     UART_PRINTF("%s, %d\r\n", __func__, __LINE__);
 
     uart_tp = (struct uart_test_st *)aos_malloc(sizeof(struct uart_test_st));
+    memset(uart_tp, 0, sizeof(struct uart_test_st));
+
     if (uart_tp == NULL) {
         return ENOMEM;
     }

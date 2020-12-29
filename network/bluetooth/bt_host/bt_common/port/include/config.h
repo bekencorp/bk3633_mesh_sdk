@@ -82,7 +82,7 @@
  * CONFIG_BT_HCI_CMD_COUNT: hci cmd buffer count,range 2 to 64
  */
 #ifndef CONFIG_BT_HCI_CMD_COUNT
-#define CONFIG_BT_HCI_CMD_COUNT 5
+#define CONFIG_BT_HCI_CMD_COUNT 2
 #endif
 
 /**
@@ -141,7 +141,7 @@
 #undef CONFIG_BT_L2CAP_TX_BUF_COUNT
 #define CONFIG_BT_L2CAP_TX_BUF_COUNT 3
 #else
-#define CONFIG_BT_L2CAP_TX_BUF_COUNT 8
+#define CONFIG_BT_L2CAP_TX_BUF_COUNT 10
 #endif
 #endif
 
@@ -451,11 +451,11 @@
 #endif
 
 #ifndef CONFIG_BT_MESH_APP_KEY_COUNT
-#define CONFIG_BT_MESH_APP_KEY_COUNT 5
+#define CONFIG_BT_MESH_APP_KEY_COUNT 1
 #endif
 
 #ifndef CONFIG_BT_MESH_SUBNET_COUNT
-#define CONFIG_BT_MESH_SUBNET_COUNT 3
+#define CONFIG_BT_MESH_SUBNET_COUNT 2
 #endif
 
 #ifndef CONFIG_BT_MESH_CRPL
@@ -476,19 +476,19 @@
 #endif
 
 #ifndef CONFIG_BT_MESH_TX_SEG_MSG_COUNT
-#define CONFIG_BT_MESH_TX_SEG_MSG_COUNT 6
+#define CONFIG_BT_MESH_TX_SEG_MSG_COUNT 2	//6, add_provisioner_supported
 #endif
 
 #ifndef CONFIG_BT_MESH_RX_SDU_MAX
-#define CONFIG_BT_MESH_RX_SDU_MAX 200
+#define CONFIG_BT_MESH_RX_SDU_MAX 120	//200, add_provisioner_supported
 #endif
 
 #ifndef CONFIG_BT_MESH_RX_SEG_MSG_COUNT
-#define CONFIG_BT_MESH_RX_SEG_MSG_COUNT 6
+#define CONFIG_BT_MESH_RX_SEG_MSG_COUNT 3	//6, add_provisioner_supported
 #endif
 
 #ifndef CONFIG_BT_MESH_ADV_PRIO
-#define CONFIG_BT_MESH_ADV_PRIO         16
+#define CONFIG_BT_MESH_ADV_PRIO         25      //16
 #endif
 
 #ifndef CONFIG_BT_MESH_PROXY_FILTER_SIZE

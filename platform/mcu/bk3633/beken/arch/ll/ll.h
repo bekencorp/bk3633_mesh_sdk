@@ -22,7 +22,7 @@
 #include "compiler.h"
 
 #define KEIL_INTRINSICS_INTERRUPT
-
+#define ALIOS_KERNEL
 
 /** @brief Enable interrupts globally in the system.
  * This macro must be used when the initialization phase is over and the interrupts

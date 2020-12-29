@@ -363,7 +363,7 @@ static void proxy_prov_disconnected(bt_mesh_conn_t conn, u8_t reason)
 {
     int i;
 
-    BT_DBG("conn %p, handle is %d, reason 0x%02x", conn, conn->handle, reason);
+    // BT_DBG("conn %p, handle is %d, reason 0x%02x", conn, conn->handle, reason);
 
     if (conn_count) {
         conn_count--;

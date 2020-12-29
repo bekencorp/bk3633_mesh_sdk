@@ -47,9 +47,12 @@ static void sys_init(void)
 	os_printf("The APP code build at %s, %s\r\n\n", __TIME__, __DATE__);
 #endif
 
+    aos_mutex_lock_init();    //add mutex lock, add_provisioner_supported.
+
     aos_components_init(&kinit);
 
     aos_kernel_init(&kinit);
+
 #endif
 }
 
@@ -64,9 +67,6 @@ void sys_start(void)
 
     soc_driver_init();
     printf("soc_driver init ok \r\n\r\n");
-
-    UINT32 param = ICU_MCU_CLK_SEL_16M;
-    sddev_control(ICU_DEV_NAME, CMD_ICU_MCU_CLK_SEL, &param);
 
     fclk_init(FCLK_PWM_ID, RHINO_CONFIG_TICKS_PER_SECOND);
 

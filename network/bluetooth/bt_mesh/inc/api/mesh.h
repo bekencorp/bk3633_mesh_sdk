@@ -34,6 +34,8 @@
 #include <mesh/mesh_shell.h>
 #endif
 
+#ifdef CONFIG_BT_MESH_ALI_TMALL_GENIE
 #include "genie_app.h"
+#endif /* CONFIG_BT_MESH_ALI_TMALL_GENIE */
 
 #endif /* __BT_MESH_H */

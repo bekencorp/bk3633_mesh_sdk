@@ -6,7 +6,7 @@
 #define FIQ_IRQ_END                      (18)
 
 #if 1
-#define FIQ_BLE                          (15)
+#define FIQ_BLE                          (20)
 #define FIQ_BTDM                         (22)
 #define FIQ_PWM0                         (0)
 

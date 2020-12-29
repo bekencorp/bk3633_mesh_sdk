@@ -32,7 +32,7 @@ GLOBAL_DEFINES  += CONFIG_AOS_KV_SECOND_PTN=7
 GLOBAL_DEFINES  += CONFIG_AOS_KV_PTN_SIZE=4096
 GLOBAL_DEFINES  += CONFIG_AOS_KV_BUFFER_SIZE=8192
 GLOBAL_DEFINES  += CONFIG_AOS_UOTA_BREAKPOINT
-GLOBAL_DEFINES  += CONFIG_AOS_CLI_STACK_SIZE=512
+GLOBAL_DEFINES  += CONFIG_AOS_CLI_STACK_SIZE=2048
 GLOBAL_DEFINES  += CONFIG_AOS_CLI_BOARD
 
 GLOBAL_CFLAGS   += -mcpu=arm968e-s
@@ -90,10 +90,11 @@ $(NAME)_SOURCES  +=  hal/flash.c
 $(NAME)_SOURCES  +=  hal/uart.c
 $(NAME)_SOURCES  +=  hal/pwm.c
 $(NAME)_SOURCES  +=  hal/beken_rhino.c
+$(NAME)_SOURCES  +=  port/static_partition.c
 
 ifeq ($(ble), 1)
-$(NAME)_SOURCES  +=  port/ais_ota_port.c
-$(NAME)_SOURCES  +=  port/ali_dfu_port.c
+$(NAME)_SOURCES  +=  port/ota_port.c
+$(NAME)_SOURCES  +=  port/ota_crc.c
 endif
 
 ifneq ($(filter rhino.pwrmgmt,$(COMPONENTS)),)

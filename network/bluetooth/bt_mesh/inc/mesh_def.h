@@ -173,6 +173,14 @@ struct bt_mesh_uuid_128 {
 #define BT_MESH_UUID_MESH_PROXY_DATA_OUT       BT_MESH_UUID_DECLARE_16(0x2ade)
 #define BT_MESH_UUID_MESH_PROXY_DATA_OUT_VAL   0x2ade
 
+#ifdef CONFIG_BT_MESH_TELINK
+/** @def BT_MESH_UUID_MESH_TELINK
+ *  @brief Supported Telink ble mesh
+ */
+#define BT_MESH_UUID_MESH_TELINK               BT_MESH_UUID_DECLARE_16(0x7fdd)
+#define BT_MESH_UUID_MESH_TELINK_VAL           0x7fdd
+#endif /* CONFIG_BT_MESH_TELINK */
+
 /** @brief GATT Attribute structure. */
 struct bt_mesh_gatt_attr {
 	/** Attribute UUID */
@@ -534,7 +542,7 @@ enum {
 };
 
 /* Defined GAP timers */
-#define BT_MESH_GAP_ADV_FAST_INT_MIN_1               0x0030  /* 30 ms    */
+#define BT_MESH_GAP_ADV_FAST_INT_MIN_1               0x0020  /* 20 ms    */
 #define BT_MESH_GAP_ADV_FAST_INT_MAX_1               0x0060  /* 60 ms    */
 #define BT_MESH_GAP_ADV_FAST_INT_MIN_2               0x00a0  /* 100 ms   */
 #define BT_MESH_GAP_ADV_FAST_INT_MAX_2               0x00f0  /* 150 ms   */
