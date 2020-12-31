@@ -7,6 +7,7 @@
 #define LINK_CLOSE_FAILED    0x02
 #define PROVISIONER_SIZE_MAC     6
 #define CONFIG_BT_MESH_PROVISIONER_CONFIG_PRIO  16
+#define PROVISIONER_CONFIG_THREAD_STACK_SIZE    384     //512
 #define PROVISIONER_DEFAULT_MAC "\x72\x62\x12\x4D\x23\xAB"  // 3AB7104D23AB
 
 typedef enum {
@@ -27,7 +28,7 @@ static provisioner_msg_t prov_msg;
 
 static struct bt_mesh_comp comp;
 
-static struct k_sem g_sem;
+static struct k_sem provisioner_config_sem;
 
 
 void provisioner_init(void);

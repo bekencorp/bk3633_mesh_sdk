@@ -130,7 +130,7 @@ int aos_cli_unregister_commands(const struct cli_command *commands, int num_comm
  */
 #if defined BUILD_BIN || defined BUILD_KERNEL
 /* SINGLEBIN or KERNEL */
-int aos_cli_printf(const char *buff, ...);
+#define aos_cli_printf(fmt, ...) csp_printf("%s" fmt, aos_cli_get_tag(), ##__VA_ARGS__)
 #else
 /* FRAMWORK or APP */
 #define aos_cli_printf(fmt, ...) csp_printf("%s" fmt, aos_cli_get_tag(), ##__VA_ARGS__)

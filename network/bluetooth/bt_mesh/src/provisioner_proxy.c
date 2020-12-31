@@ -25,6 +25,7 @@
 #include "mesh_def.h"
 #include "mesh_bt_uuid.h"
 
+#define BT_DBG_ENABLED IS_ENABLED(CONFIG_BT_MESH_DEBUG_PROVISIONER_PROXY)
 #include "common/log.h"
 
 #include "net.h"

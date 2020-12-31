@@ -41,7 +41,7 @@
 //#include "bt_mesh_custom_log.h"
 
 /* 4 transmissions, 20ms interval */
-#define PROV_XMIT_COUNT        0
+#define PROV_XMIT_COUNT        6    //old state: 0
 #define PROV_XMIT_INT          20
 
 #define AUTH_METHOD_NO_OOB     0x00

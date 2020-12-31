@@ -139,6 +139,8 @@ struct bt_mesh_msg_ctx {
 	/** Remote address. */
 	u16_t addr;
 
+     /** Destination address of a received message. Not used for sending. */
+    uint16_t recv_dst;
 	/** Received TTL value. Not used for sending. */
 	u8_t  recv_ttl:7;
 
@@ -147,6 +149,7 @@ struct bt_mesh_msg_ctx {
 
 	/** TTL, or BT_MESH_TTL_DEFAULT for default TTL. */
 	u8_t  send_ttl;
+    u32_t recv_op;
 };
 
 struct bt_mesh_model_op {
@@ -349,6 +352,10 @@ struct bt_mesh_model {
 		} vnd;
 	};
 
+    /* Internal information, mainly for persistent storage */
+    uint8_t  elem_idx;  /* Belongs to Nth element */
+    uint8_t  model_idx; /* Is the Nth model in the element */
+    uint16_t flags;     /* Information about what has changed */
 	/* The Element this Model belongs to */
 	struct bt_mesh_elem *elem;
 

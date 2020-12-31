@@ -543,42 +543,6 @@ int bt_mesh_cfg_comp_data_get(u16_t net_idx, u16_t addr, u8_t page,
 	return cli_wait(&param, OP_DEV_COMP_DATA_STATUS);
 }
 
-#ifdef CONFIG_BT_MESH_PROVISIONER	//add_provisioner_supported
-extern struct bt_mesh_cfg_cli onoff_cli;
-int gen_onoff_cli_set(u16_t net_idx, u16_t addr)
-{
-    struct bt_mesh_model gen_onoff_cli_model ={BT_MESH_MODEL_ID_GEN_ONOFF_CLI}; ////// Generic Client - OnOff  ///define MM_ID_GENC_OO           (0x1001)
-       
-    struct net_buf_simple *msg = NET_BUF_SIMPLE(2 + 1 + 4);
-	struct bt_mesh_msg_ctx ctx = {
-		.net_idx = net_idx,
-		.app_idx = 1,//BT_MESH_KEY_DEV,//0,
-		.addr = addr,
-		.send_ttl = BT_MESH_TTL_DEFAULT,
-	};
-   	int err;
-
-    err = check_cli();
-   
-    if (err) 
-    {
-	    return err;
-	}
-       
-    bt_mesh_model_msg_init(msg, BLE_MESH_MODEL_OP_GEN_ONOFF_SET);
-        
-	net_buf_simple_add_u8(msg, 0x01);
-
-    //onoff_cli
-    err = bt_mesh_model_send(bt_mesh_model_find(bt_mesh_elem_find(0x01), 0x1001), &ctx, msg, NULL, NULL);
-              
-	if (err) {
-		BT_ERR("model_send() failed (err %d)", err);
-		return err;
-	}
-}
-#endif
-
 static int get_state_u8(u16_t net_idx, u16_t addr, u32_t op, u32_t rsp,
 			u8_t *val)
 {
@@ -2162,6 +2126,39 @@ s32_t bt_mesh_cfg_cli_timeout_get(void)
 void bt_mesh_cfg_cli_timeout_set(s32_t timeout)
 {
 	msg_timeout = timeout;
+}
+
+int bt_mesh_cfg_cli_gen_onoff_set(u16_t net_idx, u16_t src_addr, u16_t dst_addr, u16_t onoff_val)
+{
+    struct bt_mesh_model gen_onoff_cli_model ={BT_MESH_MODEL_ID_GEN_ONOFF_CLI}; ////// Generic Client - OnOff  ///define MM_ID_GENC_OO           (0x1001)
+       
+    struct net_buf_simple *msg = NET_BUF_SIMPLE(2 + 1 + 4);
+	struct bt_mesh_msg_ctx ctx = {
+		.net_idx = net_idx,
+		.app_idx = 1,//BT_MESH_KEY_DEV,//0,
+		.addr = dst_addr,
+		.send_ttl = BT_MESH_TTL_DEFAULT,
+	};
+   	int err;
+
+    err = check_cli();
+   
+    if (err) 
+    {
+	    return err;
+	}
+       
+    bt_mesh_model_msg_init(msg, BLE_MESH_MODEL_OP_GEN_ONOFF_SET);
+	net_buf_simple_add_u8(msg, onoff_val);
+
+    //onoff_cli
+    err = bt_mesh_model_send(bt_mesh_model_find(bt_mesh_elem_find(src_addr), BT_MESH_MODEL_ID_GEN_ONOFF_CLI), 
+										&ctx, msg, NULL, NULL);
+              
+	if (err) {
+		BT_ERR("model_send() failed (err %d)", err);
+		return err;
+	}
 }
 
 int bt_mesh_cfg_cli_init(struct bt_mesh_model *model, bool primary)

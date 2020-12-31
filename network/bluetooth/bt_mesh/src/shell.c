@@ -1435,98 +1435,6 @@ static int cmd_app_key_add(int argc, char *argv[])
 	return 0;
 }
 
-#ifdef CONFIG_BT_MESH_PROVISIONER   //add_provisioner_supported
-void user_comp_data_get(u16_t net_idx, u16_t dst)
-{
-	u8_t status, page = 0x00;
-	int err;
-	struct net_buf_simple *comp = NET_BUF_SIMPLE(47); ///NET_BUF_SIMPLE(_size),change the size
-
-	net_buf_simple_init(comp, 0);
-	err = bt_mesh_cfg_comp_data_get(net_idx, dst, page,
-					&status, comp);
-	if (err) {
-		printk("Getting composition failed (err %d)\n", err);
-		return 0;
-	}
-
-	if (status != 0x00) {
-		printk("Got non-success status 0x%02x\n", status);
-		return 0;
-	}
-
-}
-
-void user_app_key_add(u16_t net_idx, u16_t dst)
-{
-       u8_t key_val[16];
-	u16_t key_net_idx, key_app_idx = 0;
-	u8_t status;
-	int err;
-
-       memcpy(key_val, default_key, sizeof(key_val));
-       err = bt_mesh_cfg_app_key_add(net_idx,dst, key_net_idx,
-				      key_app_idx, key_val, &status);
-	if (err) {
-		printk("Unable to send App Key Add (err %d)\n", err);
-		return 0;
-	}
-
-	if (status) {
-		printk("AppKeyAdd failed with status 0x%02x\n", status);
-	} else {
-		printk("AppKey added, NetKeyIndex 0x%04x AppKeyIndex 0x%04x\n",
-		       key_net_idx, key_app_idx);
-	}
-}
-
-int user_mod_app_bind(u16_t net_idx, u16_t dst)
-{
-       u16_t elem_addr, mod_app_idx, mod_id, cid;
-	u8_t status;
-	int err;
-
-       err = bt_mesh_cfg_mod_app_bind(net_idx, dst, 0x02,
-					       0x00, 0x1000, &status);
-       if (err) {
-		printk("Unable to send Model App Bind (err %d)\n", err);
-		return 0;
-	}
-
-	if (status) {
-		printk("Model App Bind failed with status 0x%02x\n", status);
-	} else {
-		printk("AppKey successfully bound\n");
-	}
-       
-}
-
-int user_mod_sub_add(u16_t net_idx, u16_t dst)
-{
-       u16_t elem_addr, sub_addr, mod_id, cid;
-	u8_t status;
-	int err;
-
-       {
-		err = bt_mesh_cfg_mod_sub_add(net_idx, dst, /*elem_addr*/0x02,
-					      /*sub_addr*/0xc000, /*mod_id*/0x1000, &status);
-	}
-
-	if (err) {
-		printk("Unable to send Model Subscription Add (err %d)\n", err);
-		return 0;
-	}
-
-	if (status) {
-		printk("Model Subscription Add failed with status 0x%02x\n",
-		       status);
-	} else {
-		printk("Model subscription was successful\n");
-	}
-	return 0;
-}
-#endif
-
 static int cmd_app_key_del(int argc, char *argv[])
 {
 	u8_t key_val[16];
@@ -2383,7 +2291,7 @@ static int cmd_node_ident(int argc, char *argv[])
 	int err;
 
 	netkey_idx = strtoul(argv[1], NULL, 0);
-	if (argc == 2){
+	if (argc == 2) {
 		 err = bt_mesh_cfg_node_ident_get(netkey_idx, net.dst, net.dst, &status);
 	} else {
 		ident_state = strtoul(argv[2], NULL, 0);

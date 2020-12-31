@@ -22,6 +22,14 @@ struct bt_mesh_model *bt_mesh_model_find(struct bt_mesh_elem *elem,
 
 u16_t *bt_mesh_model_find_group(struct bt_mesh_model *mod, u16_t addr);
 
+/** @brief Get whether the model is in the primary element of the device.
+ *
+ *  @param mod Mesh model.
+ *
+ *  @return true if the model is on the primary element, false otherwise.
+ */
+bool bt_mesh_model_in_primary(struct bt_mesh_model *mod);
+
 bool bt_mesh_fixed_group_match(u16_t addr);
 
 void bt_mesh_model_foreach(void (*func)(struct bt_mesh_model *mod,

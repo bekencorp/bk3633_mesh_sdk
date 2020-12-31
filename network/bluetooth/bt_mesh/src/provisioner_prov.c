@@ -21,9 +21,10 @@
 #include <net/buf.h>
 #include <api/mesh.h>
 
+#define BT_DBG_ENABLED IS_ENABLED(CONFIG_BT_MESH_DEBUG_PROVISIONER_PROV)
 #include "common/log.h"
-#include "mesh_def.h"
 
+#include "mesh_def.h"
 #include "mesh.h"
 #include "net.h"
 #include "mesh_crypto.h"

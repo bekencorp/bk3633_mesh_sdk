@@ -29,6 +29,7 @@
 #include "mesh.h"
 #include "main.h"
 
+#define BT_DBG_ENABLED IS_ENABLED(CONFIG_BT_MESH_DEBUG_PROVISIONER_MAIN)
 #include "common/log.h"
 
 //include "crypto.h"

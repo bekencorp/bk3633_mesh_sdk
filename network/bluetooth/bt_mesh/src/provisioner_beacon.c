@@ -25,7 +25,7 @@
 #include <net/buf.h>
 #include <api/mesh.h>
 
-#define BT_DBG_ENABLED IS_ENABLED(CONFIG_BT_MESH_DEBUG_BEACON)
+#define BT_DBG_ENABLED IS_ENABLED(CONFIG_BT_MESH_DEBUG_PROVISIONER_BEACON)
 #include "common/log.h"
 
 #include "adv.h"

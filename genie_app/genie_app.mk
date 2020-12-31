@@ -119,6 +119,11 @@ GLOBAL_DEFINES += CONFIG_MESH_MODEL_VENDOR_SRV
 $(NAME)_SOURCES += bluetooth/mesh/mesh_model/src/vendor_model_srv.c
 endif
 
+ifeq ($(BLE_MESH_TIME_SCENE_SERVER),1)
+GLOBAL_DEFINES += CONFIG_BLE_MESH_TIME_SCENE_SERVER
+$(NAME)_SOURCES += bluetooth/mesh/mesh_model/src/server_common.c
+$(NAME)_SOURCES += bluetooth/mesh/mesh_model/src/time_scene_server.c
+endif
 
 $(NAME)_SOURCES += bluetooth/mesh/mesh_model/src/model_bind_ops.c
 

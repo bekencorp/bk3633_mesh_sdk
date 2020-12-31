@@ -30,6 +30,13 @@
 static const struct bt_mesh_comp *dev_comp;
 static u16_t dev_primary_addr;
 
+int time_srv_init(struct bt_mesh_model *model, bool primary);
+int time_setup_srv_init(struct bt_mesh_model *model, bool primary);
+int scene_srv_init(struct bt_mesh_model *model, bool primary);
+int scene_setup_srv_init(struct bt_mesh_model *model, bool primary);
+int scheduler_srv_init(struct bt_mesh_model *model, bool primary);
+int scheduler_setup_srv_init(struct bt_mesh_model *model, bool primary);
+
 static const struct {
     const u16_t id;
     int (*const init)(struct bt_mesh_model *model, bool primary);
@@ -41,6 +48,14 @@ static const struct {
 #endif
 #if defined(CONFIG_BT_MESH_HEALTH_CLI)
     { BT_MESH_MODEL_ID_HEALTH_CLI, bt_mesh_health_cli_init },
+#endif
+#if defined (CONFIG_BLE_MESH_TIME_SCENE_SERVER)
+    {BT_MESH_MODEL_ID_TIME_SRV, time_srv_init},
+    {BT_MESH_MODEL_ID_TIME_SETUP_SRV, time_setup_srv_init},
+    {BT_MESH_MODEL_ID_SCENE_SRV, scene_srv_init},
+    {BT_MESH_MODEL_ID_SCENE_SETUP_SRV, scene_setup_srv_init},
+    {BT_MESH_MODEL_ID_SCHEDULER_SRV, scheduler_srv_init},
+    {BT_MESH_MODEL_ID_SCHEDULER_SETUP_SRV, scheduler_setup_srv_init},
 #endif
 };
 
@@ -256,6 +271,14 @@ static void mod_init(struct bt_mesh_model *mod, struct bt_mesh_elem *elem,
         mod->keys[i] = BT_MESH_KEY_UNUSED;
     }
 
+    mod->flags = 0;
+    mod->elem_idx = elem - dev_comp->elem;
+    if (vnd) {
+        mod->model_idx = mod - elem->vnd_models;
+    } else {
+        mod->model_idx = mod - elem->models;
+    }
+
     if (vnd) {
         return;
     }
@@ -379,6 +402,11 @@ u8_t bt_mesh_elem_count(void)
     return dev_comp->elem_count;
 }
 
+struct bt_mesh_elem *bt_mesh_model_elem(struct bt_mesh_model *mod)
+{
+    return &dev_comp->elem[mod->elem_idx];
+}
+
 static bool model_has_key(struct bt_mesh_model *mod, u16_t key)
 {
     int i;
@@ -474,6 +502,11 @@ bool bt_mesh_fixed_group_match(u16_t addr)
     }
 }
 
+bool bt_mesh_model_in_primary(struct bt_mesh_model *mod)
+{
+    return (mod->elem_idx == 0);
+}
+
 void bt_mesh_model_recv(struct bt_mesh_net_rx *rx, struct net_buf_simple *buf)
 {
     struct bt_mesh_model *models, *model;
@@ -482,6 +515,7 @@ void bt_mesh_model_recv(struct bt_mesh_net_rx *rx, struct net_buf_simple *buf)
     u8_t count;
     int i;
 
+    rx->ctx.recv_dst = rx->dst;
     BT_DBG("app_idx 0x%04x src 0x%04x dst 0x%04x", rx->ctx.app_idx,
            rx->ctx.addr, rx->dst);
     BT_DBG("len %u: %s", buf->len, bt_hex(buf->data, buf->len));
@@ -529,6 +563,16 @@ void bt_mesh_model_recv(struct bt_mesh_net_rx *rx, struct net_buf_simple *buf)
             models = elem->vnd_models;
             count = elem->vnd_model_count;
         }
+
+        /* The following three operations are added by Espressif.
+         * 1. Update the "recv_op" with the opcode got from the buf;
+         * 2. Update the model pointer with the found model;
+         * 3. Update the "srv_send" to be true when received a message.
+         *    This flag will be used when a server model sends a status
+         *    message, and has no impact on the client messages.
+         * Most of these info will be used by the application layer.
+         */
+        rx->ctx.recv_op = opcode;
 
         op = find_op(models, count, rx->ctx.app_idx, opcode, &model);
         if (op) {

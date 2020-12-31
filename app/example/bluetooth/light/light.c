@@ -10,13 +10,14 @@
 #include <misc/byteorder.h>
 #include <hal/soc/gpio.h>
 #include <hal/soc/pwm.h>
-
+#include "inc/time_scene_server.h"
 #ifdef BOARD_BK3633DEVKIT
 #include "gpio_pub.h"
 #endif
 
 #include "light_board.h"
 #include "uart_test_cmd.h"
+
 
 
 led_flash_t g_flash_para;
@@ -28,6 +29,61 @@ uint32_t get_mesh_pbadv_time(void)
 
 S_ELEM_STATE g_elem_state[MESH_ELEM_STATE_COUNT];
 S_MODEL_POWERUP g_powerup[MESH_ELEM_STATE_COUNT];
+
+#if CONFIG_BLE_MESH_TIME_SCENE_SERVER
+struct bt_mesh_time_state time_srv_state_0;
+struct bt_mesh_time_srv time_srv_0 = {
+    .state = &time_srv_state_0,
+};
+
+struct bt_mesh_time_setup_srv time_setup_srv_0 = {
+    .state = &time_srv_state_0,
+};
+
+struct scene_register scene_reg[5] = {
+    [0] = {.scene_number = 1,
+           .scene_value = NET_BUF_SIMPLE(2 + 10),
+          },
+    [1] = {.scene_number = 2,
+           .scene_value = NET_BUF_SIMPLE(2 + 10),
+          },
+    [2] = {.scene_number = 3,
+           .scene_value = NET_BUF_SIMPLE(2 + 10),
+          },
+    [3] = {.scene_number = 4,
+           .scene_value = NET_BUF_SIMPLE(2 + 10),
+          },
+    [4] = {.scene_number = 5,
+           .scene_value = NET_BUF_SIMPLE(2 + 10),
+          },
+};
+
+struct bt_mesh_scenes_state scenes_srv_state_0 = {
+    .scene_count = 5,
+    .scenes = &scene_reg,
+};
+
+struct bt_mesh_scene_srv scene_srv_0 = {
+    .state = &scenes_srv_state_0,
+};
+
+struct bt_mesh_scene_setup_srv scen_setup_srv_0 = {
+    .state = &scenes_srv_state_0,
+};
+
+struct schedule_register sch_reg[5];
+struct bt_mesh_scheduler_state scheduler_srv_state_0 = {
+    .schedule_count = 5,
+    .schedules = sch_reg,
+};
+struct bt_mesh_scheduler_srv schduler_srv_0 = {
+    .state = &scheduler_srv_state_0,
+};
+
+struct bt_mesh_scheduler_setup_srv schduler_setup_srv_0 = {
+    .state = &scheduler_srv_state_0,
+};
+#endif
 
 struct k_delayed_work light_state_store_work;
 
@@ -62,7 +118,7 @@ static struct bt_mesh_model root_models[] = {
 #endif
 
     MESH_MODEL_CTL_SETUP_SRV(&g_elem_state[0]),
-    			MESH_MODEL_CTL_TEMP_SRV(&g_elem_state[0]),
+    MESH_MODEL_CTL_TEMP_SRV(&g_elem_state[0]),
 #ifdef CONFIG_MESH_MODEL_HSL_SRV
     MESH_MODEL_HSL_SRV(&g_elem_state[0]),
     MESH_MODEL_HSL_SETUP_SRV(&g_elem_state[0]),
@@ -70,6 +126,14 @@ static struct bt_mesh_model root_models[] = {
 	MESH_MODEL_HSL_HUE_SRV(&g_elem_state[0]),
 	MESH_MODEL_HSL_SAT_SRV(&g_elem_state[0]),
 
+#if CONFIG_BLE_MESH_TIME_SCENE_SERVER
+    MESH_MODEL_TIME_SRV(&time_srv_0),
+    MESH_MODEL_TIME_SETUP_SRV(&time_setup_srv_0),
+    MESH_MODEL_SCENE_SRV(&scene_srv_0),
+    MESH_MODEL_SCENE_SETUP_SRV(&scen_setup_srv_0),
+    MESH_MODEL_SCHEDULER_SRV(&schduler_srv_0),
+    MESH_MODEL_SCHEDULER_SETUP_SRV(&schduler_setup_srv_0),
+#endif
 };
 
 static struct bt_mesh_model vnd_models[] = {

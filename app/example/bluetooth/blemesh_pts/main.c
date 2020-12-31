@@ -16,20 +16,21 @@
 
 #include <bluetooth.h>
 #include <api/mesh.h>
+#include "ais_ota.h"
 
 #if 1
 #define CID_INTEL            0x0002
-#define ID_TEMP_CELSIUS            0x2A1F
+#define ID_TEMP_CELSIUS      0x2A1F
 
 #define BT_MESH_MODEL_OP_SENSOR_STATUS    BT_MESH_MODEL_OP_1(0x52)
-#define BT_MESH_MODEL_OP_SENSOR_GET    BT_MESH_MODEL_OP_2(0x82, 0x31)
+#define BT_MESH_MODEL_OP_SENSOR_GET       BT_MESH_MODEL_OP_2(0x82, 0x31)
 
 static struct k_work temp_work;
 static struct k_timer temp_timer;
 
 static u16_t node_addr = BT_MESH_ADDR_UNASSIGNED;
 
-
+uint8_t g_mac[] = {0x11, 0x22, 0x33, 0x44, 0x55, 0x78};
 
 #define CUR_FAULTS_MAX 4
 
@@ -108,16 +109,16 @@ static void show_faults(u8_t test_id, u16_t cid, u8_t *faults, size_t fault_coun
         size_t i;
 
         if (!fault_count) {
-                printk("Health Test ID 0x%02x Company ID 0x%04x: no faults\n",
-                       test_id, cid);
-                return;
+            printk("Health Test ID 0x%02x Company ID 0x%04x: no faults\n",
+                    test_id, cid);
+            return;
         }
 
         printk("Health Test ID 0x%02x Company ID 0x%04x Fault Count %zu:\n",
                test_id, cid, fault_count);
 
         for (i = 0; i < fault_count; i++) {
-                printk("\t0x%02x\n", faults[i]);
+            printk("\t0x%02x\n", faults[i]);
         }
 }
 
@@ -167,9 +168,9 @@ static struct bt_mesh_elem elements[] = {
 
 /* Node composition data used to configure a node while provisioning */
 static const struct bt_mesh_comp comp = {
-        .cid = CID_INTEL,
-        .elem = elements,
-        .elem_count = ARRAY_SIZE(elements),
+    .cid = CID_INTEL,
+    .elem = elements,
+    .elem_count = ARRAY_SIZE(elements),
 };
 
 static int output_number(bt_mesh_output_action_t action, uint32_t number)
@@ -182,12 +183,12 @@ static int output_number(bt_mesh_output_action_t action, uint32_t number)
 static void temp_work_thread(struct k_work *work)
 {
     struct bt_mesh_model *model = &root_models[2];
-           struct net_buf_simple *msg = model->pub->msg;
+    struct net_buf_simple *msg = model->pub->msg;
     int ret;
 
     if (node_addr == BT_MESH_ADDR_UNASSIGNED) {
-            goto exit;
-        }
+        goto exit;
+    }
 
     /* sensor status */
     bt_mesh_model_msg_init(msg, BT_MESH_MODEL_OP_SENSOR_GET);
@@ -211,15 +212,15 @@ static void temp_timer_thread(void *work, void *args)
 
 static void prov_complete(u16_t net_idx, u16_t addr)
 {
-        printk("Provisioning completed!\n");
+    printk("Provisioning completed!\n");
     printk("Net ID: %u\n", net_idx);
     printk("Unicast addr: 0x%04x\n", addr);
     
     node_addr = addr;
 
-        k_work_init(&temp_work, temp_work_thread);
-        k_timer_init(&temp_timer, temp_timer_thread, NULL);
-        k_timer_start(&temp_timer, K_SECONDS(50));
+    k_work_init(&temp_work, temp_work_thread);
+    k_timer_init(&temp_timer, temp_timer_thread, NULL);
+    k_timer_start(&temp_timer, K_SECONDS(50));
 }
 
 /* UUID for identifying the unprovisioned node */
@@ -227,30 +228,30 @@ static const uint8_t dev_uuid[16] = { 0xdd, 0xdd };
 
 /* Only displaying the number while provisioning is supported */
 static const struct bt_mesh_prov prov = {
-        .uuid = dev_uuid,
-        .complete = prov_complete,
+    .uuid = dev_uuid,
+    .complete = prov_complete,
 };
 
 static void bt_ready(int err)
 {
     int ret;
 
-        if (err) {
-                printk("Bluetooth init failed (err %d)\n", err);
-                return;
-        }
+    if (err) {
+        printk("Bluetooth init failed (err %d)\n", err);
+        return;
+    }
 
-        printk("Bluetooth initialized\n");
+    printk("Bluetooth initialized\n");
 
-        ret = bt_mesh_init(&prov, &comp, NULL);
-        if (ret) {
-                printk("Initializing mesh failed (err %d)\n", ret);
-                return;
-        }
+    ret = bt_mesh_init(&prov, &comp, NULL);
+    if (ret) {
+        printk("Initializing mesh failed (err %d)\n", ret);
+        return;
+    }
 
     bt_mesh_prov_enable(BT_MESH_PROV_GATT | BT_MESH_PROV_ADV);
-    
-        printk("Mesh initialized\n");
+
+    printk("Mesh initialized\n");
 }
 
 extern int hci_driver_init();
@@ -271,14 +272,14 @@ void blemesh_sample(void)
 #endif
 static void app_delayed_action(void *arg)
 {
-    //blemesh_sample();
+    // blemesh_sample();
 }
 
 #ifdef CONFIG_BT_MESH_SHELL
 static void handle_bt_mesh_cmd(char *pwbuf, int blen, int argc, char **argv)
 {
     struct mesh_shell_cmd *mesh_cmds = NULL, *p;
-    char *cmd_str, no_match = 1;;
+    char *cmd_str, no_match = 1;
 
     if (strcmp(argv[0], "bt-mesh") != 0) {
         return;
