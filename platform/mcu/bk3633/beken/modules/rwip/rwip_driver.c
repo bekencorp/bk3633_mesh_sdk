@@ -766,7 +766,7 @@ void rwip_timer_hs_set(uint32_t target)
     }
 }
 
-void rwip_timer_hus_set(uint32_t target, uint32_t half_us_delay)
+__ATTR_ARM void rwip_timer_hus_set(uint32_t target, uint32_t half_us_delay)
 {
     // save target time
     rwip_env.timer_hus_target = target;

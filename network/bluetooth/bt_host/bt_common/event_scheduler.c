@@ -48,9 +48,8 @@ void scheduler_loop(struct k_poll_event *events)
         if (IS_ENABLED(CONFIG_BT_CONN)) {
             ev_count += bt_conn_prepare_events(&events[ev_count]);
         }
-        //printk("%s,  %d\r\n\r\n", __func__, __LINE__);
+
         k_poll(events, ev_count, delayed_ms);
-        //printk("%s,  %d\r\n\r\n", __func__, __LINE__);
         process_events(events, ev_count);
 
         if (k_queue_is_empty(&g_work_queue.queue) == 0) {

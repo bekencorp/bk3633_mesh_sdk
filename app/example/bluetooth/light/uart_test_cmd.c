@@ -9,6 +9,8 @@
 #include "uart.h"
 #include "uart_pub.h"
 
+#if (CONFIG_UART_TEST_CMD)
+
 static cpu_stack_t uart_test_task[UART_TEST_TASK_STACK/sizeof(cpu_stack_t)];
 static ktask_t uart_test_task_obj;
 static struct uart_test_st *uart_tp     = NULL;
@@ -164,3 +166,5 @@ init_general_err:
 
     return ret;
 }
+
+#endif

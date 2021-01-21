@@ -44,17 +44,12 @@
 #endif
 
 #ifdef CONFIG_BT_MESH
-extern struct net_buf_pool adv_buf_pool;
 
 #ifdef CONFIG_BT_MESH_FRIEND
-extern struct net_buf_pool friend_buf_pool;
 #endif // CONFIG_BT_MESH_FRIEND
 
 struct net_buf_pool *net_buf_pool_list[] = {
-    &adv_buf_pool,
-#ifdef CONFIG_BT_MESH_FRIEND
-    &friend_buf_pool,
-#endif // CONFIG_BT_MESH_FRIEND
+   NULL
 };
 #endif // CONFIG_BT_MESH
 
@@ -377,24 +372,24 @@ struct net_buf *net_buf_ref(struct net_buf *buf)
 
 struct net_buf *net_buf_clone(struct net_buf *buf, s32_t timeout)
 {
-	struct net_buf_pool *pool;
-	struct net_buf *clone;
+    struct net_buf_pool *pool;
+    struct net_buf *clone;
 
-	NET_BUF_ASSERT(buf);
+    NET_BUF_ASSERT(buf);
 
-	pool = net_buf_pool_get(buf->pool_id);
+    pool = net_buf_pool_get(buf->pool_id);
 
 	clone = net_buf_alloc(pool, timeout);
 	if (!clone) {
 		return NULL;
-	}
+    }
 
-	net_buf_reserve(clone, net_buf_headroom(buf));
+    net_buf_reserve(clone, net_buf_headroom(buf));
 
-	/* TODO: Add reference to the original buffer instead of copying it. */
-	memcpy(net_buf_add(clone, buf->len), buf->data, buf->len);
+    /* TODO: Add reference to the original buffer instead of copying it. */
+    memcpy(net_buf_add(clone, buf->len), buf->data, buf->len);
 
-	return clone;
+    return clone;
 }
 
 struct net_buf *net_buf_frag_last(struct net_buf *buf)

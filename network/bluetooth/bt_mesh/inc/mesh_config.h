@@ -53,7 +53,7 @@
 #endif
 
 #ifndef CONFIG_BT_MESH_TX_SEG_MSG_COUNT
-#define CONFIG_BT_MESH_TX_SEG_MSG_COUNT 2	//6, add_provisioner_supported
+#define CONFIG_BT_MESH_TX_SEG_MSG_COUNT 6  //, add_provisioner_supported
 #endif
 
 #ifndef CONFIG_BT_MESH_RX_SDU_MAX
@@ -62,7 +62,7 @@
 
 /* reduce rx buf pool 2->1 */
 #ifndef CONFIG_BT_MESH_RX_SEG_MSG_COUNT
-#define CONFIG_BT_MESH_RX_SEG_MSG_COUNT 3	//6, add_provisioner_supported
+#define CONFIG_BT_MESH_RX_SEG_MSG_COUNT 6	//6, add_provisioner_supported
 #endif
 
 #ifndef CONFIG_BT_MESH_ADV_PRIO

@@ -12,13 +12,13 @@
 #include "common/log.h"
 
 #ifndef CONFIG_MESH_SEQ_COUNT_INT
-#define CONFIG_MESH_SEQ_COUNT_INT 30
+#define CONFIG_MESH_SEQ_COUNT_INT 1000
 #endif
 extern void user_event(E_GENIE_EVENT event, void *p_arg);
 extern S_ELEM_STATE g_elem_state[];
 
 static bool g_genie_provisioned = 0;
-static uint8_t g_in_prov = 0;
+
 const char *genie_event_str[] = {
     "SW_RESET",
     "HW_RESET_START",
@@ -130,7 +130,7 @@ static E_GENIE_EVENT _genie_event_handle_mesh_init(void)
 {
     //check provsioning status
     uint16_t addr;
-    uint32_t seq;
+    uint32_t seq = 0;
     uint8_t devkey[16];
     mesh_netkey_para_t netkey;
     mesh_appkey_para_t appkey;
@@ -155,9 +155,11 @@ static E_GENIE_EVENT _genie_event_handle_mesh_init(void)
         BT_DBG("addr 0x%x\r\n", addr);
         read_flag |= 0x01;
     }
-/*     if(genie_flash_read_seq(&seq) == GENIE_FLASH_SUCCESS) {
+
+    if(genie_flash_read_seq(&seq) == GENIE_FLASH_SUCCESS) {
         read_flag |= 0x02;
-    } */
+    }
+
 #ifdef CONIFG_OLD_FLASH_PARA
     if(genie_flash_read_para(&bt_mesh) == GENIE_FLASH_SUCCESS){
         BT_DBG("read old");
@@ -193,13 +195,13 @@ static E_GENIE_EVENT _genie_event_handle_mesh_init(void)
     }
 
     BT_DBG("flag %02x", read_flag);
-#if 0
+#if 1
 	if((read_flag & 0x1F) == 0x1F) {
 #else
     if((read_flag & 0x1F) == 0x1D) {            ////(0x1F)
 #endif
         BT_INFO(">>>proved<<<");
-#if 0
+#if CONFIG_MESH_SEQ_COUNT_INT
         seq += CONFIG_MESH_SEQ_COUNT_INT;
 #endif
         bt_mesh_provision(netkey.key, netkey.net_index, netkey.flag, netkey.ivi, seq, addr, devkey);
@@ -265,8 +267,7 @@ static E_GENIE_EVENT _genie_event_handle_silent_start(void)
 
 static E_GENIE_EVENT _genie_event_handle_prov_start(void)
 {
-    if(g_in_prov == 0) {
-        g_in_prov = 1;
+    if(!bt_mesh_is_provisioned()) {
         /* disable adv timer */
         genie_pbadv_timer_stop();
         /* enable prov timer */
@@ -317,7 +318,6 @@ static E_GENIE_EVENT _genie_event_handle_sync(S_ELEM_STATE *p_elem)
 static E_GENIE_EVENT _genie_event_handle_prov_fail(void)
 {
     /* reset prov */
-    g_in_prov = 0;
     _genie_reset_prov();
     /* restart adv */
     bt_mesh_prov_enable(BT_MESH_PROV_GATT | BT_MESH_PROV_ADV);
@@ -333,9 +333,8 @@ static void _genie_event_save_mesh_data(uint8_t *p_status)
 
 static E_GENIE_EVENT _genie_event_handle_appkey_add(uint8_t *p_status)
 {
-    BT_DBG("g_in_prov %d", g_in_prov);
-    if(g_in_prov) {
-        g_in_prov = 0;
+    BT_ERR("g_in_prov %d", bt_mesh_is_provisioned());
+    if(bt_mesh_is_provisioned()) {
         /* disable prov timer */
         genie_prov_timer_stop();
         if(*p_status == 0) {
@@ -378,8 +377,8 @@ static E_GENIE_EVENT _genie_event_handle_hb_set(mesh_hb_para_t *p_para)
 static E_GENIE_EVENT _genie_event_handle_seq_update(void)
 {
     uint32_t seq = bt_mesh.seq;
-#if 0
-    if (seq % CONFIG_MESH_SEQ_COUNT_INT == 0) {
+#if CONFIG_MESH_SEQ_COUNT_INT
+    if ((seq % CONFIG_MESH_SEQ_COUNT_INT == 0) || (seq == 1)) {
         genie_flash_write_seq(&seq);
     }
 #else
@@ -752,8 +751,9 @@ void genie_event(E_GENIE_EVENT event, void *p_arg)
             break;
     }
 
-    if(!ignore_user_event)
+    if(!ignore_user_event) {
         user_event(event, p_arg);
+    }
 
     if(next_event != event) {
         genie_event(next_event, p_arg);

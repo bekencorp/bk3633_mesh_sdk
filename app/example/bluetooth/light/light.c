@@ -612,7 +612,7 @@ int application_start(int argc, char **argv)
 
     led_startup();
 
-#ifdef CONFIG_UART_TEST_CMD
+#if CONFIG_UART_TEST_CMD
     uart_test_init();
 #endif
 

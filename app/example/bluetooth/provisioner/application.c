@@ -229,18 +229,25 @@ void provisioner_config_comp_data_get(u16_t net_idx, u16_t dst)
 {
 	u8_t status, page = 0x00;
 	int err;
-	struct net_buf_simple *comp = NET_BUF_SIMPLE(47); ///NET_BUF_SIMPLE(_size),change the size
+	struct net_buf_simple *comp = NET_BUF_SIMPLE(47); //NET_BUF_SIMPLE(_size),change the size
 
 	net_buf_simple_init(comp, 0);
-	err = bt_mesh_cfg_comp_data_get(net_idx, dst, page,
-					&status, comp);
+
+	while(1) {
+		err = bt_mesh_cfg_comp_data_get(net_idx, dst, page, &status, comp);
+		if(!err) {
+			BT_DBG("Getting composition data successful");
+			break;
+		}
+	}
+
 	if (err) {
-		printk("Getting composition failed (err %d)\n", err);
+		BT_ERR("Getting composition failed (err %d)", err);
 		return 0;
 	}
 
 	if (status != 0x00) {
-		printk("Got non-success status 0x%02x\n", status);
+		BT_ERR("Got non-success status 0x%02x", status);
 		return 0;
 	}
 
@@ -254,64 +261,77 @@ void provisioner_config_app_key_add(u16_t net_idx, u16_t dst)
 	u8_t status;
 	int err;
 
-       memcpy(key_val, default_app_key, sizeof(key_val));
-       err = bt_mesh_cfg_app_key_add(net_idx, dst, key_net_idx,
-				      key_app_idx, key_val, &status);
+	memcpy(key_val, default_app_key, sizeof(key_val));
+
+	while(1) {
+		err = bt_mesh_cfg_app_key_add(net_idx, dst, key_net_idx, key_app_idx, key_val, &status);
+		if(!err) {
+			break;
+		}
+	}
+
 	if (err) {
-		printk("Unable to send App Key Add (err %d)\n", err);
+		BT_ERR("Unable to send App Key Add (err %d)\n", err);
 		return 0;
 	}
 
 	if (status) {
-		printk("AppKeyAdd failed with status 0x%02x\n", status);
+		BT_ERR("AppKeyAdd failed with status 0x%02x\n", status);
 	} else {
-		printk("AppKey added, NetKeyIndex 0x%04x AppKeyIndex 0x%04x\n",
+		BT_DBG("AppKey added, NetKeyIndex 0x%04x AppKeyIndex 0x%04x\n",
 		       key_net_idx, key_app_idx);
 	}
 }
 
-int provisioner_config_mod_app_bind(u16_t net_idx, u16_t dst)
+int provisioner_config_mod_app_bind(u16_t net_idx, u16_t dst, u16_t mod_app_idx)
 {
-       u16_t elem_addr, mod_app_idx, mod_id, cid;
+    u16_t elem_addr, mod_id, cid;
 	u8_t status;
 	int err;
 
-       err = bt_mesh_cfg_mod_app_bind(net_idx, dst, 0x02,
-					       0x00, 0x1000, &status);
-       if (err) {
-		printk("Unable to send Model App Bind (err %d)\n", err);
+	while(1) {
+		err = bt_mesh_cfg_mod_app_bind(net_idx, dst, /*elem_addr*/0x02, mod_app_idx, 0x1000, &status);
+		if(!err) {
+			break;
+		}
+	}
+
+	if (err) {
+		BT_ERR("Unable to send Model App Bind (err %d)\n", err);
 		return 0;
 	}
 
 	if (status) {
-		printk("Model App Bind failed with status 0x%02x\n", status);
+		BT_ERR("Model App Bind failed with status 0x%02x\n", status);
 	} else {
-		printk("AppKey successfully bound\n");
+		BT_DBG("AppKey successfully bound\n");
 	}
        
 }
 
 int provisioner_config_mod_sub_add(u16_t net_idx, u16_t dst)
 {
-       u16_t elem_addr, sub_addr, mod_id, cid;
+	u16_t elem_addr, sub_addr, mod_id, cid;
 	u8_t status;
 	int err;
 
-       {
-		err = bt_mesh_cfg_mod_sub_add(net_idx, dst, /*elem_addr*/0x02,
-					      /*sub_addr*/0xc000, /*mod_id*/0x1000, &status);
+	while(1) {
+		err = bt_mesh_cfg_mod_sub_add(net_idx, dst, /*elem_addr*/0x02, /*sub_addr*/0xc000, /*mod_id*/0x1000, &status);
+		if(!err) {
+			break;
+		}
 	}
 
 	if (err) {
-		printk("Unable to send Model Subscription Add (err %d)\n", err);
+		BT_ERR("Unable to send Model Subscription Add (err %d)\n", err);
 		return 0;
 	}
 
 	if (status) {
-		printk("Model Subscription Add failed with status 0x%02x\n",
+		BT_ERR("Model Subscription Add failed with status 0x%02x\n",
 		       status);
 	} else {
-		printk("Model subscription was successful\n");
+		BT_DBG("Model subscription was successful\n");
 	}
 	return 0;
 }
@@ -384,7 +404,7 @@ static void provisioner_config_thread(void *p1, void *p2, void *p3)
     u16_t app_index = 0x0001;
     u16_t net_index = 0x0000;
     u8_t status = 0;
-	u16_t temp_onoff_val = 0x0001;
+	//u16_t temp_onoff_val = 0x0001;
    
     k_sem_init(&provisioner_config_sem, 0, 1);
 
@@ -399,20 +419,21 @@ static void provisioner_config_thread(void *p1, void *p2, void *p3)
             case PROVISIONER_COMP_DATA_GET:
 
                 BT_DBG("provisioning config start!");
-				BT_DBG("Get node's composition data!");
+				BT_DBG("Get composition data");
                 provisioner_config_comp_data_get(prov_msg.comp_get_t.netkey_idx, prov_msg.comp_get_t.unicast_addr);
                 
-				BT_DBG("Let node to add app key!");
+				BT_DBG("Add app key");
                 provisioner_config_app_key_add(prov_msg.comp_get_t.netkey_idx, prov_msg.comp_get_t.unicast_addr);
                 
-				BT_DBG("Let node to bind model app key!");
-                provisioner_config_mod_app_bind(prov_msg.comp_get_t.netkey_idx, prov_msg.comp_get_t.unicast_addr);
+				BT_DBG("Bind model app key");
+                provisioner_config_mod_app_bind(prov_msg.comp_get_t.netkey_idx, prov_msg.comp_get_t.unicast_addr, 
+													app_index);
                 
-                BT_DBG("Let node to subscrip group addr!");
+                BT_DBG("Subscrip group addr");
                 provisioner_config_mod_sub_add(prov_msg.comp_get_t.netkey_idx, prov_msg.comp_get_t.unicast_addr);
                 
-				BT_DBG("Set node's onoff model!");
-                bt_mesh_cfg_cli_gen_onoff_set(net_index, provisioner.prov_unicast_addr, prov_msg.comp_get_t.unicast_addr, temp_onoff_val);
+				// BT_DBG("Set node's onoff model!");
+                // bt_mesh_cfg_cli_gen_onoff_set(net_index, provisioner.prov_unicast_addr, prov_msg.comp_get_t.unicast_addr, temp_onoff_val);
 				
                 extern char temp_uuid[16];
                 temp_uuid[0x0c]++;

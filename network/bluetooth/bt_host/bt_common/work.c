@@ -33,6 +33,11 @@ static void k_work_submit_to_queue(struct k_work_q *work_q, struct k_work *work)
             work->start_ms + work->timeout < delayed_work->start_ms + delayed_work->timeout) {
             event_callback(K_POLL_TYPE_EARLIER_WORK);
         }
+        else
+        {
+            event_callback(K_POLL_TYPE_DATA_AVAILABLE);
+        }
+        
     }
 }
 

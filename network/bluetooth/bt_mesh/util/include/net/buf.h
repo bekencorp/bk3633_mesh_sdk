@@ -686,7 +686,7 @@ static inline void net_buf_destroy(struct net_buf *buf)
 	unsigned int key;
 
 	/* adv_buf_pool may be accessed from multiple threads, so let's
-           add inter-thread protection here for adv_buf. */
+       add inter-thread protection here for adv_buf. */
 	key = irq_lock();
 	k_lifo_put(&pool->free, buf);
 	irq_unlock(key);

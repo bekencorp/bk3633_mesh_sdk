@@ -35,7 +35,7 @@ struct comp_data {
 	struct net_buf_simple *comp;
 };
 
-static s32_t msg_timeout = K_SECONDS(5);	//add_provisioner_supported
+static s32_t msg_timeout = K_SECONDS(1);	//add_provisioner_supported
 
 static struct bt_mesh_cfg_cli *cli;
 

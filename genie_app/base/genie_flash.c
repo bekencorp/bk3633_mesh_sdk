@@ -6,7 +6,7 @@
 #include "genie_app.h"
 #include <aos/aos.h>
 #include "crc16.h"
-
+ 
 #define BT_DBG_ENABLED IS_ENABLED(CONFIG_BT_MESH_DEBUG_FLASH)
 #include "common/log.h"
 
@@ -52,7 +52,7 @@ flag(1B) | align(1B) | index(2B) | len(2B) | CRC(2B) | data(nB)
 typedef enum {
     GENIE_FLASH_FLAG_INITED_SYS = (GENIE_FLASH_FLAG_INITED_BASE | (0x01 << 8)),
     GENIE_FLASH_FLAG_INITED_UD = (GENIE_FLASH_FLAG_INITED_BASE | (0x02 << 8)),
-    GENIE_FLASH_FLAG_INITED_SEQ = (GENIE_FLASH_FLAG_INITED_BASE | (0x03 << 8)),
+    GENIE_FLASH_FLAG_INITED_SEQ = 0x01000001,//(GENIE_FLASH_FLAG_INITED_BASE | (0x03 << 8)),
     GENIE_FLASH_FLAG_INITED_RECYCLE = (GENIE_FLASH_FLAG_INITED_BASE | (0x04 << 8)),
     /* Append more partition Here */
 };
@@ -233,6 +233,7 @@ static E_GENIE_FLASH_ERRCODE _genie_flash_check_remain(void)
             if(cell.header.flag == GENIE_FLASH_FLAG_ACTIVE) {
                 g_info_system.remain -= sizeof(flash_header_t) + cell.header.length + cell.header.align;
             }
+
             cell.offset += sizeof(flash_header_t) + cell.header.length + cell.header.align;
         }
     } while(ret == GENIE_FLASH_SUCCESS);
@@ -280,7 +281,6 @@ void _genie_flash_get_enc_key(uint8_t project_key[16])
     memset(random, 0, 16);
     ret = hal_flash_read(HAL_PARTITION_CUSTOM_2, &offset, random, 16);
     BT_DBG("random: %s[%d]", bt_hex(random, 16), ret);
-
 
     bt_mesh_aes_encrypt(random, project_key, g_enc_key);
     BT_DBG("enc key: %s", bt_hex(g_enc_key, 16));
@@ -1109,7 +1109,7 @@ E_GENIE_FLASH_ERRCODE genie_flash_read_seq(uint32_t *p_seq)
     RETURN_WHEN_ERR(ret, GENIE_FLASH_READ_FAIL);
     BT_DBG("read count(0x%02X)", count);
 
-    *p_seq = base+count;
+    *p_seq = base + count;
     return GENIE_FLASH_SUCCESS;
 }
 
@@ -1121,7 +1121,7 @@ static E_GENIE_FLASH_ERRCODE _genie_flash_write_seqbase(uint32_t base)
     base |= GENIE_FLASH_FLAG_ACTIVE<<24;
     BT_DBG("base(0x%04X)", base);
 
-    //_genie_flash_delete_seq();
+    genie_flash_delete_seq();
 
     ret = hal_flash_write(GENIE_FLASH_PARTITION_SEQ, &offset, &base, sizeof(base));
     RETURN_WHEN_ERR(ret, GENIE_FLASH_WRITE_FAIL);
@@ -1207,6 +1207,7 @@ E_GENIE_FLASH_ERRCODE genie_flash_write_seq(uint32_t *p_seq)
         BT_ERR("flash error");
         return GENIE_FLASH_WRITE_FAIL;
     }
+
 
 CLEAN:
     BT_DBG("del seq\n");

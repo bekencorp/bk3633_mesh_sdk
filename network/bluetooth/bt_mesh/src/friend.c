@@ -53,9 +53,6 @@ struct friend_pdu_info {
 	u32_t  iv_index;
 };
 
-NET_BUF_POOL_DEFINE(friend_buf_pool, FRIEND_BUF_COUNT,
-		    BT_MESH_ADV_DATA_SIZE, BT_MESH_ADV_USER_DATA_SIZE, NULL);
-
 static struct friend_adv {
 	struct bt_mesh_adv adv;
 	u64_t seq_auth;
@@ -76,14 +73,14 @@ static void discard_buffer(void)
 	for (i = 1; i < ARRAY_SIZE(bt_mesh.frnd); i++) {
 		if (bt_mesh.frnd[i].queue_size > frnd->queue_size) {
 			frnd = &bt_mesh.frnd[i];
-		}
+        }
 	}
 
 	buf = net_buf_slist_get(&frnd->queue);
 	__ASSERT_NO_MSG(buf != NULL);
 	BT_WARN("Discarding buffer %p for LPN 0x%04x", buf, frnd->lpn);
 	net_buf_unref(buf);
-	/* should reduce queue size when discard buffer*/
+	/* should reduce queue size when discard buffer */
 	frnd->queue_size--;
 }
 
@@ -95,8 +92,8 @@ static struct net_buf *friend_buf_alloc(u16_t src)
 	BT_DBG("src 0x%04x", src);
 
 	do {
-		buf = bt_mesh_adv_create_from_pool(&friend_buf_pool, adv_alloc,
-						   BT_MESH_ADV_DATA,
+        buf = bt_mesh_adv_create_from_pool(NULL, adv_alloc,
+                           BT_MESH_ADV_DATA,
 						   BT_MESH_TRANSMIT_COUNT(xmit),
 						   BT_MESH_TRANSMIT_INT(xmit),
 						   K_NO_WAIT);
@@ -1050,8 +1047,6 @@ send_last:
 int bt_mesh_friend_init(void)
 {
 	int i;
-
-	k_lifo_init(&friend_buf_pool.free);
 
 	for (i = 0; i < ARRAY_SIZE(bt_mesh.frnd); i++) {
 		struct bt_mesh_friend *frnd = &bt_mesh.frnd[i];

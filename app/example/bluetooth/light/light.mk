@@ -10,7 +10,8 @@ $(NAME)_INCLUDES += ../ \
 					../../../../genie_app/bluetooth/mesh/mesh_model
 
 $(NAME)_SOURCES  := light.c	\
-					light_board.c
+					light_board.c \
+					uart_cmd_handler.c
 
 #ble = 1
 #bt_mesh = 1
@@ -80,10 +81,9 @@ genie_ota = 1
 #GLOBAL_DEFINES += CONFIG_BT_MESH_DEBUG_EVENT
 #GLOBAL_DEFINES += CONFIG_BT_MESH_DEBUG_OTA
 
-uart_test_cmd = 1
+#uart_test_cmd = 1
 
 ifeq ($(uart_test_cmd),1)
 GLOBAL_DEFINES += CONFIG_UART_TEST_CMD
-$(NAME)_SOURCES += 	uart_test_cmd.c \
-					uart_cmd_handler.c
+$(NAME)_SOURCES += 	uart_test_cmd.c
 endif

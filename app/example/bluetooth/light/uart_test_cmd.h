@@ -3,9 +3,6 @@
 
 #include <stdint.h>
 
-#define CONFIG_UART_TEST_CMD 1
-
-
 #define UART_TEST_TASK_STACK    2048
 
 #define UART_CMD_READ_PERIOD    200

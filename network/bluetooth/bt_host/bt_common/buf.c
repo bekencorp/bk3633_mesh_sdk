@@ -43,25 +43,10 @@
 #define WARN_ALLOC_INTERVAL K_FOREVER
 #endif
 
-extern struct net_buf_pool hci_cmd_pool;
-extern struct net_buf_pool hci_rx_pool;
-extern struct net_buf_pool acl_tx_pool;
-
 #ifdef CONFIG_BT_MESH
-extern struct net_buf_pool adv_buf_pool;
-#ifdef CONFIG_BT_MESH_FRIEND
-extern struct net_buf_pool friend_buf_pool;
-#endif
-struct net_buf_pool *net_buf_pool_list[] = { &hci_cmd_pool
-                                           , &hci_rx_pool
-                                           , &acl_tx_pool
-                                           , &adv_buf_pool
-#ifdef CONFIG_BT_MESH_FRIEND
-                                           , &friend_buf_pool
-#endif
-                                           };
+struct net_buf_pool *net_buf_pool_list[] = {NULL};
 #else
-struct net_buf_pool *net_buf_pool_list[] = { &hci_cmd_pool, &hci_rx_pool, &acl_tx_pool };
+struct net_buf_pool *net_buf_pool_list[] = { NULL};
 #endif
 
 struct net_buf_pool *net_buf_pool_get(int id)
@@ -127,95 +112,32 @@ void net_buf_reset(struct net_buf *buf)
 struct net_buf *net_buf_alloc_debug(struct net_buf_pool *pool, s32_t timeout,
 				    const char *func, int line)
 #else
-struct net_buf *net_buf_alloc(struct net_buf_pool *pool, s32_t timeout)
+struct net_buf *net_buf_alloc(unsigned int size, u16_t buf_size)
 #endif
 {
 	struct net_buf *buf;
 	unsigned int key;
-
-	NET_BUF_ASSERT(pool);
-
-	NET_BUF_DBG("%s():%d: pool %p timeout %d", func, line, pool, timeout);
 
 	/* We need to lock interrupts temporarily to prevent race conditions
 	 * when accessing pool->uninit_count.
 	 */
 	key = irq_lock();
 
-	/* If there are uninitialized buffers we're guaranteed to succeed
-	 * with the allocation one way or another.
-	 */
-	if (pool->uninit_count) {
-		u16_t uninit_count;
+	buf = aos_zalloc(size);
 
-		/* If this is not the first access to the pool, we can
-		 * be opportunistic and try to fetch a previously used
-		 * buffer from the LIFO with K_NO_WAIT.
-		 */
-		if (pool->uninit_count < pool->buf_count) {
-			buf = k_lifo_get(&pool->free, K_NO_WAIT);
-			if (buf) {
-				//irq_unlock(key);
-				goto success;
-			}
-		}
-
-		uninit_count = pool->uninit_count--;
-		//irq_unlock(key);
-
-		buf = pool_get_uninit(pool, uninit_count);
-		goto success;
-	}
-
-	//irq_unlock(key);
-
-#if defined(CONFIG_NET_BUF_LOG) && SYS_LOG_LEVEL >= SYS_LOG_LEVEL_WARNING
-	if (timeout == K_FOREVER) {
-		u32_t ref = k_uptime_get_32();
-		buf = k_lifo_get(&pool->free, K_NO_WAIT);
-		while (!buf) {
-#if defined(CONFIG_NET_BUF_POOL_USAGE)
-			NET_BUF_WARN("%s():%d: Pool %s low on buffers.",
-				     func, line, pool->name);
-#else
-			NET_BUF_WARN("%s():%d: Pool %p low on buffers.",
-				     func, line, pool);
-#endif
-			buf = k_lifo_get(&pool->free, WARN_ALLOC_INTERVAL);
-#if defined(CONFIG_NET_BUF_POOL_USAGE)
-			NET_BUF_WARN("%s():%d: Pool %s blocked for %u secs",
-				     func, line, pool->name,
-				     (k_uptime_get_32() - ref) / MSEC_PER_SEC);
-#else
-			NET_BUF_WARN("%s():%d: Pool %p blocked for %u secs",
-				     func, line, pool,
-				     (k_uptime_get_32() - ref) / MSEC_PER_SEC);
-#endif
-		}
-	} else {
-		buf = k_lifo_get(&pool->free, timeout);
-	}
-#else
-	buf = k_lifo_get(&pool->free, timeout);
-#endif
 	if (!buf) {
 		NET_BUF_ERR("%s():%d: Failed to get free buffer", func, line);
         irq_unlock(key);
 		return NULL;
 	}
 
-success:
-	NET_BUF_DBG("allocated buf %p", buf);
+    NET_BUF_DBG("allocated buf %p", buf);
 
 	buf->ref   = 1;
 	buf->flags = 0;
 	buf->frags = NULL;
 	net_buf_reset(buf);
-
-#if defined(CONFIG_NET_BUF_POOL_USAGE)
-	pool->avail_count--;
-	NET_BUF_ASSERT(pool->avail_count >= 0);
-#endif
+    buf->size = buf_size;
     irq_unlock(key);
 	return buf;
 }
@@ -340,7 +262,6 @@ void net_buf_unref(struct net_buf *buf)
 
 	while (buf) {
 		struct net_buf *frags = buf->frags;
-		struct net_buf_pool *pool;
 
 #if defined(CONFIG_NET_BUF_LOG)
 		if (!buf->ref) {
@@ -353,9 +274,6 @@ void net_buf_unref(struct net_buf *buf)
 			NET_BUF_ERR("buf %p double free!! \r\n", buf);
 			return;
 		}
-		
-		NET_BUF_DBG("buf %p ref %u pool_id %u frags %p", buf, buf->ref,
-			    buf->pool_id, buf->frags);
 
 		if (--buf->ref > 0) {
 			return;
@@ -363,18 +281,14 @@ void net_buf_unref(struct net_buf *buf)
 
 		buf->frags = NULL;
 
-		pool = net_buf_pool_get(buf->pool_id);
 
 #if defined(CONFIG_NET_BUF_POOL_USAGE)
 		pool->avail_count++;
 		NET_BUF_ASSERT(pool->avail_count <= pool->buf_count);
 #endif
 
-		if (pool->destroy) {
-			pool->destroy(buf);
-		} else {
-			net_buf_destroy(buf);
-		}
+		
+		net_buf_destroy(buf);
 
 		buf = frags;
 	}
@@ -392,6 +306,7 @@ struct net_buf *net_buf_ref(struct net_buf *buf)
 
 struct net_buf *net_buf_clone(struct net_buf *buf, s32_t timeout)
 {
+#if 0
 	struct net_buf_pool *pool;
 	struct net_buf *clone;
 
@@ -410,6 +325,8 @@ struct net_buf *net_buf_clone(struct net_buf *buf, s32_t timeout)
 	memcpy(net_buf_add(clone, buf->len), buf->data, buf->len);
 
 	return clone;
+#endif
+    return NULL;
 }
 
 struct net_buf *net_buf_frag_last(struct net_buf *buf)
