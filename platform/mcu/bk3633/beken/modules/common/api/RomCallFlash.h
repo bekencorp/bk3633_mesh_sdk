@@ -43,6 +43,7 @@ struct rom_env_tag
     void *(*malloc)(size_t size);
 	void (*free)(void *ptr);
 	void (*rf_init)(void *api);
+	void (*os_print)(const char *fmt, ...);
 #ifdef ALIOS_KERNEL
 	kstat_t (*krhino_sem_create)(ksem_t *sem, const name_t *name, sem_count_t count);
 	kstat_t (*krhino_sem_give)(ksem_t *sem);

@@ -95,7 +95,7 @@ int32_t hal_flash_erase(hal_partition_t in_partition, uint32_t off_set, uint32_t
 
     if(start_addr <= ((uint32_t)&_app_data_flash_end|(SECTOR_SIZE-1)))
     {
-    	os_printf("Not allowed to erase code area!\r\n");
+    	os_printf("Not allowed to erase code area, start_addr 0x%x!\r\n", start_addr);
         return -1;
     }
 
@@ -161,7 +161,7 @@ int32_t hal_flash_write(hal_partition_t in_partition, uint32_t *off_set, const v
 
     if(start_addr <= (uint32_t)&_app_data_flash_end)
     {
-    	os_printf("Not allowed to write code area!\r\n");
+    	os_printf("Not allowed to write code area, start_addr 0x%x.\r\n", start_addr);
         return -1;
     }
 

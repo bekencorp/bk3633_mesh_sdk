@@ -75,6 +75,9 @@ uint8_t *genie_tri_tuple_get_uuid(void)
     uint32_t off_set = 0x000;
     uint8_t addr[6] = {0};
     uint8_t dummy_addr[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+    
+    static_partition_write_addr_head(STATIC_SECTION_MAC);
+
     if(static_partition_read(STATIC_SECTION_MAC, addr, sizeof(addr)) == 0 &&
        memcmp(addr, dummy_addr, sizeof(addr)) != 0)
     {

@@ -1372,17 +1372,17 @@ enum rwip_prio_dft
     #endif //#if (BT_EMB_PRESENT)
     #if (BLE_EMB_PRESENT)
     /// Default priority for scanning events
-    RWIP_PRIO_SCAN_DFT              = 5,
+    RWIP_PRIO_SCAN_DFT              = 1,
     /// Default priority for auxillary scan/init (no_asap) rx events
     RWIP_PRIO_AUX_RX_DFT            = 12,
     /// Default priority for initiating events
     RWIP_PRIO_INIT_DFT              = 10,
     /// LE connection events default priority
-    RWIP_PRIO_CONNECT_DFT           = 14,
+    RWIP_PRIO_CONNECT_DFT           = 20,
     /// LE connection events priority with activity
-    RWIP_PRIO_CONNECT_ACT           = 16,
+    RWIP_PRIO_CONNECT_ACT           = 21,
     /// Default priority for advertising events
-    RWIP_PRIO_ADV_DFT               = 5,
+    RWIP_PRIO_ADV_DFT               = 15,
     /// Default priority for advertising high duty cycle events
     RWIP_PRIO_ADV_HDC_DFT           = 10,
     /// Default priority for aux advertising events

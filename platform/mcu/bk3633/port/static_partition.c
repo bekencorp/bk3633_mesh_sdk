@@ -7,8 +7,8 @@
 
 platform_static_partition_s bk3633_static_partition[] = 
 {
-    {STATIC_SECTION_OTA, 0x100, 0},
-    {STATIC_SECTION_MAC, 0x100, 0x100},
+    {STATIC_SECTION_OTA, 0xFC, 0},
+    {STATIC_SECTION_MAC, 0x100, 0xFC},
 
 };
 
@@ -43,9 +43,9 @@ int static_partition_read(static_section_t in_section, void *out_buf, uint32_t o
         return -1;
     }
 
-    LOG("static_partition_read sec %d, offset 0x%x\n", in_section, offset);
-
     hal_flash_read( HAL_PARTITION_STATIC_PARA, &offset, &verify, sizeof(platform_static_header_s));
+
+    LOG("static_partition_read sec %d, offset 0x%x, verify 0x%x\n", in_section, offset, verify);
     if(verify.hearder_code == STATIC_PARTITION_HEADER_CODE)
     {
         ret = hal_flash_read( HAL_PARTITION_STATIC_PARA, &offset, out_buf, out_buf_len);
@@ -85,7 +85,7 @@ int static_partition_write(static_section_t in_section, void *in_buf, uint32_t w
 
     memset(temp_data, 0, partition_info->partition_length);
 
-    ret = hal_flash_read( HAL_PARTITION_STATIC_PARA, &partition_start, temp_data, partition_info->partition_length);
+    ret = hal_flash_read(HAL_PARTITION_STATIC_PARA, &partition_start, temp_data, partition_info->partition_length);
 
     if(ret)
     {
@@ -99,7 +99,7 @@ int static_partition_write(static_section_t in_section, void *in_buf, uint32_t w
     hal_flash_erase(HAL_PARTITION_STATIC_PARA, 0, partition_info->partition_length);
 
     partition_start = 0;
-    ret = hal_flash_write( HAL_PARTITION_STATIC_PARA, &partition_start, temp_data, partition_info->partition_length);
+    ret = hal_flash_write(HAL_PARTITION_STATIC_PARA, &partition_start, temp_data, partition_info->partition_length);
 
 exit:
     aos_free(temp_data);
@@ -113,4 +113,28 @@ exit:
         return 0;
     }
 
+}
+
+int static_partition_write_addr_head(static_section_t in_section)
+{
+    platform_static_header_s verify;
+    verify.hearder_code = STATIC_PARTITION_HEADER_CODE;
+    uint32_t size = 0;
+    uint32_t offset = 0;
+
+    int ret = static_partition_get_section(in_section, &offset, &size);
+
+    if(ret)
+    {
+        return -1;
+    }
+
+    ret = hal_flash_write(HAL_PARTITION_STATIC_PARA, &offset, &(verify.hearder_code), sizeof(verify.hearder_code));
+
+    if(ret)
+    {
+        return -1;
+    }
+
+    return 0;
 }

@@ -32,4 +32,5 @@ typedef struct
 
 int static_partition_read(static_section_t in_section, void *out_buf, uint32_t out_buf_len);
 int static_partition_write(static_section_t in_section, void *in_buf, uint32_t write_len);
+int static_partition_write_addr_head(static_section_t in_section);
 #endif  //_STATIC_PARTITION_H_

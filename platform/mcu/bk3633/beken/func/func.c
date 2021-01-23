@@ -66,6 +66,7 @@ void rom_env_init(struct rom_env_tag *api)
     rom_env.rf_init = rf_init;
     rom_env.malloc = krhino_mm_alloc;
     rom_env.free = krhino_mm_free;
+    rom_env.os_print = os_printf;
 #if 1
 	rom_env.krhino_sem_create = krhino_sem_create;
 

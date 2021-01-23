@@ -20,6 +20,7 @@ static int volatile uart_test_enable   = 1;
 
 static const struct uart_command uart_test_cmds[] = {
     {UART_CMD_ERASE_REBOOT,               erase_reboot_uart_cmd_handler},
+    {UART_CMD_REBOOT,                     reboot_uart_cmd_handler}
 
 };
 

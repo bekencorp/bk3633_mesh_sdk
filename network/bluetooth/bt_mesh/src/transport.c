@@ -88,7 +88,7 @@ static struct seg_rx {
 	u32_t                    last;
 	struct k_delayed_work    ack;
 	struct net_buf_simple    buf;
-	u8_t                     *buf_data;
+	u8_t                     buf_data[CONFIG_BT_MESH_RX_SDU_MAX];
 } seg_rx[CONFIG_BT_MESH_RX_SEG_MSG_COUNT] = {
 	[0 ... (CONFIG_BT_MESH_RX_SEG_MSG_COUNT - 1)] = {
 		.buf.size = CONFIG_BT_MESH_RX_SDU_MAX,
@@ -588,15 +588,8 @@ static bool is_replay(struct bt_mesh_net_rx *rx)
 static int sdu_recv(struct bt_mesh_net_rx *rx, u8_t hdr, u8_t aszmic,
 		    struct net_buf_simple *buf)
 {
-	struct net_buf_simple *sdu = aos_zalloc(sizeof(struct net_buf_simple) + (CONFIG_BT_MESH_RX_SDU_MAX - 4));
-
-    if (!sdu) {
-        BT_ERR("No memory.\n");
-        return -ENOMEM;
-    }
-	//sdu->size = (CONFIG_BT_MESH_RX_SDU_MAX - 4);
-	//struct net_buf_simple *sdu =
-	//	NET_BUF_SIMPLE(CONFIG_BT_MESH_RX_SDU_MAX - 4);
+	struct net_buf_simple *sdu =
+		NET_BUF_SIMPLE(CONFIG_BT_MESH_RX_SDU_MAX - 4);
 	u8_t *ad;
 	u16_t i;
 	int err;
@@ -606,13 +599,11 @@ static int sdu_recv(struct bt_mesh_net_rx *rx, u8_t hdr, u8_t aszmic,
 
 	if (buf->len < 1 + APP_MIC_LEN(aszmic)) {
 		BT_ERR("Too short SDU + MIC");
-		aos_free(sdu);
 		return -EINVAL;
 	}
 
 	if (IS_ENABLED(CONFIG_BT_MESH_FRIEND) && !rx->local_match) {
 		BT_DBG("Ignoring PDU for LPN 0x%04x of this Friend", rx->dst);
-		aos_free(sdu);
 		return 0;
 	}
 
@@ -647,13 +638,11 @@ static int sdu_recv(struct bt_mesh_net_rx *rx, u8_t hdr, u8_t aszmic,
 					  rx->seq, BT_MESH_NET_IVI_RX(rx));
 		if (err) {
 			BT_ERR("Unable to decrypt with DevKey");
-			aos_free(sdu);
 			return -EINVAL;
 		}
 
 		rx->ctx.app_idx = BT_MESH_KEY_DEV;
 		bt_mesh_model_recv(rx, sdu);
-		aos_free(sdu);
 		return 0;
 	}
 
@@ -704,12 +693,11 @@ static int sdu_recv(struct bt_mesh_net_rx *rx, u8_t hdr, u8_t aszmic,
 		rx->ctx.app_idx = key->app_idx;
 
 		bt_mesh_model_recv(rx, sdu);
-		aos_free(sdu);
 		return 0;
 	}
 
 	BT_WARN("No matching AppKey");
-    aos_free(sdu);
+
 	return -EINVAL;
 }
 
@@ -1091,9 +1079,6 @@ static void seg_rx_reset(struct seg_rx *rx)
 
 	k_delayed_work_cancel(&rx->ack);
 
-    aos_free(rx->buf_data);
-	rx->buf_data = NULL;
-
 	if (IS_ENABLED(CONFIG_BT_MESH_FRIEND) && rx->obo &&
 	    rx->block != BLOCK_COMPLETE(rx->seg_n)) {
 		BT_WARN("Clearing incomplete buffers from Friend queue");
@@ -1314,11 +1299,6 @@ static int trans_seg(struct net_buf_simple *buf, struct bt_mesh_net_rx *net_rx,
 		return -ENOMEM;
 	}
 
-    rx->buf_data = aos_zalloc(seg_n * (seg_len(net_rx->ctl) + 1));
-    if (rx->buf_data == NULL) {
-        BT_ERR("No memory.\n");
-        return -ENOMEM;
-    }
 	rx->obo = net_rx->friend_match;
 
 found_rx:
@@ -1394,7 +1374,7 @@ found_rx:
 	k_delayed_work_cancel(&rx->ack);
 	send_ack(net_rx->sub, net_rx->dst, net_rx->ctx.addr,
 		 net_rx->ctx.send_ttl, seq_auth, rx->block, rx->obo);
-    rx->buf.data = rx->buf_data;
+
 	if (net_rx->ctl) {
 		err = ctl_recv(net_rx, *hdr, &rx->buf, seq_auth);
 	} else {
