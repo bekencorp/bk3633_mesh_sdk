@@ -74,6 +74,20 @@ static u16_t prov_ccc_val;
 static bool prov_fast_adv;
 #endif
 
+#if (defined CONFIG_BT_MESH_TELINK) || (defined CONFIG_BT_MESH_JINGXUN)
+static struct bt_mesh_gatt_service proxy_svc;
+static u8_t bt_mesh_proved_reset_flag = 0;
+
+int bt_mesh_proved_reset_flag_set(u8_t flag)
+{
+    bt_mesh_proved_reset_flag = flag;
+}
+int bt_mesh_proved_reset_flag_get(void)
+{
+    return bt_mesh_proved_reset_flag;
+}
+#endif /* CONFIG_BT_MESH_TELINK||CONFIG_BT_MESH_JINGXUN*/
+
 static struct bt_mesh_proxy_client {
     bt_mesh_conn_t conn;
     u16_t filter[CONFIG_BT_MESH_PROXY_FILTER_SIZE];
@@ -460,6 +474,7 @@ static ssize_t proxy_recv(bt_mesh_conn_t conn,
         return -EINVAL;
     }
 
+    //BT_WARN("====== %s =======\n", __func__);
     switch (PDU_SAR(data)) {
         case SAR_COMPLETE:
             if (client->buf.len) {
@@ -725,7 +740,10 @@ int bt_mesh_proxy_prov_enable(void)
     bt_mesh_gatt_service_register(&prov_svc);
 #ifdef CONFIG_BT_MESH_TELINK
     bt_mesh_gatt_service_register(&telink_proxy_svc);
-#endif /* CONFIG_BT_MESH_TELINK */
+#endif /*CONFIG_BT_MESH_TELINK*/
+#ifdef CONFIG_BT_MESH_JINGXUN
+    bt_mesh_gatt_service_register(&proxy_svc);
+#endif /*CONFIG_BT_MESH_JUNGXUN*/
     gatt_svc = MESH_GATT_PROV;
     prov_fast_adv = true;
 
@@ -745,9 +763,7 @@ int bt_mesh_proxy_prov_disable(void)
 
     BT_DBG("");
 
-#ifndef CONFIG_BT_MESH_TELINK
     bt_mesh_gatt_service_unregister(&prov_svc);
-#endif /* CONFIG_BT_MESH_TELINK */
     gatt_svc = MESH_GATT_NONE;
 
     for (i = 0; i < ARRAY_SIZE(clients); i++) {
@@ -834,10 +850,19 @@ int bt_mesh_proxy_gatt_enable(void)
 
     BT_DBG("%s", __func__);
 
-#ifndef CONFIG_BT_MESH_TELINK
-    bt_mesh_gatt_service_register(&proxy_svc);
+#ifdef CONFIG_BT_MESH_TELINK
+    if (bt_mesh_proved_reset_flag_get()) {
+        bt_mesh_gatt_service_register(&telink_proxy_svc);
+    }
 #endif /* CONFIG_BT_MESH_TELINK */
-
+#ifdef CONFIG_BT_MESH_JINGXUN
+    if (bt_mesh_proved_reset_flag_get()) {
+        bt_mesh_gatt_service_register(&proxy_svc);
+    }
+#endif /* CONFIG_BT_MESH_JINGXUN */
+#if (!defined CONFIG_BT_MESH_TELINK) && (!defined CONFIG_BT_MESH_JINGXUN)
+        bt_mesh_gatt_service_register(&proxy_svc);
+#endif /* !CONFIG_BT_MESH_JINGXUN && !CONFIG_BT_MESH_JINGXUN */
     gatt_svc = MESH_GATT_PROXY;
 
     for (i = 0; i < ARRAY_SIZE(clients); i++) {
@@ -876,10 +901,14 @@ int bt_mesh_proxy_gatt_disable(void)
 #ifdef CONFIG_BT_MESH_TELINK
     bt_mesh_gatt_service_unregister(&prov_svc);
     bt_mesh_gatt_service_unregister(&telink_proxy_svc);
-#else
-    bt_mesh_gatt_service_unregister(&proxy_svc);
 #endif /* CONFIG_BT_MESH_TELINK */
-
+#ifdef CONFIG_BT_MESH_JINGXUN
+    bt_mesh_gatt_service_unregister(&prov_svc);
+    bt_mesh_gatt_service_register(&proxy_svc);
+#endif /* CONFIG_BT_MESH_JINGXUN */
+#if (!defined CONFIG_BT_MESH_TELINK) && (!defined CONFIG_BT_MESH_JINGXUN)
+    bt_mesh_gatt_service_unregister(&proxy_svc);
+#endif /* !CONFIG_BT_MESH_TELINK && !CONFIG_BT_MESH_JINGXUN */
     gatt_svc = MESH_GATT_NONE;
 
     return 0;

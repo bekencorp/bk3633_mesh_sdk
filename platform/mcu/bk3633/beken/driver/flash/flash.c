@@ -34,6 +34,8 @@ static DD_OPERATIONS flash_op =
 
 uint32_t flash_mid = 0;
 
+// extern bool bt_ready_count;
+
 static const flash_config_t flash_config[] =
 {
 	/// for BK3435
@@ -346,6 +348,9 @@ static void flash_erase(UINT32 cmd, UINT32 address)
             return;
     }
 
+    // if (bt_ready_count) {
+    //     bt_mesh_scan_disable();
+    // }
     GLOBAL_INT_DISABLE();
     while(REG_FLASH_OPERATE_SW & FLASH_BUSY_BIT);
 
@@ -357,6 +362,9 @@ static void flash_erase(UINT32 cmd, UINT32 address)
 
     while(REG_FLASH_OPERATE_SW & FLASH_BUSY_BIT);
     GLOBAL_INT_RESTORE();
+    // if (bt_ready_count) {
+    //     bt_mesh_scan_enable();
+    // }
 }
 
 void flash_read_data(UINT8 *buffer, UINT32 address, UINT32 len)
@@ -615,17 +623,25 @@ UINT32 flash_close(void)
 
 UINT32 flash_read(char *user_buf, UINT32 count, UINT32 address)
 {
+    // if (bt_ready_count) {
+    //     bt_mesh_scan_disable();
+    // }
     GLOBAL_INT_DISABLE();
 
     flash_read_data(user_buf, address, count);
 
     GLOBAL_INT_RESTORE();
-
+    // if (bt_ready_count) {
+    //     bt_mesh_scan_enable();
+    // }
     return FLASH_SUCCESS;
 }
 
 UINT32 flash_write(char *user_buf, UINT32 count, UINT32 address)
 {
+    // if(bt_ready_count) {
+    //     bt_mesh_scan_disable();
+    // }
     GLOBAL_INT_DISABLE();
 
     if(4 == flash_current_config->line_mode)
@@ -643,6 +659,9 @@ UINT32 flash_write(char *user_buf, UINT32 count, UINT32 address)
     }
 
     GLOBAL_INT_RESTORE();
+    // if (bt_ready_count) {
+    //     bt_mesh_scan_enable();
+    // }
     return FLASH_SUCCESS;
 }
 

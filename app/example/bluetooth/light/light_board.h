@@ -18,6 +18,7 @@
 
 #ifdef CONFIG_INFO_ENABLE
 #define LIGHT_DBG(fmt, ...)  printf("[%s]"fmt"\n", __func__, ##__VA_ARGS__)
+#define LOG_EN_DBG(fmt, ...)  printf("[%s]"fmt"\n", __func__, ##__VA_ARGS__)
 #else
 #define LIGHT_DBG(fmt, ...)
 #endif
@@ -47,9 +48,9 @@
 #define MESH_ELEM_COUNT               1
 #define MESH_ELEM_STATE_COUNT         MESH_ELEM_COUNT
 
-#define LIGHT_STATE_STORE_DELAY_TIME  (5000)
+#define LIGHT_STATE_STORE_DELAY_TIME  (50000)
 
-typedef struct{
+typedef struct {
     pwm_dev_t light_led_r;
     pwm_dev_t light_led_g;
     pwm_dev_t light_led_b;

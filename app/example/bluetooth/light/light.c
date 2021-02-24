@@ -18,6 +18,8 @@
 #include "light_board.h"
 #include "uart_test_cmd.h"
 
+u8  app_time_flag;
+struct k_delayed_work app_timer;
 
 
 led_flash_t g_flash_para;
@@ -41,25 +43,25 @@ struct bt_mesh_time_setup_srv time_setup_srv_0 = {
 };
 
 struct scene_register scene_reg[5] = {
-    [0] = {.scene_number = 1,
-           .scene_value = NET_BUF_SIMPLE(2 + 10),
+    [0] = {.scene_number = 0x0000,
+           .scene_value = NET_BUF_SIMPLE(2 + 30),
           },
-    [1] = {.scene_number = 2,
-           .scene_value = NET_BUF_SIMPLE(2 + 10),
+    [1] = {.scene_number = 0x0000,
+           .scene_value = NET_BUF_SIMPLE(2 + 30),
           },
-    [2] = {.scene_number = 3,
-           .scene_value = NET_BUF_SIMPLE(2 + 10),
+    [2] = {.scene_number = 0x0000,
+           .scene_value = NET_BUF_SIMPLE(2 + 30),
           },
-    [3] = {.scene_number = 4,
-           .scene_value = NET_BUF_SIMPLE(2 + 10),
+    [3] = {.scene_number = 0x0000,
+           .scene_value = NET_BUF_SIMPLE(2 + 30),
           },
-    [4] = {.scene_number = 5,
-           .scene_value = NET_BUF_SIMPLE(2 + 10),
+    [4] = {.scene_number = 0x0000,
+           .scene_value = NET_BUF_SIMPLE(2 + 30),
           },
 };
 
 struct bt_mesh_scenes_state scenes_srv_state_0 = {
-    .scene_count = 5,
+    .scene_count = 16,
     .scenes = &scene_reg,
 };
 
@@ -160,11 +162,24 @@ struct bt_mesh_elem elements[] = {
     //BT_MESH_ELEM(0, s1_models, BT_MESH_MODEL_NONE, 0),
 };
 
+#if (CONFIG_NET_BUF_DBG_LOG)
+static bool show_count = false;
+#endif //CONFIG_NET_BUF_DBG_LOG
 static void light_state_store(struct k_work *work)
 {
     uint8_t *p_read = aos_zalloc(sizeof(g_powerup));
 
     LIGHT_DBG("");
+    if (!p_read) {
+        LIGHT_DBG("%s, no memory.\n", __func__);
+#if (CONFIG_NET_BUF_DBG_LOG)
+        if (!show_count) {
+            show_count = true;
+            net_buf_dbg_show();
+        }
+#endif //CONFIG_NET_BUF_DBG_LOG
+        return;
+    }
 
     genie_flash_read_userdata(GFI_MESH_POWERUP, p_read, sizeof(g_powerup));
 
@@ -592,7 +607,12 @@ void user_event(E_GENIE_EVENT event, void *p_arg)
             break;
 #endif
 #ifdef CONFIG_GENIE_RESET_BY_REPEAT
-        case GENIE_EVT_REPEAT_RESET:
+        case GENIE_EVT_REPEAT_RESET_START:
+            BT_DBG_R("FLASH x5");
+            _led_flash(5, 0);
+            break;
+        case GENIE_EVT_REPEAT_RESET_DONE:
+            led_ctl_set_handler(0, 0, 0);
             erase_reboot_uart_cmd_handler(NULL);
             break;
 #endif
@@ -603,6 +623,24 @@ void user_event(E_GENIE_EVENT event, void *p_arg)
     if(next_event != event) {
         genie_event(next_event, p_arg);
     }
+}
+
+u8 JX_model_flag =0;
+void vendor_C7_ack(u8_t tid);
+
+static void app_timer_cb(void *p_timer, void *args)
+{
+	static uint16_t times = 0;
+
+	times++;
+	JX_model_flag =1;
+
+    app_time_flag = 0;
+//	k_delayed_work_submit(&app_timer, 1000);
+	vendor_C7_ack(times);
+
+    //BT_DBG(" ++++++++++++++++++++++ %s, times %d flag = %d ++++++++++++++++\r\n", 
+     //        __func__,times, app_time_flag);
 }
 
 int application_start(int argc, char **argv)
@@ -617,7 +655,7 @@ int application_start(int argc, char **argv)
 #endif
 
     BT_INFO("BUILD_TIME:%s", __DATE__","__TIME__);
-
+	k_delayed_work_init(&app_timer, app_timer_cb);
     //aos_loop_run();
 
     return 0;

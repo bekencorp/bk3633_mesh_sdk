@@ -597,15 +597,15 @@ struct net_buf_pool {
  *  @param _ud_size  Amount of user data space to reserve.
  *  @param _destroy  Optional destroy callback when buffer is freed.
  */
-#define NET_BUF_POOL_DEFINE(_name, _count, _size, _ud_size, _destroy)    \
+#define NET_BUF_POOL_DEFINE(_name, _count, _size, _ud_size, _destroy)        \
 	static struct {                                                      \
-		struct net_buf buf;                                              \
-		u8_t data[_size] __net_buf_align;	                             \
-		u8_t ud[ROUND_UP(_ud_size, 4)] __net_buf_align;                  \
-	} _net_buf_##_name[_count] /* __noinit */;                           \
+		struct net_buf buf;                                          \
+		u8_t data[_size] __net_buf_align;	                     \
+		u8_t ud[ROUND_UP(_ud_size, 4)] __net_buf_align;              \
+	} _net_buf_##_name[_count] /*__noinit*/;                             \
 	struct net_buf_pool _name __net_buf_align =                          \
-		NET_BUF_POOL_INITIALIZER(_name, _net_buf_##_name,                \
-                                 _count, _size, _ud_size, _destroy)
+		NET_BUF_POOL_INITIALIZER(_name, _net_buf_##_name,            \
+					 _count, _size, _ud_size, _destroy)
 
 
 /**
@@ -650,7 +650,7 @@ struct net_buf *net_buf_alloc_debug(struct net_buf_pool *pool, s32_t timeout,
 #define	net_buf_alloc(_pool, _timeout) \
 	net_buf_alloc_debug(_pool, _timeout, __func__, __LINE__)
 #else
-struct net_buf *net_buf_alloc(unsigned int size, u16_t buf_size);
+struct net_buf *net_buf_alloc(struct net_buf_pool *pool, s32_t timeout);
 #endif
 
 /**
@@ -686,13 +686,14 @@ struct net_buf *net_buf_get(struct k_fifo *fifo, s32_t timeout);
  */
 static inline void net_buf_destroy(struct net_buf *buf)
 {
-    unsigned int key;
+	struct net_buf_pool *pool = net_buf_pool_get(buf->pool_id);
+	unsigned int key;
 
 	/* adv_buf_pool may be accessed from multiple threads, so let's
-       add inter-thread protection here for adv_buf. */
-    key = irq_lock();
-    aos_free(buf);
-    irq_unlock(key);
+           add inter-thread protection here for adv_buf. */
+	key = irq_lock();
+	k_lifo_put(&pool->free, buf);
+	irq_unlock(key);
 }
 
 /**

@@ -242,12 +242,12 @@ void ke_timer_set(ke_msg_id_t const timer_id, ke_task_id_t const task_id, uint32
     }
 
     // Extract the timer from the list if required
-    timer = (struct ke_timer*) ke_queue_extract(&ke_env.queue_timer, cmp_timer_id, (uint32_t)timer_id << 16 | task_id);
+    timer = (struct ke_timer *) ke_queue_extract(&ke_env.queue_timer, cmp_timer_id, (uint32_t)timer_id << 16 | task_id);
 
     if (timer == NULL)
     {
         // Create new one
-        timer = (struct ke_timer*) ke_malloc(sizeof(struct ke_timer), KE_MEM_KE_MSG);
+        timer = (struct ke_timer *) ke_malloc(sizeof(struct ke_timer), KE_MEM_KE_MSG);
         ASSERT_ERR(timer);
         timer->id = timer_id;
         timer->task = task_id;

@@ -12,7 +12,7 @@ extern "C"
 #define VFS_FALSE 0u
 #define VFS_TRUE 1u
 
-#define AOS_CONFIG_VFS_DEV_NODES 1
+#define AOS_CONFIG_VFS_DEV_NODES 5
 /*mem 1000 byte*/
 #define AOS_CONFIG_VFS_DEV_MEM 2000
 #define AOS_CONFIG_VFS_POLL_SUPPORT 1

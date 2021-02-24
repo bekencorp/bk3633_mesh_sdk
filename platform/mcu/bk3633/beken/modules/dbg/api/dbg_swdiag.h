@@ -83,13 +83,16 @@
 #endif //BT_EMB_PRESENT / BLE_EMB_PRESENT
 #endif // (BT_DUAL_MODE)
 
+#if 0
 /// Macro used to set a SW diag to specific value
 #define DBG_SWDIAG(bank , field , value)                                              \
     if(sw_to_hw[DBG_SWDIAG_##bank] != DBG_SWDIAG_UNDEFINED)                           \
     {                                                                                 \
         SW_DIAG_SET( ((SW_DIAG_GET()) & (~(DBG_SWDIAG_##bank##_##field##_MASK << (8 * sw_to_hw[DBG_SWDIAG_##bank])))) | ((((value << DBG_SWDIAG_##bank##_##field##_OFFSET) & DBG_SWDIAG_##bank##_##field##_MASK) << (8*sw_to_hw[DBG_SWDIAG_##bank])))  );      \
     }
+#endif
 
+#define DBG_SWDIAG(bank , field , value)
 
 /*
  * SW DIAGS MAP

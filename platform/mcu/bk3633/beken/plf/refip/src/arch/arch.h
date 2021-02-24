@@ -17,6 +17,8 @@
 #ifndef _ARCH_H_
 #define _ARCH_H_
 
+#include "debug_uart.h"
+
 /**
  ****************************************************************************************
  * @defgroup REFIP
@@ -141,42 +143,6 @@ uint16_t get_stack_usage(void);
 void platform_reset(uint32_t error);
 
 #if PLF_DEBUG
-/**
- ****************************************************************************************
- * @brief Print the assertion error reason and loop forever.
- *
- * @param condition C string containing the condition.
- * @param file C string containing file where the assertion is located.
- * @param line Line number in the file where the assertion is located.
- ****************************************************************************************
- */
-void assert_err(const char *condition, const char * file, int line);
-
-/**
- ****************************************************************************************
- * @brief Print the assertion error reason and loop forever.
- * The parameter value that is causing the assertion will also be disclosed.
- *
- * @param param0 parameter value 0.
- * @param param1 parameter value 1.
- * @param file C string containing file where the assertion is located.
- * @param line Line number in the file where the assertion is located.
- ****************************************************************************************
- */
-void assert_param(int param0, int param1, const char * file, int line);
-
-/**
- ****************************************************************************************
- * @brief Print the assertion warning reason.
- *
- * @param param0 parameter value 0.
- * @param param1 parameter value 1.
- * @param file C string containing file where the assertion is located.
- * @param line Line number in the file where the assertion is located.
- ****************************************************************************************
- */
-void assert_warn(int param0, int param1, const char * file, int line);
-
 
 /**
  ****************************************************************************************
@@ -199,7 +165,8 @@ void dump_data(uint8_t* data, uint16_t length);
 #define ASSERT_ERR(cond)                              \
     do {                                              \
         if (!(cond)) {                                \
-            assert_err(#cond, __MODULE__, __LINE__);  \
+            stack_printf("ASSERT_ERR: %s,condition %s,file %s,line = %d\n", __func__, cond, __MODULE__, __LINE__);\
+            while(1);                                 \
         }                                             \
     } while(0)
 
@@ -207,7 +174,8 @@ void dump_data(uint8_t* data, uint16_t length);
 #define ASSERT_INFO(cond, param0, param1)             \
     do {                                              \
         if (!(cond)) {                                \
-            assert_param((int)param0, (int)param1, __MODULE__, __LINE__);  \
+            stack_printf("ASSERT_INFO: %s,param0 = 0x%x,param1 = 0x%x,file = %s,line = %d\n", __func__, param0, param1, __MODULE__, __LINE__);\
+            while(1);                                 \
         }                                             \
     } while(0)
 
@@ -215,7 +183,8 @@ void dump_data(uint8_t* data, uint16_t length);
 #define ASSERT_WARN(cond, param0, param1)             \
     do {                                              \
         if (!(cond)) {                                \
-            assert_warn((int)param0, (int)param1, __MODULE__, __LINE__); \
+            stack_printf("ASSERT_WARN: %s,param0 = 0x%x,param1 = 0x%x,file = %s,line = %d\n", __func__, param0, param1, __MODULE__, __LINE__);\
+            while(1);                                 \
         }                                             \
     } while(0)
 

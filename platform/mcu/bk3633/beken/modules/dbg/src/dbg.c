@@ -70,7 +70,7 @@ void dbg_init(bool reset)
 
         #if (RW_SWDIAG)
         // Initialize SW profiling module
-        dbg_swdiag_init();
+        //dbg_swdiag_init();
         #endif //RW_SWDIAG
     }
 

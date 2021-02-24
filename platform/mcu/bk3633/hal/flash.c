@@ -125,7 +125,7 @@ int32_t hal_flash_erase(hal_partition_t in_partition, uint32_t off_set, uint32_t
         hal_flash_lock();
         ddev_control(flash_hdl, cmd, (void *)&addr);
         hal_flash_unlock();
-        
+
         addr += erase_size;
     }
 

@@ -32,6 +32,7 @@
 
 #include <stdint.h>         // integer
 #include <stdbool.h>        // boolean
+#include "sch_arb.h"
 
 /*
  * DEFINES
@@ -263,6 +264,10 @@ void sch_prog_skip_isr(uint8_t et_idx);
 void sch_prog_end_isr(uint8_t et_idx);
 
 #endif //BT_EMB_PRESENT
+
+#if (BLE_MESH_FULL_SCAN)
+__ATTR_ARM void lld_evt_start_scan_sch(struct sch_arb_elt_tag *elt);
+#endif //BLE_MESH_FULL_SCAN
 
 /// @} SCH_PROG
 #endif // SCH_PROG_H_

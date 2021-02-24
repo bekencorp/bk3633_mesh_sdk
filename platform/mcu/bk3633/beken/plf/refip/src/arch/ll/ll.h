@@ -18,7 +18,6 @@
 
 #include <stdint.h>
 
-
 #include "compiler.h"
 
 #define KEIL_INTRINSICS_INTERRUPT

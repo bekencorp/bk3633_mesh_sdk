@@ -267,6 +267,8 @@ void tt_values_calculator(struct bt_mesh_state_transition *transition);
 
 void bt_mesh_server_start_transition(struct bt_mesh_state_transition *transition);
 
+void scene_recall_work_handler(struct k_work *work);
+
 #ifdef __cplusplus
 }
 #endif

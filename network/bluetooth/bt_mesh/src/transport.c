@@ -581,8 +581,8 @@ static bool is_replay(struct bt_mesh_net_rx *rx)
 		}
 	}
 
-	BT_ERR("RPL is full!");
-	return true;
+	BT_DBG("RPL is full!");
+	return false;
 }
 
 static int sdu_recv(struct bt_mesh_net_rx *rx, u8_t hdr, u8_t aszmic,

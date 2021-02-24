@@ -482,7 +482,7 @@ __INLINE uint32_t co_read24p(void const *ptr24)
  */
 __INLINE void co_write24p(void const *ptr24, uint32_t value)
 {
-    uint8_t *ptr=(uint8_t*)ptr24;
+    uint8_t *ptr=(uint8_t *)ptr24;
 
     *ptr++ = (uint8_t)(value&0xff);
     *ptr++ = (uint8_t)((value&0xff00)>>8);

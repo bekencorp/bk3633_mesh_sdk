@@ -78,7 +78,7 @@ const hal_logic_partition_t hal_partitions_8M[] =
 
 const hal_logic_partition_t hal_partitions_4M[] =
 {
-	[HAL_PARTITION_BOOTLOADER] =
+    [HAL_PARTITION_BOOTLOADER] =
 	{
 	    .partition_owner            = HAL_FLASH_EMBEDDED,
 	    .partition_description      = "Bootloader",

@@ -187,7 +187,7 @@
 #endif
 
 #ifndef RHINO_CONFIG_TIMER_MSG_NUM
-#define RHINO_CONFIG_TIMER_MSG_NUM           10
+#define RHINO_CONFIG_TIMER_MSG_NUM           20
 #endif
 
 /* kernel intrpt conf */
@@ -235,7 +235,7 @@
 
 /* kernel idle conf */
 #ifndef RHINO_CONFIG_IDLE_TASK_STACK_SIZE
-#define RHINO_CONFIG_IDLE_TASK_STACK_SIZE    100
+#define RHINO_CONFIG_IDLE_TASK_STACK_SIZE    300
 #endif
 
 /* kernel hook conf */

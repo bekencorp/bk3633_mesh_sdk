@@ -87,9 +87,9 @@ int bt_mesh_provision(const u8_t net_key[16], u16_t net_idx,
     err = bt_mesh_net_create(net_idx, flags, net_key, iv_index);
     if (err) {
         if (IS_ENABLED(CONFIG_BT_MESH_PB_GATT)) {
-#ifndef CONFIG_BT_MESH_TELINK            
+#if (!defined CONFIG_BT_MESH_TELINK) && (!defined CONFIG_BT_MESH_JINGXUN)            
             bt_mesh_proxy_prov_enable();
-#endif /* CONFIG_BT_MESH_TELINK */
+#endif /* !CONFIG_BT_MESH_TELINK && !CONFIG_BT_MESH_JINGXUN */
         }
 
         return err;

@@ -199,6 +199,8 @@ static void _light_set_rgb(uint16_t rgb[LED_CHANNEL_MAX])
     } 
 }
 
+extern struct k_delayed_work app_timer;
+
 void led_ctl_set_handler(uint16_t ctl_lightness, uint16_t temperature, uint16_t ctl_UV)
 {
     uint16_t rgb_cal[LED_CHANNEL_MAX];
@@ -211,11 +213,16 @@ void led_ctl_set_handler(uint16_t ctl_lightness, uint16_t temperature, uint16_t 
         return;
     }
 
-    uint32_t rgb = _temperature_to_rgb(temperature, ctl_UV);
+	k_delayed_work_submit(&app_timer, 3000);
 
-    rgb_cal[0] = _color_8to16(rgb >> 16) * ctl_lightness / LIGHTNESS_MAX;
-    rgb_cal[1] = _color_8to16(rgb >> 8) * ctl_lightness / LIGHTNESS_MAX;
-    rgb_cal[2] = _color_8to16(rgb) * ctl_lightness / LIGHTNESS_MAX;
+//    uint32_t rgb = _temperature_to_rgb(temperature, ctl_UV);
+
+//    rgb_cal[0] = _color_8to16(rgb >> 16) * ctl_lightness / LIGHTNESS_MAX;
+//    rgb_cal[1] = _color_8to16(rgb >> 8) * ctl_lightness / LIGHTNESS_MAX;
+//    rgb_cal[2] = _color_8to16(rgb) * ctl_lightness / LIGHTNESS_MAX;
+	  rgb_cal[0] = ctl_lightness;
+	  rgb_cal[1] = temperature;
+	  rgb_cal[2] = 0;
     _light_set_rgb(rgb_cal);
 
 }

@@ -1029,7 +1029,7 @@ static int net_decrypt(struct bt_mesh_subnet *sub, const u8_t *enc,
     }
 
     if (rx->net_if == BT_MESH_NET_IF_ADV && msg_cache_match(rx, buf)) {
-        BT_WARN("Duplicate found in Network Message Cache");
+        BT_DBG("Duplicate found in Network Message Cache");
         return -EALREADY;
     }
 
@@ -1333,7 +1333,7 @@ int bt_mesh_net_decode(struct net_buf_simple *data, enum bt_mesh_net_if net_if,
     }
 
     if (net_if != BT_MESH_NET_IF_LOCAL && bt_mesh_elem_find(rx->ctx.addr)) {
-        BT_ERR("Dropping locally originated packet");
+        BT_DBG("Dropping locally originated packet");
         return -EBADMSG;
     }
 

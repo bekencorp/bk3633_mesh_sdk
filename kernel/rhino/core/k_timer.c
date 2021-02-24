@@ -358,7 +358,7 @@ static void cmd_proc(k_timer_queue_cb *cb, uint8_t cmd)
         default:
             k_err_proc(RHINO_SYS_FATAL_ERR);
             break;
-    }   
+    }
 
 }
 

@@ -19,6 +19,9 @@
 #include "mesh_config.h"
 #include "access.h"
 #include "server_common.h"
+#include "misc/dlist.h"
+#include "time_scene_server.h"
+
 #if CONFIG_BLE_MESH_TIME_SCENE_SERVER
 
 /**
@@ -55,6 +58,18 @@ void bt_mesh_free_buf(struct net_buf_simple *buf)
     }
 }
 
+static void transition_timer_start(struct bt_mesh_state_transition *transition)
+{
+    transition->start_timestamp = k_uptime_get();
+    k_delayed_work_submit(&transition->timer, K_MSEC(transition->quo_tt));
+    atomic_set_bit(transition->flag, BLE_MESH_TRANS_TIMER_START);
+}
+
+static void transition_timer_stop(struct bt_mesh_state_transition *transition)
+{
+    k_delayed_work_cancel(&transition->timer);
+    atomic_clear_bit(transition->flag, BLE_MESH_TRANS_TIMER_START);
+}
 
 void bt_mesh_server_alloc_ctx(struct k_work *work)
 {
@@ -64,10 +79,10 @@ void bt_mesh_server_alloc_ctx(struct k_work *work)
      * bt_mesh_msg_ctx" info to the application layer after a certain delay.
      * Here we use the allocated heap memory to store the "struct bt_mesh_msg_ctx".
      */
-    __ASSERT(work, "Invalid parameter");
+    //__ASSERT(work, "Invalid parameter");
     if (!work->_reserved) {
         work->_reserved = aos_calloc(1, sizeof(struct bt_mesh_msg_ctx));
-        __ASSERT(work->_reserved, "Out of memory");
+        //__ASSERT(work->_reserved, "Out of memory");
     }
 }
 
@@ -367,10 +382,54 @@ void tt_values_calculator(struct bt_mesh_state_transition *transition)
 void bt_mesh_server_start_transition(struct bt_mesh_state_transition *transition)
 {
     if (transition->delay) {
-        k_delayed_work_submit(&transition->timer, K_MSEC(5 * transition->delay));
-        atomic_set_bit(transition->flag, BLE_MESH_TRANS_TIMER_START);
+        //k_delayed_work_submit(&transition->timer, K_MSEC(5 * transition->delay));
+        //atomic_set_bit(transition->flag, BLE_MESH_TRANS_TIMER_START);
     } else {
-        k_work_submit(&transition->timer.work);
+        //k_work_submit(&transition->timer.work);
     }
+}
+
+void scene_recall_work_handler(struct k_work *work)
+{
+    struct bt_mesh_scene_srv *srv =
+        CONTAINER_OF(work, struct bt_mesh_scene_srv, transition.timer.work);
+    struct bt_mesh_msg_ctx *ctx = NULL;
+    bt_mesh_time_scene_server_state_change_t change = {0};
+
+    if (srv == NULL || srv->state == NULL ||
+            srv->transition.timer.work._reserved == NULL) {
+        BT_ERR("%s, Invalid parameter", __func__);
+        return;
+    }
+
+    ctx = (struct bt_mesh_msg_ctx *)srv->transition.timer.work._reserved;
+
+    if (srv->transition.just_started) {
+        srv->transition.just_started = false;
+        if (srv->transition.counter == 0U) {
+            change.scene_recall.scene_number = srv->state->current_scene;
+            atomic_clear_bit(srv->transition.flag, BLE_MESH_TRANS_TIMER_START);
+        } else {
+            transition_timer_start(&srv->transition);
+        }
+
+        return;
+    }
+
+    if (srv->transition.counter != 0U) {
+        srv->transition.counter--;
+    }
+
+    if (srv->transition.counter == 0U) {
+        transition_timer_stop(&srv->transition);
+        srv->state->current_scene = srv->state->target_scene;
+        srv->state->in_progress = false;
+        srv->state->target_scene = INVALID_SCENE_NUMBER;
+    }
+
+    change.scene_recall.scene_number = srv->state->current_scene;
+
+    scene_publish(srv->model, ctx, BLE_MESH_MODEL_OP_SCENE_STATUS);
+    return;
 }
 #endif /* CONFIG_BLE_MESH_SERVER_MODEL */

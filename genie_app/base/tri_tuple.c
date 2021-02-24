@@ -123,6 +123,23 @@ uint8_t *genie_tri_tuple_get_uuid(void)
     BT_DBG("uuid: %s", bt_hex(g_uuid, 16));
     return g_uuid;
 #endif
+#if (CONFIG_BT_MESH_JINGXUN)
+    u32_t pid = 0x47aeb9d5;
+    g_uuid[0] = 0x00;
+    g_uuid[1] = (u8_t)pid;
+    g_uuid[2] = (u8_t)(pid >> 8);
+    g_uuid[3] = (u8_t)(pid >> 16);
+    g_uuid[4] = (u8_t)(pid >> 24);
+    g_uuid[5] = 0x00;
+    g_uuid[6] = 0x01;
+
+    for(i = 0; i < 6; i++) {
+        g_uuid[i+7] = g_mac[i];
+    }
+    g_uuid[13] = 0x00;
+    g_uuid[14] = 0x00;
+    g_uuid[15] = 0x01;
+#else
    for (i = 0; i < 6; i++) {
         g_uuid[i] = g_mac[i];
     }
@@ -132,7 +149,8 @@ uint8_t *genie_tri_tuple_get_uuid(void)
     g_uuid[8] = 0x64;// PID
     g_uuid[9] = 0x66; g_uuid[10] = 0x76; g_uuid[11] = 0x6f;g_uuid[12] = 0x61;
     g_uuid[13] = 0x72;g_uuid[14] = 0x63; g_uuid[15] = 0x61; //RFU
-    BT_DBG("uuid: %s", bt_hex(g_uuid, 16));
+#endif
+    printf("uuid: %s\n", bt_hex(g_uuid, 16));
     return g_uuid;
 }
 #ifdef GENIE_OLD_AUTH

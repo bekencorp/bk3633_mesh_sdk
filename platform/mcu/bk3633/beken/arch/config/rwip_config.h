@@ -171,6 +171,8 @@
 #define CFG_BLE_EXT_ADV      0
 #define CFG_BLE_EXT_SCAN     0
 
+#define BLE_MESH_FULL_SCAN   1
+
 //   <e> CFG_HW_AUDIO
 //   	<i> enable HW_AUDIO
 //   </e>

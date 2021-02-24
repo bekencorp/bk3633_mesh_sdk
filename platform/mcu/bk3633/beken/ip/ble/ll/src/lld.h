@@ -39,8 +39,6 @@
 #include "data_path.h"      // Used for Isochronous channels
 #endif // (BLE_ISO_PRESENT)
 
-
-
 /*
  * DEFINES
  *****************************************************************************************

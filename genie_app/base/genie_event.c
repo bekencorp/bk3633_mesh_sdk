@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2018-2020 Alibaba Group Holding Limited
  */
-
+#include <misc/byteorder.h>
 #include "genie_app.h"
 //#include "mesh_hal_ble.h"
 #include "mesh/cfg_srv.h"
@@ -91,7 +91,7 @@ static E_GENIE_EVENT _genie_event_handle_sw_reset(void)
 {
     _genie_reset_prov();
     bt_mesh_adv_stop();
-#if 0
+#if 1
     aos_reboot();
 #endif
     bt_mesh_prov_enable(BT_MESH_PROV_GATT | BT_MESH_PROV_ADV);
@@ -126,6 +126,7 @@ static E_GENIE_EVENT _genie_event_handle_hw_reset_done(void)
     return GENIE_EVT_SDK_MESH_PBADV_START;
 }
 
+extern struct k_delayed_work app_timer;
 static E_GENIE_EVENT _genie_event_handle_mesh_init(void)
 {
     //check provsioning status
@@ -201,9 +202,14 @@ static E_GENIE_EVENT _genie_event_handle_mesh_init(void)
     if((read_flag & 0x1F) == 0x1D) {            ////(0x1F)
 #endif
         BT_INFO(">>>proved<<<");
+		k_delayed_work_submit(&app_timer, 3000);
+
 #if CONFIG_MESH_SEQ_COUNT_INT
         seq += CONFIG_MESH_SEQ_COUNT_INT;
 #endif
+#if (defined CONFIG_BT_MESH_TELINK) || (defined CONFIG_BT_MESH_JINGXUN)
+        bt_mesh_proved_reset_flag_set(1);
+#endif /* CONFIG_BT_MESH_TELINK||CONFIG_BT_MESH_JINGXUN */
         bt_mesh_provision(netkey.key, netkey.net_index, netkey.flag, netkey.ivi, seq, addr, devkey);
         extern void genie_appkey_register(u16_t net_idx, u16_t app_idx, const u8_t val[16], bool update);
         genie_appkey_register(appkey.net_index, appkey.key_index, appkey.key, appkey.flag);
@@ -363,6 +369,9 @@ static E_GENIE_EVENT _genie_event_handle_appkey_add(uint8_t *p_status)
 
 static E_GENIE_EVENT _genie_event_handle_sub_add(void)
 {
+    for (int i = 0; i < sizeof(g_sub_list) / sizeof(g_sub_list[0]); i++) {
+        BT_ERR("g_sub_list[%d]: 0x%x\n", i, g_sub_list[i]);
+    }
     genie_flash_write_sub(g_sub_list);
     return GENIE_EVT_SDK_SUB_ADD;
 }
@@ -591,12 +600,12 @@ void genie_event(E_GENIE_EVENT event, void *p_arg)
     }
 #endif
     switch(event) {
-        case GENIE_EVT_SW_RESET:
-            //call user_event first
-            user_event(GENIE_EVT_SW_RESET, p_arg);
-            ignore_user_event = 1;
-            next_event = _genie_event_handle_sw_reset();
-            break;
+//        case GENIE_EVT_SW_RESET:
+//            //call user_event first
+//            user_event(GENIE_EVT_SW_RESET, p_arg);
+//            ignore_user_event = 1;
+//            next_event = _genie_event_handle_sw_reset();
+//            break;
 
         case GENIE_EVT_HW_RESET_START:
             _genie_event_handle_hw_reset_start();
@@ -610,8 +619,23 @@ void genie_event(E_GENIE_EVENT event, void *p_arg)
             break;
 
 #ifdef CONFIG_GENIE_RESET_BY_REPEAT
-        case GENIE_EVT_REPEAT_RESET:
-            next_event = GENIE_EVT_REPEAT_RESET;
+		case GENIE_EVT_SW_RESET:
+			user_event(GENIE_EVT_REPEAT_RESET_START, p_arg);
+			genie_hardreset_done();
+			ignore_user_event = 1;
+			event =GENIE_EVT_REPEAT_RESET_START;
+			next_event = GENIE_EVT_REPEAT_RESET_START;
+			break;
+        case GENIE_EVT_REPEAT_RESET_START:
+            user_event(GENIE_EVT_REPEAT_RESET_START, p_arg);
+			genie_hardreset_done();
+            ignore_user_event = 1;
+//			event =GENIE_EVT_REPEAT_RESET_START;
+            next_event = GENIE_EVT_REPEAT_RESET_START;
+            break;
+
+        case GENIE_EVT_REPEAT_RESET_DONE:
+            next_event = GENIE_EVT_REPEAT_RESET_DONE;
             break;
 #endif
 
@@ -676,11 +700,33 @@ void genie_event(E_GENIE_EVENT event, void *p_arg)
             //_genie_event_save_mesh_data((uint8_t *)p_arg);
             break;
 
-        case GENIE_EVT_SDK_SUB_ADD:
-            next_event = _genie_event_handle_sub_add();
-            break;
+        case GENIE_EVT_SDK_SUB_ADD: {
+            int i;
+            uint16_t sub_addr = sys_get_le16(p_arg);
+            for (i = 0; i < CONFIG_BT_MESH_MODEL_GROUP_COUNT; i++) {
+                if (g_sub_list[i] == sub_addr) {
+                    break;
+                }
 
-        case GENIE_EVT_SDK_SUB_DEL:
+                if (g_sub_list[i] == BT_MESH_ADDR_UNASSIGNED) {
+                    g_sub_list[i] = sub_addr;
+                    next_event = _genie_event_handle_sub_add();
+                    break;
+                }
+            }
+        } 
+            break;
+        case GENIE_EVT_SDK_SUB_DEL: {
+            int i;
+            uint16_t sub_addr = sys_get_le16(p_arg);
+            for (i = 0; i < CONFIG_BT_MESH_MODEL_GROUP_COUNT; i++) {
+                if (g_sub_list[i] == sub_addr) {
+                    g_sub_list[i] == BT_MESH_ADDR_UNASSIGNED;
+                    next_event = _genie_event_handle_sub_add();
+                    break;
+                }
+            }
+        }
             break;
 
         case GENIE_EVT_SDK_HB_SET:

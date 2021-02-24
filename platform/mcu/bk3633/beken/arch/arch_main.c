@@ -145,7 +145,7 @@ void assert_err(const char *condition, const char * file, int line)
 {
 	//while(1)
     #if (UART_PRINTF_EN && UART_DRIVER)	
-	uart_printf("%s,condition %s,file %s,line = %d\r\n",__func__,condition,file,line);
+	stack_printf("%s,condition %s,file %s,line = %d\r\n",__func__,condition,file,line);
     #endif
  // Delay_ms(5000);
 }
@@ -154,7 +154,7 @@ void assert_param(int param0, int param1, const char * file, int line)
 {
 //	Delay_ms(5000);
     #if (UART_PRINTF_EN && UART_DRIVER)	
-	uart_printf("%s,param0 = 0x%x,param1 = 0x%x,file = %s,line = %d\r\n",__func__,param0,param1,file,line);
+	stack_printf("%s,param0 = 0x%x,param1 = 0x%x,file = %s,line = %d\r\n",__func__,param0,param1,file,line);
     #endif
   
 }
@@ -163,7 +163,7 @@ void assert_warn(int param0, int param1, const char * file, int line)
 {
 //	 Delay_ms(5000);
     #if (UART_PRINTF_EN && UART_DRIVER)	
-	 uart_printf("%s,param0 = 0x%x,param1 = 0x%x,file = %s,line = %d\r\n",__func__,param0,param1,file,line);
+	 stack_printf("%s,param0 = 0x%x,param1 = 0x%x,file = %s,line = %d\r\n",__func__,param0,param1,file,line);
     #endif
  
 }
@@ -172,7 +172,7 @@ void dump_data(uint8_t* data, uint16_t length)
 {
 	//Delay_ms(5000);
     #if (UART_PRINTF_EN && UART_DRIVER)	
-	uart_printf("%s,data = 0x%x,length = 0x%x,file = %s,line = %d\r\n",__func__,data,length);
+	stack_printf("%s,data = 0x%x,length = 0x%x,file = %s,line = %d\r\n",__func__,data,length);
     #endif
  
 }

@@ -31,7 +31,7 @@
 #include <stdbool.h>              // Standard boolean definitions
 #include "co_list.h"              // List management functions definitions
 #include "rwip.h"                 // For rwip_time_t
-
+#include "lld_int.h"
 
 /*
  * MACROS
@@ -264,6 +264,11 @@ void sch_arb_event_start_isr(void);
  */
 void sch_arb_sw_isr(void);
 
+#if (BLE_MESH_FULL_SCAN)
+struct sch_arb_elt_tag *ea_get_scan_elt(void);
+
+void ea_set_scan_elt(struct sch_arb_elt_tag *ea_scan_elt);
+#endif // BLE_MESH_FULL_SCAN
 
 ///@} SCH_ARB
 

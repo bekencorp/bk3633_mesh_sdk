@@ -118,6 +118,11 @@ struct acl_data
  * the same buffer is also used for the response.
  */
 #define CMD_BUF_SIZE BT_BUF_RX_SIZE
+NET_BUF_POOL_DEFINE(hci_cmd_pool, CONFIG_BT_HCI_CMD_COUNT,
+                    CMD_BUF_SIZE, BT_BUF_USER_DATA_MIN, NULL);
+
+NET_BUF_POOL_DEFINE(hci_rx_pool, CONFIG_BT_RX_BUF_COUNT,
+                    BT_BUF_RX_SIZE, BT_BUF_USER_DATA_MIN, NULL);
 
 static void send_cmd(struct net_buf *buf);
 
@@ -170,7 +175,8 @@ static void report_completed_packet(struct net_buf *buf)
 }
 
 #define ACL_IN_SIZE BT_L2CAP_BUF_SIZE(CONFIG_BT_L2CAP_RX_MTU)
-
+NET_BUF_POOL_DEFINE(acl_in_pool, CONFIG_BT_ACL_RX_COUNT, ACL_IN_SIZE,
+                    BT_BUF_USER_DATA_MIN, report_completed_packet);
 #endif /* CONFIG_BT_HCI_ACL_FLOW_CONTROL */
 
 struct net_buf *bt_hci_cmd_create(u16_t opcode, u8_t param_len)
@@ -180,7 +186,7 @@ struct net_buf *bt_hci_cmd_create(u16_t opcode, u8_t param_len)
 
     BT_DBG("opcode 0x%04x param_len %u", opcode, param_len);
 
-    buf = net_buf_alloc(sizeof(struct net_buf) + ROUND_UP(BT_BUF_USER_DATA_MIN, 4) + ROUND_UP(CMD_BUF_SIZE, sizeof(int)), CMD_BUF_SIZE);
+    buf = net_buf_alloc(&hci_cmd_pool, K_FOREVER);
     if (buf) {
         BT_DBG("buf %p", buf);
 
@@ -1727,6 +1733,12 @@ static void hci_reset_complete(struct net_buf *buf)
 static void hci_cmd_done(u16_t opcode, u8_t status, struct net_buf *buf)
 {
     BT_DBG("%s, opcode 0x%04x status 0x%02x buf %p, id %d", __func__, opcode, status, buf, buf->pool_id);
+
+    if (net_buf_pool_get(buf->pool_id) != &hci_cmd_pool) {
+        BT_WARN("opcode 0x%04x pool id %u pool %p != &hci_cmd_pool %p", opcode,
+                buf->pool_id, net_buf_pool_get(buf->pool_id), &hci_cmd_pool);
+        return;
+    }
 
     if (cmd(buf)->opcode != opcode) {
         BT_WARN("OpCode 0x%04x completed instead of expected 0x%04x", opcode,
@@ -3589,12 +3601,12 @@ struct net_buf *bt_buf_get_rx(enum bt_buf_type type, s32_t timeout)
 
 #if defined(CONFIG_BT_HCI_ACL_FLOW_CONTROL)
     if (type == BT_BUF_EVT) {
-        buf = net_buf_alloc(sizeof(struct net_buf) + ROUND_UP(BT_BUF_RX_SIZE, sizoef(int)) + ROUND_UP(BT_BUF_USER_DATA_MIN, 4), BT_BUF_RX_SIZE);
+        buf = net_buf_alloc(&hci_rx_pool, timeout);
     } else {
-        buf = net_buf_alloc(sizeof(struct net_buf) + ROUND_UP(ACL_IN_SIZE, sizeof(int)) + ROUND_UP(BT_BUF_USER_DATA_MIN, 4), ACL_IN_SIZE);
+        buf = net_buf_alloc(&acl_in_pool, timeout);
     }
 #else
-    buf = net_buf_alloc(sizeof(struct net_buf) + ROUND_UP(BT_BUF_RX_SIZE, sizeof(int)) + ROUND_UP(BT_BUF_USER_DATA_MIN, 4), BT_BUF_RX_SIZE);
+    buf = net_buf_alloc(&hci_rx_pool, timeout);
 #endif
 
     if (buf) {

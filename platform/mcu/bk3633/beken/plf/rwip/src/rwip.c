@@ -665,7 +665,7 @@ void rwip_init(uint32_t error)
     rwip_param.del = nvds_del;
     #else // (NVDS_SUPPORT)
     // !! Need to point to some parameter configuration system
-    ASSERT_WARN(0, 0, 0);
+    // ASSERT_WARN(0, 0, 0);
     rwip_param.get = rwip_param_dummy_get;
     rwip_param.set = rwip_param_dummy_set;
     rwip_param.del = rwip_param_dummy_del;

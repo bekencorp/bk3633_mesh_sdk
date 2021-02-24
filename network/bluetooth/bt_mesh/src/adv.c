@@ -54,9 +54,9 @@
  * an increased call stack whenever it's used.
  */
 #if ((defined(CONFIG_BT_TINYCRYPT_ECC)) && (!defined(BOARD_BK3633DEVKIT)))
-#define ADV_STACK_SIZE 256
+#define ADV_STACK_SIZE 768
 #else
-#define ADV_STACK_SIZE 256//(512-256)
+#define ADV_STACK_SIZE 768//(512-256)
 #endif
 
 static K_FIFO_DEFINE(adv_queue);
@@ -69,6 +69,11 @@ static const u8_t adv_type[] = {
     [BT_MESH_ADV_BEACON] = BT_MESH_DATA_MESH_BEACON,
 };
 
+NET_BUF_POOL_DEFINE(adv_buf_pool, CONFIG_BT_MESH_ADV_BUF_COUNT,
+                    BT_MESH_ADV_DATA_SIZE, BT_MESH_ADV_USER_DATA_SIZE, NULL);
+
+static struct bt_mesh_adv adv_pool[CONFIG_BT_MESH_ADV_BUF_COUNT];
+
 static const bt_addr_le_t *dev_addr;
 
 #ifdef CONFIG_BT_MESH_MULTIADV
@@ -78,7 +83,7 @@ static struct k_delayed_work g_mesh_adv_timer;
 
 static struct bt_mesh_adv *adv_alloc(int id)
 {
-    return NULL;
+    return &adv_pool[id];
 }
 
 static inline void adv_send_start(u16_t duration, int err,
@@ -141,7 +146,7 @@ static inline void adv_send(struct net_buf *buf)
     }
 
     BT_DBG("Advertising started. Sleeping %u ms", duration);
-
+    
     k_sleep(duration);
 
 exit:
@@ -355,21 +360,17 @@ struct net_buf *bt_mesh_adv_create_from_pool(struct net_buf_pool *pool,
 {
     struct bt_mesh_adv *adv;
     struct net_buf *buf;
-    u16_t offset;
-    buf = net_buf_alloc(sizeof(struct net_buf) + ROUND_UP(sizeof(struct bt_mesh_adv) + BT_MESH_ADV_DATA_SIZE, 4) + \
-                         ROUND_UP(BT_MESH_ADV_USER_DATA_SIZE, 4) + 4 , BT_MESH_ADV_DATA_SIZE + sizeof(struct bt_mesh_adv));
+
+    buf = net_buf_alloc(pool, timeout);
     if (!buf) {
         return NULL;
     }
 
-    u16_t data_size = sizeof(struct net_buf) + ROUND_UP(sizeof(struct bt_mesh_adv) + BT_MESH_ADV_DATA_SIZE, 4) + \
-                         ROUND_UP(BT_MESH_ADV_USER_DATA_SIZE, 4);
-    offset = ROUND_UP(sizeof(struct net_buf) + BT_MESH_ADV_DATA_SIZE, sizeof(int));
-    adv = (struct bt_mesh_adv *)((u8_t *)buf + offset);
+    adv = get_id(net_buf_id(buf));
     BT_MESH_ADV(buf) = adv;
 
     memset(adv, 0, sizeof(*adv));
- 
+
     adv->type         = type;
     adv->count        = xmit_count;
     adv->adv_int      = xmit_int;
@@ -380,7 +381,7 @@ struct net_buf *bt_mesh_adv_create_from_pool(struct net_buf_pool *pool,
 struct net_buf *bt_mesh_adv_create(enum bt_mesh_adv_type type, u8_t xmit_count,
                                    u16_t xmit_int, s32_t timeout)
 {
-    return bt_mesh_adv_create_from_pool(NULL, adv_alloc, type,
+    return bt_mesh_adv_create_from_pool(&adv_buf_pool, adv_alloc, type,
                                         xmit_count, xmit_int, timeout);
 }
 
@@ -411,7 +412,7 @@ void bt_mesh_adv_send(struct net_buf *buf, const struct bt_mesh_send_cb *cb,
 
 const bt_addr_le_t *bt_mesh_pba_get_addr(void)
 {
-    return dev_addr;
+	return dev_addr;
 }
 
 static void bt_mesh_scan_cb(const bt_mesh_addr_le_t *addr, s8_t rssi,
@@ -427,7 +428,7 @@ static void bt_mesh_scan_cb(const bt_mesh_addr_le_t *addr, s8_t rssi,
 
     //BT_DBG("len %u: %s", buf->len, bt_hex(buf->data, buf->len));
 
-    dev_addr = (bt_addr_le_t *)addr;
+	dev_addr = (bt_addr_le_t *)addr;
 
     while (buf->len > 1) {
         struct net_buf_simple_state state;
@@ -508,7 +509,7 @@ static void bt_mesh_scan_cb(const bt_mesh_addr_le_t *addr, s8_t rssi,
                 default:
                     break;
             }
-        }
+    	}
 
         net_buf_simple_restore(buf, &state);
         net_buf_simple_pull(buf, len);
@@ -518,6 +519,7 @@ static void bt_mesh_scan_cb(const bt_mesh_addr_le_t *addr, s8_t rssi,
 void bt_mesh_adv_init(void)
 {
     k_fifo_init(&adv_queue);
+    k_lifo_init(&adv_buf_pool.free);
     k_thread_create(&adv_thread_data, adv_thread_stack,
                     K_THREAD_STACK_SIZEOF(adv_thread_stack), adv_thread,
                     NULL, NULL, NULL, CONFIG_BT_MESH_ADV_PRIO, 0, K_NO_WAIT);

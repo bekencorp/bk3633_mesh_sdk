@@ -25,6 +25,8 @@
 
 #define CONFIG_CID_TAOBAO            0x01A8
 #define CONFIG_CID_TUYA              0x07d0
+#define CONFIG_CID_JX                0x0211
+
 #define CONFIG_MESH_VENDOR_COMPANY_ID CONFIG_CID_TAOBAO
 #define CONFIG_MESH_VENDOR_MODEL_SRV  0x0000
 #define CONFIG_MESH_VENDOR_MODEL_CLI  0x0001
@@ -35,7 +37,7 @@
 
 #define DEFAULT_TRANS_NUM_STEPS_MASK    0x3F
 #define DEFAULT_TRANS_SEP_RESO(x)       (((x)>>6) & 0x03)
-#define DEFAULT_TRANS_TIME_RANGE        62 
+#define DEFAULT_TRANS_TIME_RANGE        62
 
 #define UNPROV_ADV_FEATURE_AUTO_BIND_MODEL_SUB     0x02
 #define UNPROV_ADV_FEATURE_SILENT_ADV              0x01
@@ -272,6 +274,9 @@ uint8_t genie_elem_state_init(uint8_t state_count, S_ELEM_STATE *p_elem);
 uint8_t genie_restore_user_state(uint8_t state_count,S_ELEM_STATE *p_elem, S_MODEL_POWERUP *p_pup);
 void standart_indication(S_ELEM_STATE *p_elem);
 void genie_sub_list_init(void);
+
+void vendor_C7_ack(u8_t tid);
+
 
 #ifdef CONFIG_MESH_MODEL_GEN_ONOFF_SRV
 #include "bluetooth/mesh/mesh_model/inc/gen_onoff_srv.h"

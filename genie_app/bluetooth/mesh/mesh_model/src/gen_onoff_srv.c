@@ -192,10 +192,36 @@ static void _gen_onoff_set_unack(struct bt_mesh_model *p_model,
     }
 }
 
+extern u8 JX_model_flag;
+extern u16 app_dst;
+static void _gen_onoff_status_publish(struct bt_mesh_model *p_model,
+                          struct bt_mesh_msg_ctx *p_ctx,
+                          struct net_buf_simple *p_buf)
+{
+//    struct net_buf_simple *p_msg = NET_BUF_SIMPLE(2 + 3 + 4);
+//    S_MODEL_STATE *p_state = &((S_ELEM_STATE *)p_model->user_data)->state;
+
+//	if(JX_model_flag ==0)
+//	{
+//		return;
+//	}
+
+    BT_DBG("");
+//	p_ctx.addr =app_dst;
+
+	_gen_onoff_status(p_model, p_ctx, 1);
+//	p_ctx->addr =0xFFFF;
+//	net_buf_simple_add_u8(p_msg, p_state->onoff[T_TAR]);
+//    if(bt_mesh_model_send(p_model, p_ctx, p_msg, NULL, NULL)) {
+//        BT_ERR("Unable to send OnOff Status");
+//    }
+}
+
 const struct bt_mesh_model_op g_gen_onoff_op[] = {
     { BT_MESH_MODEL_OP_GEN_ONOFF_GET,       0, _gen_onoff_get },
     { BT_MESH_MODEL_OP_GEN_ONOFF_SET,       2, _gen_onoff_set },
     { BT_MESH_MODEL_OP_GEN_ONOFF_SET_UNACK, 2, _gen_onoff_set_unack },
+    { BT_MESH_MODEL_OP_GEN_ONOFF_STATUS,    0, _gen_onoff_status_publish },
     BT_MESH_MODEL_OP_END,
 };
 

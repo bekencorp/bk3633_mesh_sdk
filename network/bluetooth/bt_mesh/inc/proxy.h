@@ -32,6 +32,10 @@ int bt_mesh_proxy_gatt_enable(void);
 int bt_mesh_proxy_gatt_disable(void);
 void bt_mesh_proxy_gatt_disconnect(void);
 
+#if (defined CONFIG_BT_MESH_TELINK) || (defined CONFIG_BT_MESH_JINGXUN)
+int bt_mesh_proved_reset_flag_set(u8_t flag);
+#endif /* CONFIG_BT_MESH_TELINK||CONFIG_BT_MESH_JINGXUN*/
+
 void bt_mesh_proxy_beacon_send(struct bt_mesh_subnet *sub);
 
 struct net_buf_simple *bt_mesh_proxy_get_buf(void);
