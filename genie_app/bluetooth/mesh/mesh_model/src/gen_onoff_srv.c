@@ -192,8 +192,10 @@ static void _gen_onoff_set_unack(struct bt_mesh_model *p_model,
     }
 }
 
+#ifdef CONFIG_BT_MESH_JINGXUN
 extern u8 JX_model_flag;
 extern u16 app_dst;
+#endif //CONFIG_BT_MESH_JINGXUN
 static void _gen_onoff_status_publish(struct bt_mesh_model *p_model,
                           struct bt_mesh_msg_ctx *p_ctx,
                           struct net_buf_simple *p_buf)

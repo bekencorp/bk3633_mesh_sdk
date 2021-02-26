@@ -126,7 +126,10 @@ static E_GENIE_EVENT _genie_event_handle_hw_reset_done(void)
     return GENIE_EVT_SDK_MESH_PBADV_START;
 }
 
+#ifdef CONFIG_BT_MESH_JINGXUN
 extern struct k_delayed_work app_timer;
+#endif // CONFIG_BT_MESH_JINGXUN
+
 static E_GENIE_EVENT _genie_event_handle_mesh_init(void)
 {
     //check provsioning status
@@ -202,8 +205,9 @@ static E_GENIE_EVENT _genie_event_handle_mesh_init(void)
     if((read_flag & 0x1F) == 0x1D) {            ////(0x1F)
 #endif
         BT_INFO(">>>proved<<<");
+#ifdef CONFIG_BT_MESH_JINGXUN
 		k_delayed_work_submit(&app_timer, 3000);
-
+#endif // CONFIG_BT_MESH_JINGXUN
 #if CONFIG_MESH_SEQ_COUNT_INT
         seq += CONFIG_MESH_SEQ_COUNT_INT;
 #endif
@@ -600,12 +604,12 @@ void genie_event(E_GENIE_EVENT event, void *p_arg)
     }
 #endif
     switch(event) {
-//        case GENIE_EVT_SW_RESET:
-//            //call user_event first
-//            user_event(GENIE_EVT_SW_RESET, p_arg);
-//            ignore_user_event = 1;
-//            next_event = _genie_event_handle_sw_reset();
-//            break;
+        case GENIE_EVT_SW_RESET:
+            //call user_event first
+            user_event(GENIE_EVT_SW_RESET, p_arg);
+            ignore_user_event = 1;
+            next_event = _genie_event_handle_sw_reset();
+            break;
 
         case GENIE_EVT_HW_RESET_START:
             _genie_event_handle_hw_reset_start();
@@ -619,23 +623,8 @@ void genie_event(E_GENIE_EVENT event, void *p_arg)
             break;
 
 #ifdef CONFIG_GENIE_RESET_BY_REPEAT
-		case GENIE_EVT_SW_RESET:
-			user_event(GENIE_EVT_REPEAT_RESET_START, p_arg);
-			genie_hardreset_done();
-			ignore_user_event = 1;
-			event =GENIE_EVT_REPEAT_RESET_START;
-			next_event = GENIE_EVT_REPEAT_RESET_START;
-			break;
-        case GENIE_EVT_REPEAT_RESET_START:
-            user_event(GENIE_EVT_REPEAT_RESET_START, p_arg);
-			genie_hardreset_done();
-            ignore_user_event = 1;
-//			event =GENIE_EVT_REPEAT_RESET_START;
-            next_event = GENIE_EVT_REPEAT_RESET_START;
-            break;
-
-        case GENIE_EVT_REPEAT_RESET_DONE:
-            next_event = GENIE_EVT_REPEAT_RESET_DONE;
+        case GENIE_EVT_REPEAT_RESET:
+            next_event = GENIE_EVT_REPEAT_RESET;
             break;
 #endif
 

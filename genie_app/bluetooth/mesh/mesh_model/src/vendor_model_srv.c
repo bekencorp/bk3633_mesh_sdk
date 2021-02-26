@@ -299,7 +299,11 @@ s16_t vendor_model_msg_send(vnd_model_msg *p_model_msg)
     }
 
     //prepare buffer
+#ifdef CONFIG_BT_MESH_JINGXUN
     bt_mesh_model_msg_init(p_msg, BT_MESH_MODEL_OP_3(p_model_msg->opid, CONFIG_CID_JX));
+#else
+    bt_mesh_model_msg_init(p_msg, BT_MESH_MODEL_OP_3(p_model_msg->opid, CONFIG_MESH_VENDOR_COMPANY_ID));
+#endif //CONFIG_BT_MESH_JINGXUN
     net_buf_simple_add_u8(p_msg, p_model_msg->tid);
     if (p_model_msg->len) {
         net_buf_simple_add_mem(p_msg, p_model_msg->data, p_model_msg->len);
@@ -318,7 +322,11 @@ s16_t vendor_model_msg_send(vnd_model_msg *p_model_msg)
 #else
     ctx.app_idx = bt_mesh_model_get_appkey_id();
     ctx.net_idx = bt_mesh_model_get_netkey_id();
+#if CONFIG_BT_MESH_JINGXUN
     ctx.addr = 0xFFFF;
+#else
+    ctx.addr = 0xF000;
+#endif // CONFIG_BT_MESH_JINGXUN
     ctx.send_ttl = 0;
     ctx.send_rel = 0;
     err = bt_mesh_model_send(p_model, &ctx, p_msg, NULL, NULL);
@@ -515,6 +523,7 @@ static void _vendor_model_transparent_ack(struct bt_mesh_model *model,
     _vendor_model_msg_check_tid(&g_vnd_msg_list, tid);
 }
 
+#ifdef CONFIG_BT_MESH_JINGXUN
 /** @def _vendor_model_C7_ack
  *
  *  @brief handle VENDOR_OP_ATTR_TRANS_ACK message
@@ -530,8 +539,7 @@ static void _vendor_model_C7_ack(struct bt_mesh_model *model,
     printf("+++++++ %s ++++++\n", __func__);
     return  _vendor_model_analyze(model, ctx, buf, VENDOR_OP_C7_INDICATE);
 }
-
-
+#endif //CONFIG_BT_MESH_JINGXUN
 
 /** @def g_vendor_model_alibaba_op
  *
@@ -541,12 +549,16 @@ static void _vendor_model_C7_ack(struct bt_mesh_model *model,
 const struct bt_mesh_model_op g_vendor_model_alibaba_op[VENDOR_MODEL_OPC_NUM] = {
     { BT_MESH_MODEL_OP_3(VENDOR_OP_ATTR_GET_STATUS, CONFIG_MESH_VENDOR_COMPANY_ID), 2, _vendor_model_get },
     { BT_MESH_MODEL_OP_3(VENDOR_OP_ATTR_SET_ACK, CONFIG_MESH_VENDOR_COMPANY_ID), 2, _vendor_model_set_ack },
-//    { BT_MESH_MODEL_OP_3(VENDOR_OP_ATTR_SET_UNACK, CONFIG_MESH_VENDOR_COMPANY_ID), 2, _vendor_model_set_unack },
+#ifndef CONFIG_BT_MESH_JINGXUN
+    { BT_MESH_MODEL_OP_3(VENDOR_OP_ATTR_SET_UNACK, CONFIG_MESH_VENDOR_COMPANY_ID), 2, _vendor_model_set_unack },
+#endif //CONFIG_BT_MESH_JINGXUN
     { BT_MESH_MODEL_OP_3(VENDOR_OP_ATTR_CONFIME, CONFIG_MESH_VENDOR_COMPANY_ID), 1, _vendor_model_confirm },
     { BT_MESH_MODEL_OP_3(VENDOR_OP_ATTR_CONFIME_TG, CONFIG_MESH_VENDOR_COMPANY_ID), 1, _vendor_model_confirm_tg },
     { BT_MESH_MODEL_OP_3(VENDOR_OP_ATTR_TRANS_MSG, CONFIG_MESH_VENDOR_COMPANY_ID), 1, _vendor_model_transparent },
     { BT_MESH_MODEL_OP_3(VENDOR_OP_ATTR_TRANS_ACK, CONFIG_MESH_VENDOR_COMPANY_ID), 1, _vendor_model_transparent_ack },
+#ifdef CONFIG_BT_MESH_JINGXUN
     { BT_MESH_MODEL_OP_3(VENDOR_OP_ATTR_SET_UNACK, CONFIG_CID_JX), 2, _vendor_model_set_unack },
     { BT_MESH_MODEL_OP_3(VENDOR_OP_C7_INDICATE, CONFIG_CID_JX), 1, _vendor_model_C7_ack },
+#endif //CONFIG_BT_MESH_JINGXUN
     BT_MESH_MODEL_OP_END,
 };

@@ -836,6 +836,7 @@ static int trans_ack(struct bt_mesh_net_rx *rx, u8_t hdr,
 	} else {
 		BT_DBG("SDU TX complete");
 		seg_tx_complete(tx, 0);
+		BT_DBG("SDU TX complete after.");
 	}
 
 	return 0;

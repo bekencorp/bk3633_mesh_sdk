@@ -320,6 +320,7 @@ void genie_indicate_start(uint16_t delay_ms, S_ELEM_STATE *p_elem)
     k_timer_start(&g_indc_timer, random_time);
 }
 
+#ifdef CONFIG_BT_MESH_JINGXUN
 void vendor_C7_ack(u8_t tid)
 {
 	 struct bt_mesh_elem *elem;
@@ -388,6 +389,7 @@ void vendor_C7_ack(u8_t tid)
 		}
 	}
 }
+#endif //CONFIG_BT_MESH_JINGXUN
 
 
 #ifdef MESH_MODEL_VENDOR_TIMER
@@ -806,6 +808,7 @@ u16_t genie_vnd_msg_handle(vnd_model_msg *p_msg){
 
             break;
         }
+#ifdef CONFIG_BT_MESH_JINGXUN
         case VENDOR_OP_C7_INDICATE:
         {
 			if(p_data[0] ==0x01 && p_data[1] ==0x01)
@@ -815,6 +818,7 @@ u16_t genie_vnd_msg_handle(vnd_model_msg *p_msg){
 
 			break;
         }
+#endif //CONFIG_BT_MESH_JINGXUN
         case VENDOR_OP_ATTR_GET_STATUS: {
 #ifdef MESH_MODEL_VENDOR_TIMER
             u16_t attr_type = *p_data++;
@@ -1061,7 +1065,9 @@ s16_t genie_vendor_model_msg_send(vnd_model_msg *p_vendor_msg) {
         case VENDOR_OP_ATTR_INDICATE:
         case VENDOR_OP_ATTR_INDICATE_TG:
         case VENDOR_OP_ATTR_TRANS_MSG:
+#ifdef CONFIG_BT_MESH_JINGXUN
 		case VENDOR_OP_C7_INDICATE:
+#endif //CONFIG_BT_MESH_JINGXUN
             vendor_model_msg_send(p_vendor_msg);
             break;
         default:
@@ -1358,7 +1364,7 @@ static void _prov_reset(void)
 
 }
 
-bool bt_ready_count = false;
+// bool bt_ready_count = false;
 static void _genie_mesh_ready(int err)
 {
     if (err) {
@@ -1373,7 +1379,7 @@ static void _genie_mesh_ready(int err)
         return;
     }
 
-    bt_ready_count = true;
+    // bt_ready_count = true;
 #ifdef MESH_MODEL_VENDOR_TIMER
     vendor_timer_init(_vendor_timer_event);
 #endif
@@ -1398,7 +1404,11 @@ void genie_mesh_init(void)
     prov.complete = _prov_complete;
     prov.reset = _prov_reset;
 
+#ifdef CONFIG_BT_MESH_JINGXUN
     comp.cid = CONFIG_CID_JX;
+#else
+    comp.cid = CONFIG_CID_TUYA;
+#endif //CONFIG_BT_MESH_JINGXUN
     comp.pid = 0;
     comp.vid = 1; // firmware version fir ota
     comp.elem = elements;

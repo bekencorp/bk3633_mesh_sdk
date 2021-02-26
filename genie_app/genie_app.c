@@ -31,5 +31,6 @@ void genie_init(void)
 #ifdef CONFIG_BT_MESH
     genie_mesh_init();
 #endif
+
 }
 

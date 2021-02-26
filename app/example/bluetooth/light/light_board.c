@@ -199,7 +199,9 @@ static void _light_set_rgb(uint16_t rgb[LED_CHANNEL_MAX])
     } 
 }
 
+#ifdef CONFIG_BT_MESH_JINGXUN
 extern struct k_delayed_work app_timer;
+#endif //CONFIG_BT_MESH_JINGXUN
 
 void led_ctl_set_handler(uint16_t ctl_lightness, uint16_t temperature, uint16_t ctl_UV)
 {
@@ -213,16 +215,14 @@ void led_ctl_set_handler(uint16_t ctl_lightness, uint16_t temperature, uint16_t 
         return;
     }
 
+#ifdef CONFIG_BT_MESH_JINGXUN
 	k_delayed_work_submit(&app_timer, 3000);
+#endif // CONFIG_BT_MESH_JINGXUN
+    uint32_t rgb = _temperature_to_rgb(temperature, ctl_UV);
 
-//    uint32_t rgb = _temperature_to_rgb(temperature, ctl_UV);
-
-//    rgb_cal[0] = _color_8to16(rgb >> 16) * ctl_lightness / LIGHTNESS_MAX;
-//    rgb_cal[1] = _color_8to16(rgb >> 8) * ctl_lightness / LIGHTNESS_MAX;
-//    rgb_cal[2] = _color_8to16(rgb) * ctl_lightness / LIGHTNESS_MAX;
-	  rgb_cal[0] = ctl_lightness;
-	  rgb_cal[1] = temperature;
-	  rgb_cal[2] = 0;
+    rgb_cal[0] = _color_8to16(rgb >> 16) * ctl_lightness / LIGHTNESS_MAX;
+    rgb_cal[1] = _color_8to16(rgb >> 8) * ctl_lightness / LIGHTNESS_MAX;
+    rgb_cal[2] = _color_8to16(rgb) * ctl_lightness / LIGHTNESS_MAX;
     _light_set_rgb(rgb_cal);
 
 }

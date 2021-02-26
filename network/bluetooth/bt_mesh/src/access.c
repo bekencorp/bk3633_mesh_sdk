@@ -507,8 +507,10 @@ bool bt_mesh_model_in_primary(struct bt_mesh_model *mod)
     return (mod->elem_idx == 0);
 }
 
+#ifdef CONFIG_BT_MESH_JINGXUN
 extern struct k_delayed_work app_timer;
 u16 app_dst;
+#endif //CONFIG_BT_MESH_JINGXUN
 void bt_mesh_model_recv(struct bt_mesh_net_rx *rx, struct net_buf_simple *buf)
 {
     struct bt_mesh_model *models, *model;
@@ -528,12 +530,13 @@ void bt_mesh_model_recv(struct bt_mesh_net_rx *rx, struct net_buf_simple *buf)
     }
 
     BT_DBG("OpCode 0x%08x", opcode);
+#ifdef CONFIG_BT_MESH_JINGXUN
 	if(opcode ==0x00000003)
 	{
 		app_dst =rx->dst;
 		k_delayed_work_submit(&app_timer, 4000);
 	}
-
+#endif //CONFIG_BT_MESH_JINGXUN
 #ifdef MESH_DEBUG_RX
     MESH_MSG_RX("");
     MESH_MSG_RX("SRC: 0x%02X", rx->ctx.addr);

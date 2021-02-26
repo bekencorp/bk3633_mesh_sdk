@@ -20,7 +20,7 @@
 //#define DEFAULT_MAC "\x0E\x8B\x12\x4D\x23\xDC"  // 0E8B124D23DC
 //#define DEFAULT_MAC "\x0F\x8B\x12\x4D\x23\xDC"  // 0F8B124D23DC
 //#define DEFAULT_MAC "\x10\x8B\x12\x4D\x23\xDC"  // 108B124D23DC
-//#define DEFAULT_MAC "\x11\x8B\x12\x4D\x23\xDC"    // 118B124D23DC
+//#define DEFAULT_MAC "\x11\x8B\x12\x4D\x23\xDC"  // 118B124D23DC
 //#define DEFAULT_MAC "\x12\x8B\x12\x4D\x23\xDC"  // 128B124D23DC
 //#define DEFAULT_MAC "\x13\x8B\x12\x4D\x23\xDC"  // 138B124D23DC
 #endif

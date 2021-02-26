@@ -2125,5 +2125,9 @@ uint8_t lld_con_sync_info_get(uint8_t link_id, uint16_t* ref_con_evt_cnt, uint32
  */
 uint8_t lld_sync_info_get(uint8_t act_id, uint8_t* phy, uint16_t* intv, struct access_addr* aa, struct crc_init* crcinit, uint32_t* sync_ind_ts, uint16_t* sync_ind_bit_off, uint16_t* pa_evt_cnt, struct le_chnl_map *map, uint8_t* sca);
 
+#if (BLE_MESH_FULL_SCAN)
+void lld_abort_scan_evt(void);
+#endif //BLE_MESH_FULL_SCAN
+
 /// @} LLD
 #endif // LLD_H_

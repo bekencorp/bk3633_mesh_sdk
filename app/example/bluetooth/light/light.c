@@ -18,9 +18,10 @@
 #include "light_board.h"
 #include "uart_test_cmd.h"
 
+#ifdef CONFIG_BT_MESH_JINGXUN
 u8  app_time_flag;
 struct k_delayed_work app_timer;
-
+#endif CONFIG_BT_MESH_JINGXUN
 
 led_flash_t g_flash_para;
 
@@ -607,12 +608,7 @@ void user_event(E_GENIE_EVENT event, void *p_arg)
             break;
 #endif
 #ifdef CONFIG_GENIE_RESET_BY_REPEAT
-        case GENIE_EVT_REPEAT_RESET_START:
-            BT_DBG_R("FLASH x5");
-            _led_flash(5, 0);
-            break;
-        case GENIE_EVT_REPEAT_RESET_DONE:
-            led_ctl_set_handler(0, 0, 0);
+        case GENIE_EVT_REPEAT_RESET:
             erase_reboot_uart_cmd_handler(NULL);
             break;
 #endif
@@ -625,6 +621,7 @@ void user_event(E_GENIE_EVENT event, void *p_arg)
     }
 }
 
+#ifdef CONFIG_BT_MESH_JINGXUN
 u8 JX_model_flag =0;
 void vendor_C7_ack(u8_t tid);
 
@@ -642,6 +639,7 @@ static void app_timer_cb(void *p_timer, void *args)
     //BT_DBG(" ++++++++++++++++++++++ %s, times %d flag = %d ++++++++++++++++\r\n", 
      //        __func__,times, app_time_flag);
 }
+#endif //CONFIG_BT_MESH_JINGXUN
 
 int application_start(int argc, char **argv)
 {
@@ -655,7 +653,9 @@ int application_start(int argc, char **argv)
 #endif
 
     BT_INFO("BUILD_TIME:%s", __DATE__","__TIME__);
+#ifdef CONFIG_BT_MESH_JINGXUN
 	k_delayed_work_init(&app_timer, app_timer_cb);
+#endif //CONFIG_BT_MESH_JINGXUN
     //aos_loop_run();
 
     return 0;
