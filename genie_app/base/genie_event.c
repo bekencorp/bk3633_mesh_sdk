@@ -219,6 +219,9 @@ static E_GENIE_EVENT _genie_event_handle_mesh_init(void)
         genie_appkey_register(appkey.net_index, appkey.key_index, appkey.key, appkey.flag);
 
 #ifdef CONFIG_GENIE_OTA
+        ais_service_register();
+#endif
+#ifdef CONFIG_BEKEN_OTA
         ota_service_register();
 #endif
         /* check hb */
@@ -247,6 +250,9 @@ static E_GENIE_EVENT _genie_event_handle_mesh_init(void)
             return GENIE_EVT_HW_RESET_START;
         }
 #ifdef CONFIG_GENIE_OTA
+        ais_service_register();
+#endif
+#ifdef CONFIG_BEKEN_OTA
         ota_service_register();
 #endif
         bt_mesh_prov_enable(BT_MESH_PROV_GATT | BT_MESH_PROV_ADV);

@@ -597,15 +597,15 @@ struct net_buf_pool {
  *  @param _ud_size  Amount of user data space to reserve.
  *  @param _destroy  Optional destroy callback when buffer is freed.
  */
-#define NET_BUF_POOL_DEFINE(_name, _count, _size, _ud_size, _destroy)        \
+#define NET_BUF_POOL_DEFINE(_name, _count, _size, _ud_size, _destroy)    \
 	static struct {                                                      \
-		struct net_buf buf;                                          \
-		u8_t data[_size] __net_buf_align;	                     \
-		u8_t ud[ROUND_UP(_ud_size, 4)] __net_buf_align;              \
-	} _net_buf_##_name[_count] /*__noinit*/;                             \
+		struct net_buf buf;                                              \
+		u8_t data[_size] __net_buf_align;	                             \
+		u8_t ud[ROUND_UP(_ud_size, 4)] __net_buf_align;                  \
+	} _net_buf_##_name[_count] /* __noinit */;                           \
 	struct net_buf_pool _name __net_buf_align =                          \
-		NET_BUF_POOL_INITIALIZER(_name, _net_buf_##_name,            \
-					 _count, _size, _ud_size, _destroy)
+		NET_BUF_POOL_INITIALIZER(_name, _net_buf_##_name,                \
+                                 _count, _size, _ud_size, _destroy)
 
 
 /**

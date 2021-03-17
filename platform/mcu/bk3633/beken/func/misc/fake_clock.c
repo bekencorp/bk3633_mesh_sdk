@@ -90,6 +90,13 @@ UINT32 fclk_cal_endvalue(UINT32 mode)
     return fclk_second / ticks_per_second;
 }
 
+void fclk_disable(UINT8 pwm_id)
+{
+    pwm_param_t pwm_drv_desc;
+    pwm_drv_desc.channel         = pwm_id;
+    sddev_control(PWM_DEV_NAME, CMD_PWM_DEINIT_PARAM, &pwm_drv_desc);
+}
+
 void fclk_init(UINT8 pwm_id, UINT16 ticks_per_sec)
 {
 	pwm_param_t pwm_drv_desc;

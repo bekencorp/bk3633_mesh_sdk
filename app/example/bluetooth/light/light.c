@@ -191,7 +191,7 @@ static void light_state_store(struct k_work *work)
 
     aos_free(p_read);
 
-#if CONFIG_GENIE_OTA
+#if CONFIG_BEKEN_OTA
     if (g_powerup[0].last_onoff == 0 && ota_update_complete_get() == 1) {
         //Means have ota, wait for reboot while light off
         aos_reboot();
@@ -211,22 +211,6 @@ void mesh_sub_init(u16_t *p_sub)
     p_sub[0] = DEFAULT_MESH_GROUP1;
     p_sub[1] = DEFAULT_MESH_GROUP2;
 }
-
-#ifdef CONFIG_GENIE_OTA
-bool ota_check_reboot(void)
-{
-    // the device will reboot when it is off
-    if (g_elem_state[0].state.onoff[T_CUR] == 0) {
-        // save light para, always off
-        g_powerup[0].last_onoff = 0;
-        genie_flash_write_userdata(GFI_MESH_POWERUP, (uint8_t *)g_powerup, sizeof(g_powerup));
-        LIGHT_DBG("Allow to reboot!");
-        return true;
-    }
-    LIGHT_DBG("no reboot!");
-    return false;
-}
-#endif
 
 void _init_light_para(void)
 {
@@ -657,6 +641,9 @@ int application_start(int argc, char **argv)
 	k_delayed_work_init(&app_timer, app_timer_cb);
 #endif //CONFIG_BT_MESH_JINGXUN
     //aos_loop_run();
+
+
+    sleep_mode_enable(1);
 
     return 0;
 }

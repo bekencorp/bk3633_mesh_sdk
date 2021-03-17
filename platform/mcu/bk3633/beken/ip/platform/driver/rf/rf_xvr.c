@@ -527,6 +527,17 @@ void  xvr_reg_initial(void)
     addPMU_Reg0x13 = 0XFFFFFF80;
     
     kmod_calibration();
+#if 1   
+  //  addXVR_Reg0x6 = 0x85a7cc00;XVR_ANALOG_REG_BAK[0x6] = 0x85a7cc00;
+    
+    addXVR_Reg0x6 = 0x80b7ce20;XVR_ANALOG_REG_BAK[0x6] = 0x80b7ce20;
+   
+    addXVR_Reg0x7 = 0xAA023FC0;XVR_ANALOG_REG_BAK[0x7] = 0xAA023FC0;
+  //  
+    addXVR_Reg0xa = 0x9C03785f;XVR_ANALOG_REG_BAK[0xa] = 0x9C03785f;
+   //
+    addXVR_Reg0x1c = 0x919CDDC5;XVR_ANALOG_REG_BAK[0x1c] = 0x919CDDC5;
+#endif
 }
 
 void rf_init(struct rwip_rf_api *api)

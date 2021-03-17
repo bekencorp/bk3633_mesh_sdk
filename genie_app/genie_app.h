@@ -12,6 +12,10 @@
 #endif
 
 #ifdef CONFIG_GENIE_OTA
+#include "bluetooth/host/profile/ais_srv/ais_service.h"
+#endif
+
+#ifdef CONFIG_BEKEN_OTA
 #include "bluetooth/host/profile/ota_srv/ota_service.h"
 #endif
 

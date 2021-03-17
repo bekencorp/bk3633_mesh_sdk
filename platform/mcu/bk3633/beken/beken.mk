@@ -86,6 +86,7 @@ $(NAME)_SOURCES  += arch/app/app_task.c
 $(NAME)_SOURCES  += func/func.c
 $(NAME)_SOURCES  += func/misc/fake_clock.c
 $(NAME)_SOURCES  += func/power_save/mcu_ps.c
+$(NAME)_SOURCES  += func/power_save/idle_mode.c
 
 $(NAME)_SOURCES  += driver/driver.c
 $(NAME)_SOURCES  += driver/common/dd.c

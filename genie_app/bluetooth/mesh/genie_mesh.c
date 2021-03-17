@@ -1165,7 +1165,7 @@ uint8_t genie_restore_user_state(uint8_t state_count,S_ELEM_STATE *p_elem, S_MOD
     
     while(i < state_count) 
     {
-#ifdef CONFIG_GENIE_OTA
+#if defined(CONFIG_BEKEN_OTA) || defined(CONFIG_GENIE_OTA)
         // if the device reboot by ota, it must be off.
         if(p_pup[i].last_onoff == 0)
         {
@@ -1385,7 +1385,7 @@ static void _genie_mesh_ready(int err)
 #endif
 
     //send event
-    genie_event(GENIE_EVT_SDK_MESH_INIT, NULL);
+    // genie_event(GENIE_EVT_SDK_MESH_INIT, NULL);
 }
 
 void genie_mesh_init(void)
@@ -1394,21 +1394,20 @@ void genie_mesh_init(void)
 
     BT_INFO(">>>init genie<<<");
 
-    // genie_tri_tuple_load();
-
-    prov.uuid = genie_tri_tuple_get_uuid();
-#ifdef GENIE_OLD_AUTH
+#ifdef CONFIG_BT_MESH_ALI_TMALL_GENIE
+    genie_tri_tuple_load();
     prov.static_val = genie_tri_tuple_get_auth();
     prov.static_val_len = STATIC_OOB_LENGTH;
-#endif
+#endif /*CONFIG_BT_MESH_ALI_TMALL_GENIE*/
+    prov.uuid = genie_tri_tuple_get_uuid();
     prov.complete = _prov_complete;
     prov.reset = _prov_reset;
 
-#ifdef CONFIG_BT_MESH_JINGXUN
+#ifdef CONFIG_BT_MESH_ALI_TMALL_GENIE
+    comp.cid = CONFIG_CID_TAOBAO;
+#else /*CONFIG_BT_MESH_ALI_TMALL_GENIE*/
     comp.cid = CONFIG_CID_JX;
-#else
-    comp.cid = CONFIG_CID_TUYA;
-#endif //CONFIG_BT_MESH_JINGXUN
+#endif
     comp.pid = 0;
     comp.vid = 1; // firmware version fir ota
     comp.elem = elements;

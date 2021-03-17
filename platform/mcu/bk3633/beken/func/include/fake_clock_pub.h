@@ -15,6 +15,7 @@
 extern UINT32 fclk_get_tick(void);
 extern UINT32 fclk_get_second(void);
 extern void fclk_reset_count(void);
+extern void fclk_disable(UINT8 pwm_id);
 extern void fclk_init(UINT8 pwm_id, UINT16 ticks_per_sec);
 extern UINT32 fclk_from_sec_to_tick(UINT32 sec);
 extern UINT32 fclk_tick_a_second(void);

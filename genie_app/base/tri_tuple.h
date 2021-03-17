@@ -28,7 +28,8 @@ E_GENIE_FLASH_ERRCODE genie_flash_read_trituple(uint32_t *p_pid, uint8_t *p_mac,
  * @return the string refering to uuid
  */
 uint8_t *genie_tri_tuple_get_uuid(void);
-#ifdef GENIE_OLD_AUTH
+
+#ifdef CONFIG_BT_MESH_ALI_TMALL_GENIE
 /**
  * @brief get the authentication info
  * @return the authenticated sequence

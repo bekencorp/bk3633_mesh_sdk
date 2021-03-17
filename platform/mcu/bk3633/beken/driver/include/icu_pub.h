@@ -27,23 +27,29 @@ enum
     CMD_CLK_PWR_UP,
     CMD_CONF_PWM_PCLK,
     CMD_CONF_PWM_LPOCLK,
+    CMD_SET_SLEEP_MODE,
+    CMD_GET_SLEEP_MODE,
 };
 
 
-#define REG_SYS_PWD                                 &(addSYS_Reg0x3)
-#define REG_SYS_CLK_SEL                             &(addSYS_Reg0x4)
-#define REG_SYS_INT_EN                              &(addSYS_Reg0x10)
-#define REG_SYS_INT_STATUS                          &(addSYS_Reg0x12)
-#define REG_SYS_INT_PRI                             &(addSYS_Reg0x11)
-
-#define SYS_PWM0_PWD_POS                             posSYS_Reg0x3_pwm0_pwd
-#define SYS_PWM0_SEL_POS                             posSYS_Reg0x4_pwm0_sel
-#define SYS_PWM0_INT_EN_POS                          posSYS_Reg0x10_int_pwm0_en
-
-#define SYS_PWM1_PWD_POS                             posSYS_Reg0x3_pwm1_pwd
-#define SYS_PWM1_SEL_POS                             posSYS_Reg0x4_pwm1_sel
-#define SYS_PWM1_INT_EN_POS                          posSYS_Reg0x10_int_pwm1_en
-
+/* 1: power down; 0: power up */
+#define SYS_PWD_I2S_BIT                                    (1 << 19)
+#define SYS_PWD_DMA_BIT                                    (1 << 18)
+#define SYS_PWD_RWBT_BIT                                   (1 << 17)
+#define SYS_PWD_BK24_BIT                                   (1 << 16)
+#define SYS_PWD_WDT_BIT                                    (1 << 15)
+#define SYS_PWD_EFUSE_BIT                                  (1 << 14)
+#define SYS_PWD_SPI_BIT                                    (1 << 13)
+#define SYS_PWD_I2C_BIT                                    (1 << 12)
+#define SYS_PWD_USB_BIT                                    (1 << 11)
+#define SYS_PWD_SADC_BIT                                   (1 << 10)
+#define SYS_PWD_RTC_BIT                                    (1 << 8)
+#define SYS_PWD_PWM1_BIT                                   (1 << 6)
+#define SYS_PWD_PWM0_BIT                                   (1 << 4)
+#define SYS_PWD_TIMER1_BIT                                 (1 << 3)
+#define SYS_PWD_TIMER0_BIT                                 (1 << 2)
+#define SYS_PWD_UART1_BIT                                  (1 << 1)
+#define SYS_PWD_UART0_BIT                                  (1 << 0)
 /* CMD_ICU_CLKGATING_DISABLE CMD_ICU_CLKGATING_ENABLE */
 #define CLKGATE_PWM_BIT                      (1 << 9)
 #define CLKGATE_XVR_BIT                      (1 << 8)
@@ -99,6 +105,16 @@ enum
 	CLK_PWR_DEV_I2S_PCM,
 };
 
+typedef enum
+{
+	MCU_NO_SLEEP = 0,
+	MCU_IDLE_SLEEP,         //cpu idle,clk run	
+    MCU_REDUCE_VO_SLEEP,    //cpu idle,16M,PLL STOP,reduce cpu voltage
+    MCU_DEEP_SLEEP,         //cpu idle,16M,PLL STOP
+
+    MCU_SLEEP_MODE_NUM,
+} MCU_SLEEP_MODE;
+
 
 
 /*******************************************************************************
@@ -107,6 +123,10 @@ enum
 extern void icu_init(void);
 extern void icu_exit(void);
 extern UINT32 icu_ctrl(UINT32 cmd, void *param);
+
+void cpu_reduce_voltage_sleep(void);
+void cpu_wakeup(void);
+void cpu_idle_sleep(void);
 
 #endif //_ICU_PUB_H_ 
 

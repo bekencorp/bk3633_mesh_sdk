@@ -20,7 +20,8 @@ static int volatile uart_test_enable   = 1;
 
 static const struct uart_command uart_test_cmds[] = {
     {UART_CMD_ERASE_REBOOT,               erase_reboot_uart_cmd_handler},
-    {UART_CMD_REBOOT,                     reboot_uart_cmd_handler}
+    {UART_CMD_REBOOT,                     reboot_uart_cmd_handler},
+    {UART_CMD_LNP_SET,                    lpn_set_uart_cmd_handler}
 
 };
 
@@ -55,6 +56,7 @@ static int handle_uart_cmd(char *inbuf)
     char *para = NULL;
     uint16_t opcode = ((uint16_t)(*index++)<<8) | (*index++);
 
+    UART_PRINTF("%s, opcode %x\n", __func__, opcode);
     if((*index) != '\0')
     {
         para = index;

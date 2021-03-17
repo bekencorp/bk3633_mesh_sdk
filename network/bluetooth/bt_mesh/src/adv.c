@@ -312,9 +312,15 @@ static void adv_thread(void *p1, void *p2, void *p3)
                         break;
                     } else {
                         k_sleep(1);
+#ifdef CONFIG_BT_MESH_CUSTOM_ADV
+                        break;
+#endif
                     }
                 }
                 bt_mesh_proxy_adv_stop();
+#ifdef CONFIG_BT_MESH_CUSTOM_ADV
+                bt_mesh_custom_adv_send();
+#endif
             }
         } else {
             buf = net_buf_get(&adv_queue, K_FOREVER);

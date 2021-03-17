@@ -1254,7 +1254,7 @@ static s32_t gatt_proxy_advertise(struct bt_mesh_subnet *sub)
     BT_DBG("");
 
     if (conn_count == CONFIG_BT_MAX_CONN) {
-        BT_WARN("Connectable advertising deferred (max connections)");
+        //BT_WARN("Connectable advertising deferred (max connections)");
         return remaining;   
     }
 
@@ -1375,6 +1375,48 @@ void bt_mesh_proxy_adv_stop(void)
         proxy_adv_enabled = false;
     }
 }
+
+#ifdef CONFIG_BT_MESH_CUSTOM_ADV
+#define BT_MESH_CUSTOM_ADV_INT  1  //custom adv send continue for 1ms.
+static u8_t g_custom_adv_data[14] = {
+    0xa8, 0x01, //taobao
+    0x85,       //vid & sub
+    0x15,       //FMSK
+    0x15, 0x11, 0x22, 0x33,             //PID
+    0xAA, 0xBB, 0xCC, 0x11, 0x22, 0x33  //MAC
+};
+static struct bt_data g_custom_ad[] = {
+    BT_DATA_BYTES(BT_DATA_FLAGS, (BT_LE_AD_GENERAL | BT_LE_AD_NO_BREDR)),
+    BT_DATA_BYTES(BT_DATA_UUID16_SOME, 0xB3, 0xFE),
+    BT_DATA(BT_DATA_MANUFACTURER_DATA, g_custom_adv_data, 14),
+};
+static const struct bt_data g_custom_sd[] = {
+    BT_DATA_BYTES(BT_DATA_FLAGS, (BT_LE_AD_GENERAL | BT_LE_AD_NO_BREDR)),
+    BT_DATA(BT_DATA_NAME_COMPLETE, CONFIG_BT_DEVICE_NAME, (sizeof(CONFIG_BT_DEVICE_NAME) - 1)),
+};
+
+void bt_mesh_custom_adv_send()
+{
+    int err;
+
+    if (conn_count == CONFIG_BT_MAX_CONN) {
+        // BT_WARN("custom_adv_send Connectable advertising deferred (max connections)");
+        return ;
+    }
+
+    err = bt_mesh_adv_start(&fast_adv_param, g_custom_ad, ARRAY_SIZE(g_custom_ad), g_custom_sd, ARRAY_SIZE(g_custom_sd));
+    if (err) {
+        BT_ERR("Failed to advertising (err %d)", err);
+    }
+
+    k_sleep(BT_MESH_CUSTOM_ADV_INT);
+
+    err = bt_mesh_adv_stop();
+    if (err) {
+        BT_ERR("Failed to stop advertising (err %d)", err);
+    }
+}
+#endif /* CONFIG_BT_MESH_CUSTOM_ADV */
 
 #ifdef CONFIG_BT_MESH_MULTIADV
 void bt_mesh_proxy_adv_timer_callback(void *timer)

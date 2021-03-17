@@ -167,7 +167,7 @@ static void init_pwm_param(pwm_param_t *pwm_param, UINT8 enable)
 
     if((pwm_param == NULL)
             || (pwm_param->channel >= PWM_COUNT)
-            || (pwm_param->duty_cycle > pwm_param->end_value))
+            || ((pwm_param->duty_cycle > pwm_param->end_value) & enable))
     {
         return;
     }

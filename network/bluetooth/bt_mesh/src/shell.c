@@ -131,11 +131,9 @@ static struct bt_mesh_model root_models[] = {
         BT_MESH_MODEL_HEALTH_CLI(&health_cli),
 #endif
 #if 0
-#ifdef	CONFIG_BT_MESH_ALI_TMALL_GENIE
 #ifdef CONFIG_BT_MESH_GEN_ONOFF_CLI
 	MESH_MODEL_GEN_ONOFF_CLI(NULL, NULL),
 #endif
-#endif	/* CONFIG_BT_MESH_ALI_TMALL_GENIE*/
 #ifdef CONFIG_BT_MESH_GEN_BATTERY_CLI
 	MESH_MODEL_GEN_BATTERY_CLI(),
 #endif

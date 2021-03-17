@@ -71,7 +71,7 @@ struct rwble_env_tag
  */
 
 /// Environment of the RW BLE interrupt handler
-//static struct rwble_env_tag rwble_env;
+static struct rwble_env_tag rwble_env;
 
 /*
  * GLOBAL VARIABLES
@@ -174,7 +174,7 @@ __BLEIRQ void rwble_isr(void)
 
     DBG_SWDIAG(ISR, BLE, 0);
 }
-#if 0
+
 void rwble_sleep_enter(void)
 {
     // Keep currently enabled interrupts
@@ -186,12 +186,11 @@ void rwble_sleep_enter(void)
     ble_intack0_clear(0xFFFFFFFF);
 }
 
-
 void rwble_sleep_wakeup_end(void)
 {
     // Restore enabled interrupts
     ble_intcntl0_set(rwble_env.irq_mask);
 }
-#endif
+
 #endif //(BT_DUAL_MODE || BLE_STD_MODE) 
 ///@} RWBTINT

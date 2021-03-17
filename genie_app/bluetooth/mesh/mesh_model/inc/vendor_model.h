@@ -16,7 +16,6 @@
 #define VENDOR_OP_ATTR_TRANS_MSG         0xCF
 #define VENDOR_OP_ATTR_TRANS_INDICATE    0xCE
 #define VENDOR_OP_ATTR_TRANS_ACK         0xCD
-
 #define VENDOR_OP_C7_INDICATE            0xC7
 
 #define ONOFF_T           0x0100

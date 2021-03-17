@@ -15,70 +15,70 @@
 #include <stddef.h>     // standard definition
 #include "BK3633_RegList.h"
 #include "gpio.h"
-
 #include "intc_pub.h"
 #include "gpio_pub.h"
 
 
 static SDD_OPERATIONS gpio_op =
-{
+{ 
     gpio_ctrl
 };
 
 static GPIO_INT_CALLBACK_T gpio_int_cb = NULL; 
 
-void gpio_config(uint8_t gpio, Dir_Type dir, Pull_Type pull)
+void gpio_config(UINT32 index, Dir_Type dir, Pull_Type pull)
 {
 
     uint32_t  gpio_temp=0;
-    uint8_t port = ((gpio&0xf0)>>4);
-    uint8_t  pin = (gpio&0xf);
+    uint32_t value;
     uint32_t* dest_reg;
 
-    REG_GPIOx_CFG(dest_reg, port, pin);
+    uint8_t idx = GPIO_PORT2ID(index);
+
+    REG_GPIOx_CFG(dest_reg, idx);
+
+    value = REG_READ(dest_reg);
 
     switch(dir)
     {
         case OUTPUT:	       
-            gpio_temp &= ~(1<<GPIO_INPUT_EN);
-            gpio_temp &= ~(1<<GPIO_OUTPUT_EN);
+            value &= ~(1<<GPIO_INPUT_EN);
+            value &= ~(1<<GPIO_OUTPUT_EN);
             break;        
         case INPUT:
-            gpio_temp |= (1<<GPIO_OUTPUT_EN);
-            gpio_temp |= (1<<GPIO_INPUT_EN);
+            value |= (1<<GPIO_OUTPUT_EN);
+            value |= (1<<GPIO_INPUT_EN);
             break;
     	case FLOAT:		
-    		gpio_temp &= ~(1<<GPIO_INPUT_EN);
-            gpio_temp |= (1<<GPIO_OUTPUT_EN);
+    		value &= ~(1<<GPIO_INPUT_EN);
+            value |= (1<<GPIO_OUTPUT_EN);
             break;
     }
 
     switch(pull)
     {
         case PULL_HIGH:
-            gpio_temp |= (1<<GPIO_PULL_EN);
-            gpio_temp |= (1<<GPIO_PULL_MODE);
+            value |= (1<<GPIO_PULL_EN);
+            value |= (1<<GPIO_PULL_MODE);
             break;
         case PULL_LOW:
-            gpio_temp |= (1<<GPIO_PULL_EN);
-            gpio_temp &= ~(1<<GPIO_PULL_MODE);
+            value |= (1<<GPIO_PULL_EN);
+            value &= ~(1<<GPIO_PULL_MODE);
             break;
         case PULL_NONE:
-            gpio_temp &= ~(1<<GPIO_PULL_EN);
+            value &= ~(1<<GPIO_PULL_EN);
             break;
     }
 
-    *(volatile unsigned long *)dest_reg = gpio_temp;
-
+    REG_WRITE(dest_reg, value);
 }
 
-void gpio_config_func(uint8_t gpio)
+void gpio_config_func(UINT32 index)
 {
     uint32_t*  p_add;
-    uint8_t port = (gpio&0xf0)>>4;
-    uint8_t  pin = gpio&0xf;
+    uint8_t idx = GPIO_PORT2ID(index);
 
-    REG_GPIOx_CFG(p_add, port, pin);
+    REG_GPIOx_CFG(p_add, idx);
 
     setf_GPIO_2nd_Fun_Ena(p_add);
 }
@@ -161,78 +161,61 @@ static void gpio_enable_second_function(UINT32 func_mode)
     return;
 }
 
-uint8_t gpio_get_input(uint8_t gpio)
+UINT8 gpio_get_input(UINT32 index)
 {
 
-    uint32_t*  p_add;
-    uint8_t port = (gpio&0xf0)>>4;
-    uint8_t  pin = gpio&0xf;
+    UINT32*  p_add;
 
-    REG_GPIOx_CFG(p_add, port, pin);
-	
-    return get_GPIO_Input_Monitor(p_add);
+    UINT8 idx = GPIO_PORT2ID(index);
+
+    REG_GPIOx_CFG(p_add, idx);
+
+    UINT32 value = REG_READ(p_add);
+
+    return (value & (1 << GPIO_INPUT_VA));
+
 }
 
-void gpio_set(uint8_t gpio, uint8_t val)
+void gpio_set(UINT32 index, UINT8 val)
 {
+    UINT32*  p_add;
+    UINT8 idx = GPIO_PORT2ID(index);
 
-    uint32_t*  p_add;
-    uint8_t port = ((gpio&0xf0)>>4);
-    uint8_t  pin = (gpio&0xf);
+    REG_GPIOx_CFG(p_add, idx);
 
-    REG_GPIOx_CFG(p_add, port, pin);
+    UINT32 value = REG_READ(p_add);
 
     if(val)
     {
-        *p_add |= (1<<GPIO_OUTPUT_VA);
+        value |= (1<<GPIO_OUTPUT_VA);
     }
     else
     {
-        *p_add &= ~(1<<GPIO_OUTPUT_VA);
+        value &= ~(1<<GPIO_OUTPUT_VA);
     }
 
+    REG_WRITE(p_add, value);
 }
 
-#if GPIO_DBG_MSG
-void gpio_debug_msg_init()
+void gpio_output_reverse(UINT32 index)
 {
+    UINT32*  p_add;
+    UINT8 idx = GPIO_PORT2ID(index);
+    UINT8 sta;
 
-	*(GPIO_CFG[0]) = 0X0000ff;		    	
-	*(GPIO_DATA[0]) = 0;
-	REG_AHB0_ICU_DIGITAL_PWD |= (0X01 << 4);
+    REG_GPIOx_CFG(p_add, idx);
+
+    UINT32 value = REG_READ(p_add);
+    sta = (value >> GPIO_OUTPUT_VA) & 0x01;
+    sta = (sta + 1) & 0x01;
+
+    gpio_set(index, sta);
 }
-#endif
+
 
 void gpio_init(void)
 {
 	sddev_register_dev(GPIO_DEV_NAME, &gpio_op);
-
-#if DEBUG_HW
-	*(GPIO_CFG[2]) = 0XFF0000;
-	*(GPIO_DATA[2]) = 0;
-	REG_AHB0_ICU_DIGITAL_PWD |= (0X01 << 4);
-	//gpio_config(0x17, OUTPUT, PULL_NONE);
-	//gpio_set(0x17, 0);
-#endif
-
-#if GPIO_DBG_MSG
-    
-	//gpio_debug_msg_init();
-	gpio_config(0x26, OUTPUT, PULL_NONE);
-	gpio_config(0x27, OUTPUT, PULL_NONE);
-	gpio_config(0x30, OUTPUT, PULL_NONE);
-	gpio_config(0x31, OUTPUT, PULL_NONE);
-	gpio_config(0x32, OUTPUT, PULL_NONE);
-	// while(1)
-	{
-	    gpio_set(0x27, 1);
-	    gpio_set(0x27, 0);
-	    for (int j = 0; j < 5000; j++)
-	    {
-			;
-	    }
-	}
-#endif
 }
 
 
@@ -258,13 +241,14 @@ void gpio_cb_register(GPIO_INT_CALLBACK_T cb)
 
 void gpio_isr(void)
 {
-    int i;
-    unsigned long ulIntStatus;
+    UINT8 i;
+    UINT32 value = 0;
 
-    ulIntStatus = REG_APB5_GPIO_WUATOD_STAT;
+    value = REG_READ(GPIO_INT_STAT1);
+
     for (i = 0; i < GPIO_SUM; i++)
     {
-        if (ulIntStatus & (0x01UL << i))
+        if (value & (0x01UL << i))
         {
         	if(gpio_int_cb)
         	{
@@ -273,19 +257,25 @@ void gpio_isr(void)
         }
     }
 
-    REG_APB5_GPIO_WUATOD_STAT = ulIntStatus;
+    REG_WRITE(GPIO_INT_STAT1, value);
 }
 
 void gpio_int_disable(UINT32 index)
 {
-	uint8_t idx = ((index&0x30)>>1)+(index&0x7);
-    REG_APB5_GPIO_WUATOD_ENABLE &= ~(0x01 << idx);
+	UINT8 idx = GPIO_PORT2ID(index);
+    UINT32 value = 0;
+
+    value = REG_READ(GPIO_INT_EN1);
+    value &= ~(0x01 << idx);
+    REG_WRITE(GPIO_INT_EN1, value);
 }
 
 void gpio_int_enable(UINT32 index, UINT32 mode, void (*p_Int_Handler)(unsigned char))
 {
     UINT32 param;
-	uint8_t idx = ((index&0x30)>>1)+(index&0x7);
+    UINT32 value = 0, reg = 0, pos = 0;
+	UINT8 idx = GPIO_PORT2ID(index);
+
     if((index >= GPIONUM) || (index&0x08))
     {
         os_printf("gpio_id_cross_border\r\n");
@@ -294,12 +284,9 @@ void gpio_int_enable(UINT32 index, UINT32 mode, void (*p_Int_Handler)(unsigned c
 
     intc_service_register(IRQ_GPIO, PRI_IRQ_GPIO, gpio_isr);
     gpio_cb_register(p_Int_Handler);
-    //param = IRQ_GPIO_BIT;
-    //sddev_control(ICU_DEV_NAME, CMD_ICU_INT_ENABLE, &param);
-
     intc_enable(IRQ_GPIO);
 
-    if(mode&0x01 == 1)
+    if(mode == GPIO_INT_LEVEL_FALLING || mode == GPIO_INT_LEVEL_LOW)
     {
         gpio_config(index, INPUT, PULL_HIGH);
     }
@@ -310,135 +297,133 @@ void gpio_int_enable(UINT32 index, UINT32 mode, void (*p_Int_Handler)(unsigned c
 
     if(idx <= 15)
     {
-        REG_APB5_GPIO_WUATOD_TYPE_LOW = (REG_APB5_GPIO_WUATOD_TYPE_LOW & (~(0x11 << idx*2))) | (mode << idx);
+        reg = GPIO_INT_TYPE_L;
+        pos = idx*2;
     }
     else
     {
-        REG_APB5_GPIO_WUATOD_TYPE_HIGH = (REG_APB5_GPIO_WUATOD_TYPE_HIGH & (~(0x11 << (idx-16)*2))) | (mode << (idx-16)*2);
+        reg = GPIO_INT_TYPE_H;
+        pos = (idx-16)*2;
     }
 
-    REG_APB5_GPIO_WUATOD_ENABLE |= (0x01 << idx);
+    value = REG_READ(reg);
+    value &= (~(GPIO_INT_MASK << pos));
+    value |= (mode << pos);
+    REG_WRITE(reg, value);
+
+    value = REG_READ(GPIO_INT_EN1);
+    value |= (0x01 << idx);
+    REG_WRITE(GPIO_INT_EN1, value);
 }
 
 UINT32 gpio_ctrl(UINT32 cmd, void *param)
 {
-    UINT32 ret;
-    ret = GPIO_SUCCESS;
+    UINT32 ret = GPIO_SUCCESS;
 
     switch(cmd)
     {
-    case CMD_GPIO_CFG:
-    {
-        UINT32 id;
-        UINT32 mode;
-        Dir_Type dir;
-        Pull_Type pull;
-
-        id = GPIO_CFG_PARAM_DEMUX_ID(*(UINT32 *)param);
-        mode = GPIO_CFG_PARAM_DEMUX_MODE(*(UINT32 *)param);
-
-        if(mode== GMODE_INPUT_PULLUP)
+        case CMD_GPIO_CFG:
         {
-        	dir  = INPUT;
-        	pull = PULL_HIGH;
+            UINT32 id;
+            UINT32 mode;
+            Dir_Type dir;
+            Pull_Type pull;
+
+            id = GPIO_CFG_PARAM_DEMUX_ID(*(UINT32 *)param);
+            mode = GPIO_CFG_PARAM_DEMUX_MODE(*(UINT32 *)param);
+
+            if(mode== GMODE_INPUT_PULLUP)
+            {
+                dir  = INPUT;
+                pull = PULL_HIGH;
+            }
+            else if(mode== GMODE_INPUT_PULLDOWN)
+            {
+                dir  = INPUT;
+                pull = PULL_LOW;
+            }
+            else if(mode== GMODE_INPUT)
+            {
+                dir  = INPUT;
+                pull = PULL_NONE;
+            }
+            else if(mode== GMODE_OUTPUT)
+            {
+                dir  = OUTPUT;
+                pull = PULL_NONE;
+            }
+            else
+            {
+                break;
+            }
+
+            gpio_config(id, dir, pull);
+
+            break;
         }
-        else if(mode== GMODE_INPUT_PULLDOWN)
+
+        case CMD_GPIO_OUTPUT_REVERSE:
+            ASSERT(param);
+
+            gpio_output_reverse(*(UINT32 *)param);
+            break;
+
+        case CMD_GPIO_OUTPUT:
         {
-        	dir  = INPUT;
-        	pull = PULL_LOW;
+            UINT32 id;
+            UINT32 val;
+
+            id = GPIO_OUTPUT_DEMUX_ID(*(UINT32 *)param);
+            val = GPIO_OUTPUT_DEMUX_VAL(*(UINT32 *)param);
+
+            gpio_set(id, val);
+            break;
         }
-        else if(mode== GMODE_INPUT)
+
+        case CMD_GPIO_INPUT:
         {
-        	dir  = INPUT;
-        	pull = PULL_NONE;
+            UINT32 id;
+            UINT32 val;
+
+            ASSERT(param);
+
+            id = *(UINT32 *)param;
+            val = gpio_get_input(id);
+
+            ret = val;
+            break;
         }
-        else if(mode== GMODE_OUTPUT)
+
+        case CMD_GPIO_ENABLE_SECOND:
         {
-        	dir  = OUTPUT;
-        	pull = PULL_NONE;
+            UINT32 second_mode;
+
+            ASSERT(param);
+
+            second_mode = *(UINT32 *)param;
+            gpio_enable_second_function(second_mode);
+            break;
         }
-        else
+        case CMD_GPIO_INT_ENABLE:
         {
-        	break;
+            GPIO_INT_ST *ptr = param;
+            gpio_int_enable(ptr->id, ptr->mode, ptr->phandler);
+            break;
         }
-
-        gpio_config(id, dir, pull);
-
-        break;
-    }
-
-    case CMD_GPIO_OUTPUT_REVERSE:
-        ASSERT(param);
-
-        //gpio_output_reverse(*(UINT32 *)param);
-        break;
-
-    case CMD_GPIO_OUTPUT:
-    {
-        UINT32 id;
-        UINT32 val;
-
-        id = GPIO_OUTPUT_DEMUX_ID(*(UINT32 *)param);
-        val = GPIO_OUTPUT_DEMUX_VAL(*(UINT32 *)param);
-
-        //gpio_output(id, val);
-        gpio_set(id, val);
-        break;
-    }
-
-    case CMD_GPIO_INPUT:
-    {
-        UINT32 id;
-        UINT32 val;
-
-        ASSERT(param);
-
-        id = *(UINT32 *)param;
-        //val = gpio_input(id);
-        val = gpio_get_input(id);
-
-        ret = val;
-        break;
-    }
-
-    case CMD_GPIO_ENABLE_SECOND:
-    {
-        UINT32 second_mode;
-
-        ASSERT(param);
-
-        second_mode = *(UINT32 *)param;
-        gpio_enable_second_function(second_mode);
-        break;
-    }
-    case CMD_GPIO_INT_ENABLE:
-    {
-        GPIO_INT_ST *ptr = param;
-        gpio_int_enable(ptr->id, ptr->mode, ptr->phandler);
-        break;
-    }
-    case CMD_GPIO_INT_DISABLE:
-    {
-        UINT32 id ;
-        id = *(UINT32 *)param;
-        gpio_int_disable(id);
-        break;
-    }
-    default:
-        break;
+        case CMD_GPIO_INT_DISABLE:
+        {
+            UINT32 id ;
+            id = *(UINT32 *)param;
+            gpio_int_disable(id);
+            break;
+        }
+        default:
+            break;
     }
 
     return ret;
 }
 
 
-
-void DEBUG_MSG(uint8_t x)
-{
-#if GPIO_DBG_MSG
-	REG_APB5_GPIOA_DATA = x & 0xff;
-	gpio_triger(GPIOD_4);
-#endif
-}
 
 

@@ -147,7 +147,7 @@
 #endif // (BLE_EMB_PRESENT || BT_EMB_PRESENT)
 
 __attribute__((section("STACK_FUNC")))
-const struct rwip_func_tag rwip_func = {rwip_isr, rwip_init, rwip_schedule, rwip_set_bd_address};
+const struct rwip_func_tag rwip_func = {rwip_isr, rwip_init, rwip_schedule, rwip_set_bd_address, rwip_sleep};
 
 #if (DISPLAY_SUPPORT)
 ///Table of HW image names for display
@@ -1017,7 +1017,7 @@ void rwip_isr(void)
 
         DBG_SWDIAG(IP_ISR, TIMESTAMPINT, 0);
     }
-#if 0
+#if 1
     // Clock
     if (irq_stat & IP_CLKNINTSTAT_BIT) // clock interrupt
     {
@@ -1113,12 +1113,11 @@ void rwip_isr(void)
     DBG_SWDIAG(ISR, RWIP, 0);
 }
 
-#if 0
-uint8_t rwip_sleep(void)
+uint8_t rwip_sleep(int32_t * dur)
 {
     uint8_t sleep_res = RWIP_ACTIVE;
     #if (BLE_EMB_PRESENT || BT_EMB_PRESENT)
-    int32_t sleep_duration;
+    int32_t sleep_duration = 0;
 //    int32_t sleep_duration1;
     rwip_time_t current_time;
     #endif // (BLE_EMB_PRESENT || BT_EMB_PRESENT)
@@ -1253,6 +1252,12 @@ uint8_t rwip_sleep(void)
         rwble_sleep_enter();
         #endif // (BLE_EMB_PRESENT)
 
+
+
+        sleep_duration = 0;
+
+
+
         // Program wake-up time
         ip_deepslwkup_set(sleep_duration);
 
@@ -1286,9 +1291,10 @@ uint8_t rwip_sleep(void)
     {
         DBG_SWDIAG(SLEEP, FUNC, 0);
     }
+
+    *dur = sleep_duration;
     return sleep_res;
 }
-#endif
 
 void rwip_set_bd_address(struct bd_addr *bd_addr)
 {

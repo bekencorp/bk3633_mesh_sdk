@@ -55,12 +55,19 @@ E_GENIE_FLASH_ERRCODE genie_flash_read_trituple(uint32_t *p_pid, uint8_t *p_mac,
 
     BT_DBG("");
 
-    ret = genie_flash_read_reliable(GFI_MESH_TRITUPLE, data, GENIE_SIZE_TRI_TRUPLE);
+    static_partition_write_addr_head(STATIC_SECTION_TRITUPLE);
+    ret = static_partition_read(STATIC_SECTION_TRITUPLE, data, GENIE_SIZE_TRI_TRUPLE);
     RETURN_WHEN_ERR(ret, ret);
 
     memcpy(p_pid, data, GENIE_SIZE_PID);
     memcpy(p_key, data+GENIE_SIZE_PID, GENIE_SIZE_KEY);
     memcpy(p_mac, data+GENIE_SIZE_PID+GENIE_SIZE_KEY, GENIE_SIZE_MAC);
+    //memcpy(p_mac, data + GENIE_SIZE_PID, GENIE_SIZE_MAC);
+    //memcpy(p_key, data + GENIE_SIZE_PID + GENIE_SIZE_MAC, GENIE_SIZE_KEY);
+
+    printf("p_pid:%s\n", bt_hex(p_pid, GENIE_SIZE_PID));
+    printf("p_key:%s\n", bt_hex(p_key, GENIE_SIZE_KEY));
+    printf("p_mac:%s\n", bt_hex(p_mac, GENIE_SIZE_MAC));
     return GENIE_FLASH_SUCCESS;
 }
 
@@ -72,29 +79,7 @@ void genie_tri_tuple_set_silent_adv(void)
 uint8_t *genie_tri_tuple_get_uuid(void)
 {
     int i;
-    uint32_t off_set = 0x000;
-    uint8_t addr[6] = {0};
-    uint8_t dummy_addr[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
-    
-    static_partition_write_addr_head(STATIC_SECTION_MAC);
-
-    if(static_partition_read(STATIC_SECTION_MAC, addr, sizeof(addr)) == 0 &&
-       memcmp(addr, dummy_addr, sizeof(addr)) != 0)
-    {
-        memcpy(g_mac, addr, 6);
-        printf("read sec, addr:%02x : %02x: %02x : %02x : %02x: %02x\n",
-           addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
-    }
-    else
-    {
-        memcpy(addr, DEFAULT_MAC, 6);
-        memcpy(g_mac, DEFAULT_MAC, 6);
-        printf("-----------------\n");
-    }
-
-    printf("%s, addr:%02x : %02x: %02x : %02x : %02x: %02x\n",
-           __func__, addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
-#if 0  
+#ifdef CONFIG_BT_MESH_ALI_TMALL_GENIE
     // all fields in uuid should be in little-endian
     // CID: Taobao
     g_uuid[0] = 0xa8;
@@ -121,8 +106,30 @@ uint8_t *genie_tri_tuple_get_uuid(void)
     g_uuid[13] |= UNPROV_ADV_FEATURE_AUTO_BIND_MODEL_SUB;
 
     BT_DBG("uuid: %s", bt_hex(g_uuid, 16));
-    return g_uuid;
-#endif
+#else /*CONFIG_BT_MESH_ALI_TMALL_GENIE*/
+    uint32_t off_set = 0x000;
+    uint8_t addr[6] = {0};
+    uint8_t dummy_addr[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+
+    static_partition_write_addr_head(STATIC_SECTION_MAC);
+
+    if(static_partition_read(STATIC_SECTION_MAC, addr, sizeof(addr)) == 0 &&
+       memcmp(addr, dummy_addr, sizeof(addr)) != 0)
+    {
+        memcpy(g_mac, addr, 6);
+        printf("read sec, addr:%02x : %02x: %02x : %02x : %02x: %02x\n",
+           addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
+    }
+    else
+    {
+        memcpy(addr, DEFAULT_MAC, 6);
+        memcpy(g_mac, DEFAULT_MAC, 6);
+        printf("-----------------\n");
+    }
+
+    printf("%s, addr:%02x : %02x: %02x : %02x : %02x: %02x\n",
+           __func__, addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
+
 #if (CONFIG_BT_MESH_JINGXUN)
     u32_t pid = 0x47aeb9d5;
     g_uuid[0] = 0x00;
@@ -150,10 +157,13 @@ uint8_t *genie_tri_tuple_get_uuid(void)
     g_uuid[9] = 0x66; g_uuid[10] = 0x76; g_uuid[11] = 0x6f;g_uuid[12] = 0x61;
     g_uuid[13] = 0x72;g_uuid[14] = 0x63; g_uuid[15] = 0x61; //RFU
 #endif
+
+#endif //CONFIG_BT_MESH_ALI_TMALL_GENIE
     printf("uuid: %s\n", bt_hex(g_uuid, 16));
     return g_uuid;
 }
-#ifdef GENIE_OLD_AUTH
+
+#ifdef CONFIG_BT_MESH_ALI_TMALL_GENIE
 uint8_t *genie_tri_tuple_get_auth(void)
 {
     int ret;
@@ -368,7 +378,7 @@ void genie_tri_tuple_show(void)
 
 void ultra_prov_get_auth(const uint8_t random_hex[16], const uint8_t key[16], uint8_t cfm[16])
 {
-#ifdef GENIE_OLD_AUTH
+#ifdef CONFIG_BT_MESH_ALI_TMALL_GENIE
     genie_tri_tuple_get_auth();
 #else
     genie_tri_tuple_get_auth(random_hex);
