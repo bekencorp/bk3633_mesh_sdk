@@ -48,6 +48,7 @@
 #include "reg_blecore.h"      // BLE Core registers
 #include "user_config.h"
 #include "debug_uart.h"
+#include "reg_ipcore.h"
 
 /*
  * DEFINES
@@ -178,18 +179,21 @@ __BLEIRQ void rwble_isr(void)
 void rwble_sleep_enter(void)
 {
     // Keep currently enabled interrupts
-    rwble_env.irq_mask = ble_intcntl0_get();
-
+    rwble_env.irq_mask = ip_intcntl1_get();
+    
     // Mask all interrupts
     ble_intcntl0_set(0);
     // Clear possible pending IRQs
     ble_intack0_clear(0xFFFFFFFF);
+    ip_intcntl1_set(IP_SLPINTMSK_BIT);
 }
 
 void rwble_sleep_wakeup_end(void)
 {
     // Restore enabled interrupts
     ble_intcntl0_set(rwble_env.irq_mask);
+
+    ip_intcntl1_set( (rwble_env.irq_mask | ip_intcntl1_get()) );
 }
 
 #endif //(BT_DUAL_MODE || BLE_STD_MODE) 

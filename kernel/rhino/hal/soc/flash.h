@@ -5,6 +5,8 @@
 #ifndef HAL_FLASH_H
 #define HAL_FLASH_H
 
+#include "flash_pub.h"
+
 #define PAR_OPT_READ_POS  ( 0 )
 #define PAR_OPT_WRITE_POS ( 1 )
 
@@ -123,31 +125,12 @@ int32_t hal_flash_read(hal_partition_t in_partition, int32_t *off_set,
 
 /**
  * Set security options on a logical partition
- *
- * @param[in]  partition  The target flash logical partition
- * @param[in]  offset     Point to the start address that the data is read, and
- *                        point to the last unread address after this function is
- *                        returned, so you can call this function serval times without
- *                        update this start address.
- * @param[in]  size       Size of enabled flash area
+ * 
+ * @param[in]  sector_type       sectors of protected flash area
  *
  * @return  0 : On success, EIO : If an error occurred with any step
  */
-int32_t hal_flash_enable_secure(hal_partition_t partition, uint32_t off_set, uint32_t size);
-
-/**
- * Disable security options on a logical partition
- *
- * @param[in]  partition  The target flash logical partition
- * @param[in]  offset     Point to the start address that the data is read, and
- *                        point to the last unread address after this function is
- *                        returned, so you can call this function serval times without
- *                        update this start address.
- * @param[in]  size       Size of disabled flash area
- *
- * @return  0 : On success, EIO : If an error occurred with any step
- */
-int32_t hal_flash_dis_secure(hal_partition_t partition, uint32_t off_set, uint32_t size);
+int32_t hal_flash_secure_sector(PROTECT_TYPE sector_type);
 
 #endif /* HAL_FLASH_H */
 

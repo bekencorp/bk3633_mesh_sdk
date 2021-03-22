@@ -24,6 +24,7 @@
 #include "pwm_pub.h"
 
 static UINT8 mcu_sleep_mode;
+static UINT8 icu_clk_sel = 0;
 
 extern volatile uint32_t XVR_ANALOG_REG_BAK[32];
 
@@ -48,86 +49,73 @@ static void icu_get_sleep_mode(MCU_SLEEP_MODE* mode)
     *mode = mcu_sleep_mode;
 }
 
-
-
-#define LDO_MODE_IN_SLEEP          1
-void cpu_reduce_voltage_sleep(void)
+void cpu_reduce_voltage_sleep()
 {
-    printf("%s, %d \r\n\r\n", __func__, __LINE__);
-   uint32_t tmp_reg;
-	uint8_t delay_nop=0;
+    uint32_t tmp_reg;
+    //set_AON_GPIO_Reg0x4_GPIO4_Config(0x002); //set GPIO4 OUTPUT HIGH
+    //set_AON_GPIO_Reg0x4_GPIO4_Config(0x000); //set GPIO4 OUTPUT LOW
+    set_SYS_Reg0x1_gotosleep(1);
+    set_SYS_Reg0x1_gotosleep(0);
 
-    //set_flash_clk(0x08);
+//    set_PMU_Reg0x14_voltage_ctrl_work_aon(0x06);
+//    set_PMU_Reg0x14_voltage_ctrl_work_core(0x06);
+    //ICU_PRT("rv:%x\r\n",addPMU_Reg0x14);
+
+   set_PMU_Reg0x14_voltage_ctrl_sleep_aon(03);
+//    
+   set_PMU_Reg0x14_voltage_ctrl_sleep_core(0x03);
+       
+   setf_PMU_Reg0x14_sleep_sel; // don't set if use reduce viltage sleep
+
+           
     set_SYS_Reg0x2_core_sel(0x01);
     set_SYS_Reg0x2_core_div(0x0);
-#if(LDO_MODE_IN_SLEEP)
-    ///
-	addXVR_Reg0x6 = 0x8587CC00;//0x80B7CE20  ;
-	XVR_ANALOG_REG_BAK[6] = 0x8587CC00;//0x80B7CE20;
-	addXVR_Reg0xa = 0x9C03F86B;//0x9C27785B  ;
-	XVR_ANALOG_REG_BAK[0xa] = 0x9C03F86B;//0x9C27785B;
-#endif
     
-    setf_SYS_Reg0x17_enb_busrt_sel; 
+    setf_SYS_Reg0x17_enb_busrt_sel;
+    
     setf_SYS_Reg0x17_CLK96M_PWD;
     setf_SYS_Reg0x17_HP_LDO_PWD;
     setf_SYS_Reg0x17_cb_bias_pwd;
 
-   
+
     tmp_reg = addSYS_Reg0x17 | 0x08;
     
-#if(!LDO_MODE)
-    set_PMU_Reg0x14_voltage_ctrl_work_aon(0x05);
-    set_PMU_Reg0x14_voltage_ctrl_work_core(0x05);
-#endif
+    //set_AON_GPIO_Reg0x4_GPIO4_Config(0x002); //set GPIO4 OUTPUT HIGH
+    //set_AON_GPIO_Reg0x4_GPIO4_Config(0x000); 
+    //set_AON_GPIO_Reg0x4_GPIO4_Config(0x002); //set GPIO4 OUTPUT HIGH
+    //set_AON_GPIO_Reg0x4_GPIO4_Config(0x000); 
+    set_PMU_Reg0x14_voltage_ctrl_work_aon(0x03);
+    set_PMU_Reg0x14_voltage_ctrl_work_core(0x03);
+    
     set_SYS_Reg0x2_core_sel(0x00);
-
+    
     addSYS_Reg0x17 = tmp_reg;
-
-    setf_SYS_Reg0x1_CPU_PWD;  ////sleep
-
-    delay_nop++;
-    addSYS_Reg0x17 = 0x80;
-
-    delay_nop++;
-    delay_nop++;
-    addPMU_Reg0x14=0x6666;
-    delay_nop++;
-	delay_nop++;
-	delay_nop++;
+    
+    setf_SYS_Reg0x1_CPU_PWD;  
+    
+    addSYS_Reg0x17 = 0x82;
     set_SYS_Reg0x2_core_sel(0x01);
+    set_PMU_Reg0x14_voltage_ctrl_work_aon(0x06);
+    set_PMU_Reg0x14_voltage_ctrl_work_core(0x06);
 
-#if(LDO_MODE_IN_SLEEP)
-    ///
-    addXVR_Reg0x6 = 0x85A7CC00;//0x8097CE20  ;
-	XVR_ANALOG_REG_BAK[6] = 0x85A7CC00;//0x8097CE20;
-    addXVR_Reg0xa = 0x9C03F86F;//0x9C27785B  ;
-    XVR_ANALOG_REG_BAK[0xa] = 0x9C03F86F;//0x9C27785B;
-#endif
 }
 
 void cpu_wakeup(void)
 {   
-    printf("%s, %d \r\n\r\n", __func__, __LINE__);
+    ICU_PRT("%s, %d \r\n", __func__, __LINE__);
     addSYS_Reg0x17 = 0x80;
     
-            set_SYS_Reg0x2_core_div(0x1);            
-            set_SYS_Reg0x2_core_div(0x1);              
+    sddev_control(ICU_DEV_NAME, CMD_ICU_MCU_CLK_SEL, &icu_clk_sel);              
 
     //set_flash_clk(0x01);  	   
 }
 
 void cpu_idle_sleep(void)
 {
-    printf("%s, %d \r\n\r\n", __func__, __LINE__);
+    ICU_PRT("%s, %d \r\n", __func__, __LINE__);
     clrf_PMU_Reg0x14_sleep_sel; 
     setf_SYS_Reg0x1_CPU_PWD;
 }
-
-
-
-
-
 
 
 
@@ -151,6 +139,7 @@ void icu_init(void)
   //  set_PMU_Reg0x14_voltage_ctrl_sleep_core(0x04);
 
     icu_set_sleep_mode(MCU_REDUCE_VO_SLEEP);
+    icu_clk_sel = ICU_MCU_CLK_SEL_16M;
 }
 
 void icu_exit(void)
@@ -161,7 +150,7 @@ void icu_exit(void)
 UINT32 icu_ctrl(UINT32 cmd, void *param)
 {
     UINT32 ret, reg;
-    UINT8  dev, posi;
+    UINT8  dev;
 
     ret = ICU_SUCCESS;
 
@@ -181,10 +170,11 @@ UINT32 icu_ctrl(UINT32 cmd, void *param)
             break;
 
         case CMD_ICU_MCU_CLK_SEL:
-            switch(*(UINT32 *)param) {
+            icu_clk_sel = *(UINT32 *)param;
+            switch(icu_clk_sel) {
                 case ICU_MCU_CLK_SEL_16M: {
                     ICU_CORE_SEL(0x01);
-                    set_SYS_Reg0x2_core_div(0x0);
+                    set_SYS_Reg0x2_core_div(0x1);
                     setf_SYS_Reg0x17_CLK96M_PWD;
                     clrf_SYS_Reg0xd_PLL_PWR_sel;
                     break;
@@ -238,141 +228,150 @@ UINT32 icu_ctrl(UINT32 cmd, void *param)
             }
             break;
 
-    /*     case CMD_ICU_CLK_32K_SRC_SEL:
-            reg = *(UINT32 *)param & 0x1;
-            REG_WRITE(ICU_CLK_32K_SEL, reg);
-            break; */
-
         case CMD_CLK_PWR_UP:
-            dev = *(PWM_CHAN_E *)param;
+
+    	    dev = *(icu_clk_pwr_dev *)param;
+            reg  = REG_READ(REG_SYS_PWD);
 
             switch(dev)
             {
                 case CLK_PWR_DEV_PWM0:
                 case CLK_PWR_DEV_PWM1:
                 case CLK_PWR_DEV_PWM2:
-                    posi = SYS_PWM0_PWD_POS;
-                    reg  = REG_READ(REG_SYS_PWD);
-                    reg &= ~(0x01UL << posi);
-                    REG_WRITE(REG_SYS_PWD, reg);
+                	reg &= ~ICU_PWM0_CLK_PWD_MASK;
                     break;
+
                 case CLK_PWR_DEV_PWM3:
                 case CLK_PWR_DEV_PWM4:
                 case CLK_PWR_DEV_PWM5:
-                    posi = SYS_PWM1_PWD_POS;
-                    reg  = REG_READ(REG_SYS_PWD);
-                    reg &= ~(0x01UL << posi);
-                    REG_WRITE(REG_SYS_PWD, reg);
+                	reg &= ~ICU_PWM1_CLK_PWD_MASK;
                     break;
+
                 case CLK_PWR_DEV_UART1:
-                    reg  = REG_READ(REG_SYS_PWD);
                     reg &= ~ICU_UART1_CLK_PWD_MASK;
-                    REG_WRITE(REG_SYS_PWD, reg);
                     break;
+
                 case CLK_PWR_DEV_UART2:
-                    reg  = REG_READ(REG_SYS_PWD);
                     reg &= ~ICU_UART2_CLK_PWD_MASK;
-                    REG_WRITE(REG_SYS_PWD, reg);
                     break;
+
                 case CLK_PWR_DEV_WDT:
-                    reg  = REG_READ(REG_SYS_PWD);
                     reg &= ~ICU_WDT_CLK_PWD_MASK;
-                    REG_WRITE(REG_SYS_PWD, reg);
                     break;
+
                 case CLK_PWR_DEV_I2S_PCM:
-                    reg  = REG_READ(REG_SYS_PWD);
                     reg &= ~ICU_I2S_CLK_PWD_MASK;
-                    REG_WRITE(REG_SYS_PWD, reg);
                     break;
+
+                case CLK_PWR_DEV_SPI:
+                    reg &= ~ICU_SPI_CLK_PWD_MASK;
+                    break;
+
                 default:
                     break;
             }
+
+            REG_WRITE(REG_SYS_PWD, reg);
             break;
+
         case CMD_CLK_PWR_DOWN:
-            dev = *(UINT8 *)param;
+
+    	    dev = *(icu_clk_pwr_dev *)param;
+            reg  = REG_READ(REG_SYS_PWD);
+
             switch(dev)
             {
                 case CLK_PWR_DEV_PWM0:
                 case CLK_PWR_DEV_PWM1:
                 case CLK_PWR_DEV_PWM2:
-                    posi = SYS_PWM0_PWD_POS;
-                    reg  = REG_READ(REG_SYS_PWD);
-                    reg |= (0x01UL << posi);
-                    REG_WRITE(REG_SYS_PWD, reg);
+                	reg |= ICU_PWM0_CLK_PWD_MASK;
                     break;
+
                 case CLK_PWR_DEV_PWM3:
                 case CLK_PWR_DEV_PWM4:
                 case CLK_PWR_DEV_PWM5:
-                    posi = SYS_PWM1_PWD_POS;
-                    reg  = REG_READ(REG_SYS_PWD);
-                    reg |= (0x01UL << posi);
-                    REG_WRITE(REG_SYS_PWD, reg);
+                	reg |= ICU_PWM1_CLK_PWD_MASK;
                     break;
+
                 case CLK_PWR_DEV_UART1:
-                    reg  = REG_READ(REG_SYS_PWD);
                     reg |= ICU_UART1_CLK_PWD_MASK;
-                    REG_WRITE(REG_SYS_PWD, reg);
                     break;
+
                 case CLK_PWR_DEV_UART2:
-                    reg  = REG_READ(REG_SYS_PWD);
                     reg |= ICU_UART2_CLK_PWD_MASK;
-                    REG_WRITE(REG_SYS_PWD, reg);
                     break;
+
                 case CLK_PWR_DEV_WDT:
-                    reg  = REG_READ(REG_SYS_PWD);
                     reg |= ICU_WDT_CLK_PWD_MASK;
-                    REG_WRITE(REG_SYS_PWD, reg);
                     break;
+
                 case CLK_PWR_DEV_I2S_PCM:
-                    reg  = REG_READ(REG_SYS_PWD);
                     reg |= ICU_I2S_CLK_PWD_MASK;
-                    REG_WRITE(REG_SYS_PWD, reg);
                     break;
+
+                case CLK_PWR_DEV_SPI:
+                    reg |= ICU_SPI_CLK_PWD_MASK;
+                    break;
+
                 default:
                     break;
             }
+
+            REG_WRITE(REG_SYS_PWD, reg);
             break;
 
         case CMD_CONF_PWM_PCLK:
-            dev = *(PWM_CHAN_E *)param;
+
+            dev = *(icu_clk_pwr_dev *)param;
+            reg = REG_READ(REG_SYS_CLK_SEL);
+
             switch(dev)
             {
-                case PWM0:
-                case PWM1:
-                case PWM2: 
-                    posi = SYS_PWM0_SEL_POS;
+                case CLK_PWR_DEV_PWM0:
+                case CLK_PWR_DEV_PWM1:
+                case CLK_PWR_DEV_PWM2:
+                    reg &= ~(0x03 << SYS_PWM0_SEL_POS);
+                    reg |= (0x01 << SYS_PWM0_SEL_POS);
                     break;
-                case PWM3:
-                case PWM4:
-                case PWM5: 
-                    posi = SYS_PWM1_SEL_POS;
+
+                case CLK_PWR_DEV_PWM3:
+                case CLK_PWR_DEV_PWM4:
+                case CLK_PWR_DEV_PWM5:
+                    reg &= ~(0x03 << SYS_PWM1_SEL_POS);
+                    reg |= (0x01 << SYS_PWM1_SEL_POS);
                     break;
             }
-
-            reg = REG_READ(REG_SYS_CLK_SEL);
-            reg &= ~(0x03 << posi);
-            reg |= (0x01 << posi);
+            
             REG_WRITE(REG_SYS_CLK_SEL, reg);
             break;
 
         case CMD_CONF_PWM_LPOCLK:
-            dev = *(PWM_CHAN_E *)param;
+
+            dev = *(icu_clk_pwr_dev *)param;
+            reg = REG_READ(REG_SYS_CLK_SEL);
+
             switch(dev)
             {
-                case PWM0:
-                case PWM1:
-                case PWM2: 
-                    posi = SYS_PWM0_SEL_POS;
+                case CLK_PWR_DEV_PWM0:
+                case CLK_PWR_DEV_PWM1:
+                case CLK_PWR_DEV_PWM2: 
+                    reg &= ~(0x03 << SYS_PWM0_SEL_POS);
                     break;
-                case PWM3:
-                case PWM4:
-                case PWM5: 
-                    posi = SYS_PWM1_SEL_POS;
+
+                case CLK_PWR_DEV_PWM3:
+                case CLK_PWR_DEV_PWM4:
+                case CLK_PWR_DEV_PWM5:
+                    reg &= ~(0x03 << SYS_PWM1_SEL_POS);
                     break;
             }
 
+            REG_WRITE(REG_SYS_CLK_SEL, reg);
+            break;
+
+        case CMD_SPI_CLK_SEL:
             reg = REG_READ(REG_SYS_CLK_SEL);
-            reg &= ~(0x03 << posi);
+            reg &= ~(0x01 << SYS_SPI_SEL_POS);
+            reg |= (*(uint8_t *)param) << SYS_SPI_SEL_POS;
             REG_WRITE(REG_SYS_CLK_SEL, reg);
             break;
 
@@ -405,7 +404,6 @@ UINT32 icu_ctrl(UINT32 cmd, void *param)
             break;
 
         case CMD_CLR_INTR_STATUS:
-            ASSERT(param);
             reg = REG_READ(REG_ICU_INT_FLAG);
             reg |= *(UINT32 *)param; ///write 1 to clear interrupt status
             REG_WRITE(REG_ICU_INT_FLAG, reg);
@@ -419,13 +417,6 @@ UINT32 icu_ctrl(UINT32 cmd, void *param)
             icu_get_sleep_mode((MCU_SLEEP_MODE *)param);
             break;
 
-
-    #if 0
-        case CMD_ARM_WAKEUP:
-            reg = (*(UINT32*)param);
-            REG_WRITE(ICU_ARM_WAKEUP_EN, reg);            
-            break;
-    #endif
         default:
             break;
     }

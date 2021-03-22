@@ -10,6 +10,7 @@
 #include "gpio.h"
 #include "gpio_pub.h"
 #include "func_pub.h"
+#include "flash_pub.h"
 #include "fake_clock_pub.h"
 #include "BK3633_RegList.h"
 
@@ -73,6 +74,7 @@ void sys_start(void)
     printf("soc_driver init ok \r\n\r\n");
 
     fclk_init(FCLK_PWM_ID, RHINO_CONFIG_TICKS_PER_SECOND);
+    hal_flash_secure_sector(FLASH_PROTECT_SEC_120);
 
     printf("start sys_init \r\n\r\n");
     aos_app_task_obj = aos_zalloc(sizeof(ktask_t));

@@ -1,5 +1,20 @@
+/**
+ ****************************************************************************************
+ *
+ * @file flash_pub.h
+ *
+ * @brief Flash driver interface
+ *
+ * Copyright (C) Beken Leonardo 2021
+ *
+ *
+ ****************************************************************************************
+ */
+
 #ifndef _FLASH_PUB_H
 #define _FLASH_PUB_H
+
+#include "typedef.h"
 
 #define FLASH_DEV_NAME                ("flash")
 
@@ -19,28 +34,29 @@ enum
     CMD_FLASH_READ_SR,
     CMD_FLASH_WRITE_SR,
 
-    CMD_FLASH_READ_QE,
-    CMD_FLASH_SET_QE,
-
     CMD_FLASH_SET_QWFR,
     CMD_FLASH_CLR_QWFR,
 
     CMD_FLASH_SET_WSR,
     CMD_FLASH_GET_ID,
-    CMD_FLASH_READ_MID,
-    CMD_FLASH_ERASE_SECTOR,
-    CMD_FLASH_ERASE_BLOCK1,
-    CMD_FLASH_ERASE_BLOCK2,
+    CMD_FLASH_ERASE_SECTOR,         //4K
+    CMD_FLASH_ERASE_BLOCK1,         //32K
+    CMD_FLASH_ERASE_BLOCK2,         //64K
 	CMD_FLASH_SET_HPM,
     CMD_FLASH_SET_PROTECT
 };
 
 typedef enum
 {
+    //ALL sec 128 
     FLASH_PROTECT_NONE,
-    FLASH_PROTECT_ALL,
-    FLASH_PROTECT_HALF,
-    FLASH_UNPROTECT_LAST_BLOCK
+    FLASH_PROTECT_SEC_126,            //504K     0x7DFFF
+    FLASH_PROTECT_SEC_124,            //496K     0x7BFFF
+    FLASH_PROTECT_SEC_120,            //480K     0x77FFF
+    FLASH_PROTECT_SEC_112,            //448K     0x6FFFF
+    FLASH_PROTECT_SEC_96,             //384K     0x5FFFF
+    FLASH_PROTECT_SEC_64,            //256K      0x3FFFF
+    FLASH_PROTECT_ALL,               //512K      0x7FFFF
 } PROTECT_TYPE;
 
 typedef enum

@@ -1,3 +1,17 @@
+/**
+****************************************************************************************
+*
+* @file gpio_pub.h
+*
+* @brief icu initialization and specific functions
+*
+* Copyright (C) Beken Leonardo 2021
+*
+* $Rev: $
+*
+****************************************************************************************
+*/
+
 #ifndef _GPIO_PUB_H_
 #define _GPIO_PUB_H_
 
@@ -45,7 +59,8 @@ enum
     GMODE_INPUT,
     GMODE_SECOND_FUNC_PULL_UP,//Special for uart1
     GMODE_OUTPUT_PULLUP,
-    GMODE_HIGH_Z
+    GMODE_HIGH_Z,
+    GMODE_DISABLE,
 };
 
 typedef enum

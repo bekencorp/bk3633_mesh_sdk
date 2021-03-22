@@ -1377,6 +1377,16 @@ void bt_mesh_proxy_adv_stop(void)
 }
 
 #ifdef CONFIG_BT_MESH_CUSTOM_ADV
+static bool bt_mesh_custom_adv_enable = false;
+void bt_mesh_custom_adv_start(void)
+{
+    bt_mesh_custom_adv_enable = true;
+}
+void bt_mesh_custom_adv_stop(void)
+{
+    bt_mesh_custom_adv_enable = false;
+}
+
 #define BT_MESH_CUSTOM_ADV_INT  1  //custom adv send continue for 1ms.
 static u8_t g_custom_adv_data[14] = {
     0xa8, 0x01, //taobao
@@ -1395,9 +1405,14 @@ static const struct bt_data g_custom_sd[] = {
     BT_DATA(BT_DATA_NAME_COMPLETE, CONFIG_BT_DEVICE_NAME, (sizeof(CONFIG_BT_DEVICE_NAME) - 1)),
 };
 
-void bt_mesh_custom_adv_send()
+void bt_mesh_custom_adv_send(void)
 {
     int err;
+
+    if (!bt_mesh_custom_adv_enable) {
+        // BT_DBG("custom_adv_send is not enable!");
+        return;
+    }
 
     if (conn_count == CONFIG_BT_MAX_CONN) {
         // BT_WARN("custom_adv_send Connectable advertising deferred (max connections)");

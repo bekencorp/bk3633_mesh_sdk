@@ -5,7 +5,7 @@
 *
 * @brief icu initialization and specific functions
 *
-* Copyright (C) Beken 2009-2016
+* Copyright (C) Beken Leonardo 2009-2021
 *
 * $Rev: $
 *
@@ -69,6 +69,9 @@ void gpio_config(UINT32 index, Dir_Type dir, Pull_Type pull)
             value &= ~(1<<GPIO_PULL_EN);
             break;
     }
+
+    value &= ~(1<<GPIO_2FUN_EN);
+    value &= ~(1<<GPIO_INPUT_M);
 
     REG_WRITE(dest_reg, value);
 }
@@ -176,7 +179,7 @@ UINT8 gpio_get_input(UINT32 index)
 
 }
 
-void gpio_set(UINT32 index, UINT8 val)
+static void gpio_set(UINT32 index, UINT8 val)
 {
     UINT32*  p_add;
     UINT8 idx = GPIO_PORT2ID(index);
@@ -244,7 +247,7 @@ void gpio_isr(void)
     UINT8 i;
     UINT32 value = 0;
 
-    value = REG_READ(GPIO_INT_STAT1);
+    value = REG_READ(REG_GPIO_INT_STAT1);
 
     for (i = 0; i < GPIO_SUM; i++)
     {
@@ -257,7 +260,7 @@ void gpio_isr(void)
         }
     }
 
-    REG_WRITE(GPIO_INT_STAT1, value);
+    REG_WRITE(REG_GPIO_INT_STAT1, value);
 }
 
 void gpio_int_disable(UINT32 index)
@@ -265,9 +268,9 @@ void gpio_int_disable(UINT32 index)
 	UINT8 idx = GPIO_PORT2ID(index);
     UINT32 value = 0;
 
-    value = REG_READ(GPIO_INT_EN1);
+    value = REG_READ(REG_GPIO_INT_EN1);
     value &= ~(0x01 << idx);
-    REG_WRITE(GPIO_INT_EN1, value);
+    REG_WRITE(REG_GPIO_INT_EN1, value);
 }
 
 void gpio_int_enable(UINT32 index, UINT32 mode, void (*p_Int_Handler)(unsigned char))
@@ -284,7 +287,6 @@ void gpio_int_enable(UINT32 index, UINT32 mode, void (*p_Int_Handler)(unsigned c
 
     intc_service_register(IRQ_GPIO, PRI_IRQ_GPIO, gpio_isr);
     gpio_cb_register(p_Int_Handler);
-    intc_enable(IRQ_GPIO);
 
     if(mode == GPIO_INT_LEVEL_FALLING || mode == GPIO_INT_LEVEL_LOW)
     {
@@ -297,12 +299,12 @@ void gpio_int_enable(UINT32 index, UINT32 mode, void (*p_Int_Handler)(unsigned c
 
     if(idx <= 15)
     {
-        reg = GPIO_INT_TYPE_L;
+        reg = REG_GPIO_INT_TYPE_L;
         pos = idx*2;
     }
     else
     {
-        reg = GPIO_INT_TYPE_H;
+        reg = REG_GPIO_INT_TYPE_H;
         pos = (idx-16)*2;
     }
 
@@ -311,9 +313,19 @@ void gpio_int_enable(UINT32 index, UINT32 mode, void (*p_Int_Handler)(unsigned c
     value |= (mode << pos);
     REG_WRITE(reg, value);
 
-    value = REG_READ(GPIO_INT_EN1);
+    value = REG_READ(REG_GPIO_INT_EN1);
     value |= (0x01 << idx);
-    REG_WRITE(GPIO_INT_EN1, value);
+    REG_WRITE(REG_GPIO_INT_EN1, value);
+
+    value = REG_READ(REG_GPIO_INT_STAT1);
+    value |= (0x01 << idx);
+    REG_WRITE(REG_GPIO_INT_STAT1, value);
+
+    value = REG_READ(REG_GPIO_WAKE_UP);
+    value |= (0x01 << idx);
+    REG_WRITE(REG_GPIO_WAKE_UP, value);
+
+    intc_enable(IRQ_GPIO);
 }
 
 UINT32 gpio_ctrl(UINT32 cmd, void *param)
@@ -352,6 +364,12 @@ UINT32 gpio_ctrl(UINT32 cmd, void *param)
                 dir  = OUTPUT;
                 pull = PULL_NONE;
             }
+            else if (mode== GMODE_DISABLE)
+            {
+                dir  = FLOAT;
+                pull = PULL_NONE;
+            }
+            
             else
             {
                 break;

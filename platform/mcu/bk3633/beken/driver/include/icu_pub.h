@@ -1,3 +1,17 @@
+/**
+****************************************************************************************
+*
+* @file icu_pub.h
+*
+* @brief icu initialization and specific functions
+*
+* Copyright (C) Beken Leonardo 2021
+*
+* $Rev: $
+*
+****************************************************************************************
+*/
+
 #ifndef _ICU_PUB_H_
 #define _ICU_PUB_H_
 
@@ -27,6 +41,7 @@ enum
     CMD_CLK_PWR_UP,
     CMD_CONF_PWM_PCLK,
     CMD_CONF_PWM_LPOCLK,
+	CMD_SPI_CLK_SEL,
     CMD_SET_SLEEP_MODE,
     CMD_GET_SLEEP_MODE,
 };
@@ -91,7 +106,7 @@ enum
 #define GINTR_IRQ_BIT                        (1 << 0)
 
 /* CMD_CLK_PWR_DOWN CMD_CLK_PWR_UP */
-enum
+typedef enum
 {
 	CLK_PWR_DEV_PWM0 = 0,
 	CLK_PWR_DEV_PWM1,
@@ -103,7 +118,9 @@ enum
 	CLK_PWR_DEV_UART2,
 	CLK_PWR_DEV_WDT,
 	CLK_PWR_DEV_I2S_PCM,
-};
+    CLK_PWR_DEV_SPI,
+} icu_clk_pwr_dev;
+
 
 typedef enum
 {

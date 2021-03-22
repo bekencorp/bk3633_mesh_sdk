@@ -147,7 +147,7 @@
 #endif // (BLE_EMB_PRESENT || BT_EMB_PRESENT)
 
 __attribute__((section("STACK_FUNC")))
-const struct rwip_func_tag rwip_func = {rwip_isr, rwip_init, rwip_schedule, rwip_set_bd_address, rwip_sleep};
+const struct rwip_func_tag rwip_func = {rwip_isr, rwip_init, rwip_schedule, rwip_set_bd_address, rwip_sleep, rwip_sleep_flag};
 
 #if (DISPLAY_SUPPORT)
 ///Table of HW image names for display
@@ -1133,7 +1133,10 @@ uint8_t rwip_sleep(int32_t * dur)
          ************************************************************************/
         // Check if some kernel processing is ongoing (during wakeup, kernel events are not processed)
         if (((rwip_env.prevent_sleep & RW_WAKE_UP_ONGOING) == 0) && !ke_sleep_check())
+        {
+            *dur = 0;
             break;
+        }
       //  uart_printf("%x:%x\r\n",rwip_env.prevent_sleep,ke_sleep_check());
         // Processor sleep can be enabled
         sleep_res = RWIP_CPU_SLEEP;
@@ -1145,7 +1148,10 @@ uint8_t rwip_sleep(int32_t * dur)
          ************************************************************************/
         // First check if no pending procedure prevent from going to sleep
         if (rwip_env.prevent_sleep != 0)
+        {
+            *dur = 0;
             break;
+        }
 
         #if (BLE_EMB_PRESENT || BT_EMB_PRESENT)
         DBG_SWDIAG(SLEEP, ALGO, 2);
@@ -1200,6 +1206,7 @@ uint8_t rwip_sleep(int32_t * dur)
         // at least one half slot.
         if(sleep_duration <= RWIP_MINIMUM_SLEEP_TIME)
         {
+            *dur = 0;
             break;
         }
 
@@ -1210,6 +1217,7 @@ uint8_t rwip_sleep(int32_t * dur)
          ************************************************************************/
 //        sleep_duration1 = sleep_duration;
         sleep_duration -= RWIP_MINIMUM_SLEEP_TIME;
+        *dur = sleep_duration;
         sleep_duration = rwip_slot_2_lpcycles(sleep_duration);
 
         // check if sleep duration is sufficient according to wake-up delay
@@ -1217,6 +1225,7 @@ uint8_t rwip_sleep(int32_t * dur)
         // sleep duration > max(twosc,twext) + 1 (all in lp clk cycle)
         if(sleep_duration < rwip_env.lp_cycle_wakeup_delay * 2)
         {
+            *dur = 0;
             break;
         }
 
@@ -1252,12 +1261,6 @@ uint8_t rwip_sleep(int32_t * dur)
         rwble_sleep_enter();
         #endif // (BLE_EMB_PRESENT)
 
-
-
-        sleep_duration = 0;
-
-
-
         // Program wake-up time
         ip_deepslwkup_set(sleep_duration);
 
@@ -1291,8 +1294,6 @@ uint8_t rwip_sleep(int32_t * dur)
     {
         DBG_SWDIAG(SLEEP, FUNC, 0);
     }
-
-    *dur = sleep_duration;
     return sleep_res;
 }
 

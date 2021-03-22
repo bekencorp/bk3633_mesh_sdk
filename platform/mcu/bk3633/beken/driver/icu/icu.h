@@ -1,9 +1,23 @@
+/**
+****************************************************************************************
+*
+* @file icu.h
+*
+* @brief icu initialization and specific functions
+*
+* Copyright (C) Beken Leonardo 2021
+*
+* $Rev: $
+*
+****************************************************************************************
+*/
+
 #ifndef _ICU_H_
 #define _ICU_H_
 
 #include "BK3633_RegList.h"
 
-#define ICU_DEBUG
+//#define ICU_DEBUG
 
 
 #ifdef ICU_DEBUG
@@ -41,9 +55,14 @@
 #define ICU_UART2_CLK_PWD_POSI                        (posSYS_Reg0x3_UART2_pwd)
 #define ICU_UART2_CLK_PWD_MASK                        (0x01UL << ICU_UART2_CLK_PWD_POSI)
 
-#define SYS_PWM0_PWD_POS                             posSYS_Reg0x3_pwm0_pwd
+#define ICU_PWM0_CLK_PWD_POSI                        (posSYS_Reg0x3_pwm0_pwd)
+#define ICU_PWM0_CLK_PWD_MASK                        (0x01UL << ICU_PWM0_CLK_PWD_POSI)
 
-#define SYS_PWM1_PWD_POS                             posSYS_Reg0x3_pwm1_pwd
+#define ICU_SPI_CLK_PWD_POSI                         (posSYS_Reg0x3_spi_pwd)
+#define ICU_SPI_CLK_PWD_MASK                         (0x01UL << ICU_SPI_CLK_PWD_POSI)
+
+#define ICU_PWM1_CLK_PWD_POSI                        (posSYS_Reg0x3_pwm1_pwd)
+#define ICU_PWM1_CLK_PWD_MASK                        (0x01UL << ICU_PWM1_CLK_PWD_POSI)
 
 #define ICU_WDT_CLK_PWD_POSI                         (posSYS_Reg0x3_wdt_pwd)
 #define ICU_WDT_CLK_PWD_MASK                         (0x01UL << ICU_WDT_CLK_PWD_POSI)
@@ -52,10 +71,13 @@
 #define ICU_I2S_CLK_PWD_MASK                         (0x01UL << ICU_I2S_CLK_PWD_POSI)
 
 
+
 //REG4
 #define SYS_PWM0_SEL_POS                             posSYS_Reg0x4_pwm0_sel
 
 #define SYS_PWM1_SEL_POS                             posSYS_Reg0x4_pwm1_sel
+
+#define SYS_SPI_SEL_POS                       	     posSYS_Reg0x4_spi_sel
 
 
 //REGb

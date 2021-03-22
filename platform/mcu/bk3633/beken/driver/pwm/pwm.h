@@ -1,9 +1,24 @@
+/**
+****************************************************************************************
+*
+* @file pwm.h
+*
+* @brief icu initialization and specific functions
+*
+* Copyright (C) Beken Leonardo 2021
+*
+* $Rev: $
+*
+****************************************************************************************
+*/
+
+
 #ifndef _PWM_H_
 #define _PWM_H_
 
 #include "BK3633_RegList.h"
 
-#define PWM_DEBUG
+//#define PWM_DEBUG
 
 #ifdef PWM_DEBUG
 #define PWM_PRT      os_printf

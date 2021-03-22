@@ -426,6 +426,8 @@ void ota_srv_connected(struct bt_conn *p_conn)
     otas_env->p_conn = p_conn;
     otas_env->fcc1_attr = &_ota_srv_attrs[2];
     otas_env->fcc2_attr = &_ota_srv_attrs[6];
+
+    hal_flash_secure_sector(FLASH_PROTECT_SEC_64);
 }
 
 void ota_srv_disconnect(void)
@@ -438,6 +440,8 @@ void ota_srv_disconnect(void)
         aos_free(otas_env);
         otas_env = NULL;
     }
+
+    hal_flash_secure_sector(FLASH_PROTECT_SEC_120);
 }
 
 int ota_service_register(void)

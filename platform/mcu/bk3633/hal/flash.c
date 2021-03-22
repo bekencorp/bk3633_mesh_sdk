@@ -1,6 +1,16 @@
-/*
- * Copyright (C) 2015-2017 Alibaba Group Holding Limited
+/**
+ ****************************************************************************************
+ *
+ * @file flash.c
+ *
+ * @brief Flash driver interface
+ *
+ * Copyright (C) Beken Leonardo 2009-2021
+ *
+ *
+ ****************************************************************************************
  */
+
 
 #include "stdint.h"
 #include "hal/soc/wdg.h"
@@ -216,28 +226,17 @@ int32_t hal_flash_read(hal_partition_t in_partition, int32_t *off_set, void *out
     return 0;
 }
 
-int32_t hal_flash_enable_secure(hal_partition_t partition, uint32_t off_set, uint32_t size)
+int32_t hal_flash_secure_sector(PROTECT_TYPE sector_type)
 {
 	DD_HANDLE flash_hdl;
     UINT32 status;
-	uint32_t param = FLASH_UNPROTECT_LAST_BLOCK;
+	PROTECT_TYPE param = sector_type;
 
 	flash_hdl = ddev_open(FLASH_DEV_NAME, &status, 0);
     ASSERT(DD_HANDLE_UNVALID != flash_hdl);
     ddev_control(flash_hdl, CMD_FLASH_SET_PROTECT, (void *)&param);
+    ddev_close(flash_hdl);
 
     return 0;
 }
 
-int32_t hal_flash_dis_secure(hal_partition_t partition, uint32_t off_set, uint32_t size)
-{
-	DD_HANDLE flash_hdl;
-    UINT32 status;
-	uint32_t param = FLASH_PROTECT_HALF;
-
-	flash_hdl = ddev_open(FLASH_DEV_NAME, &status, 0);
-    ASSERT(DD_HANDLE_UNVALID != flash_hdl);
-    ddev_control(flash_hdl, CMD_FLASH_SET_PROTECT, (void *)&param);
-
-    return 0;
-}

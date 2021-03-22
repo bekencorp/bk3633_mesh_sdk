@@ -319,7 +319,7 @@ void ble_handler(void *arg)
      ***************************************************************************
      */
 	UART_PRINTF("ble driver start!\r\n");
-	UART_PRINTF("test.\n");
+
     krhino_add_mm_region(g_kmm_head, 
                         (void *)(REG_EM_ET_BASE_ADDR + EM_BLE_END + 1), (size_t)(EM_BT_SIZE -  EM_BLE_END - 4));
 
@@ -332,7 +332,6 @@ void ble_handler(void *arg)
 			cont_loop_cnt = 0;
 		}
 
-        // UART_PRINTF("++++++\n");
         //schedule all pending events
         rwip_func.rwip_schedule();
     }

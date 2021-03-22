@@ -5,7 +5,7 @@
  *
  * @brief gpio Driver for gpio operation.
  *
- * Copyright (C) Beken 2009-2015
+ * Copyright (C) Beken Leonardo 2009-2021
  *
  *
  ****************************************************************************************
@@ -38,15 +38,18 @@
 #define GPIO_PULL_MODE  4
 #define GPIO_PULL_EN    5
 #define GPIO_2FUN_EN    6
+#define GPIO_INPUT_M    7
 
 #define REG_GPIO_CFG_BASE                       BASEADDR_AON_GPIO
 #define REG_GPIOx_CFG(dest_reg, idx)            dest_reg = (REG_GPIO_CFG_BASE + (idx)* 0x04)
 
-#define GPIO_INT_STAT1                          &(addAON_GPIO_Reg0x35)
-#define GPIO_INT_EN1                            &(addAON_GPIO_Reg0x33)
-#define GPIO_INT_TYPE_L                         &(addAON_GPIO_Reg0x30)
-#define GPIO_INT_MASK                           0x03
-#define GPIO_INT_TYPE_H                         &(addAON_GPIO_Reg0x31)
+#define REG_GPIO_INT_STAT1                          &(addAON_GPIO_Reg0x35)
+#define REG_GPIO_INT_EN1                            &(addAON_GPIO_Reg0x33)
+#define REG_GPIO_INT_TYPE_L                         &(addAON_GPIO_Reg0x30)
+#define GPIO_INT_MASK                               0x03
+#define REG_GPIO_INT_TYPE_H                         &(addAON_GPIO_Reg0x31)
+
+#define REG_GPIO_WAKE_UP                            &(addPMU_Reg0x3)
 
 #define setf_GPIO_2nd_Fun_Ena(p)            ((*(volatile unsigned long *)p) |= (1<<GPIO_2FUN_EN))
 
