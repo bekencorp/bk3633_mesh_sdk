@@ -19,8 +19,24 @@
 
 static uint8_t sleep_flag = 0;
 
+#if _GPIO_WAKEUP_TEST_
+gpio_irq_handler_t gpio_test_func(void)
+{
+    os_printf("~~~~~~~gpio wake up!!!!!\r\n\r\n");
+}
+
+void gpio_wakeup_test_init(void)
+{
+    gpio_dev_t gpio_test;
+    gpio_test.port = GPIO_P02;
+
+    hal_gpio_enable_irq(&gpio_test, IRQ_TRIGGER_FALLING_EDGE, gpio_test_func, NULL);
+}
+#endif
+
 void sleep_mode_enable(uint8_t enable)
 {
+    os_printf("sleep_mode_enable %d\r\n", enable);
     sleep_flag = enable;
 }
 

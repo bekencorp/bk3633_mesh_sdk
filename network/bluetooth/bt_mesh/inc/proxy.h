@@ -55,6 +55,10 @@ int bt_mesh_proxy_init(void);
 void bt_mesh_custom_adv_start(void);
 void bt_mesh_custom_adv_stop(void);
 #endif
+
+void bt_mesh_proxy_adv_enabled(void);
+void bt_mesh_proxy_adv_disabled(void);
+
 /**
  * @brief Enable advertising with Node Identity.
  *

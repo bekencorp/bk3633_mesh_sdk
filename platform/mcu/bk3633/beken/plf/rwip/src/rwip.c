@@ -991,7 +991,7 @@ void rwip_isr(void)
     // Check interrupt status and call the appropriate handlers
     uint32_t irq_stat      = ip_intstat1_get();
 
-    //UART_PRINTF("%s, irq_stat(0x%x) \r\n\r\n", __func__, irq_stat );
+    //rom_env.os_print("%s, irq_stat(0x%x) \r\n\r\n", __func__, irq_stat );
     // General purpose timer interrupt - half slot accuracy
     if (irq_stat & IP_FINETGTINTSTAT_BIT)
     {
@@ -1272,10 +1272,12 @@ uint8_t rwip_sleep(int32_t * dur)
       //  uart_printf("sleep:%d:%d\r\n",sleep_duration1,current_time.hs);
 
 
-        if(!rwip_env.ext_wakeup_enable)
+/*         if(!rwip_env.ext_wakeup_enable)
         {
             ip_deepslcntl_extwkupdsb_setf(1);
-        }
+        } */
+
+        ip_deepslcntl_extwkupdsb_setf(0);
 
 
         DBG_SWDIAG(SLEEP, SLEEP, 1);

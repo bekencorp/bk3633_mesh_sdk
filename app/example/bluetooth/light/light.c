@@ -625,11 +625,6 @@ static void app_timer_cb(void *p_timer, void *args)
 }
 #endif //CONFIG_BT_MESH_JINGXUN
 
-gpio_irq_handler_t gpio_test_func(void)
-{
-    //sleep_mode_enable(0);
-    bk_printf("~~~~~~~gpio wake up!!!!!\r\n\r\n");
-}
 
 int application_start(int argc, char **argv)
 {
@@ -651,11 +646,9 @@ int application_start(int argc, char **argv)
 
     sleep_mode_enable(1);
 
-    
-    gpio_dev_t gpio_test;
-    gpio_test.port = GPIO_P02;
-
-    hal_gpio_enable_irq(&gpio_test, IRQ_TRIGGER_FALLING_EDGE, gpio_test_func, NULL);
+#if _GPIO_WAKEUP_TEST_
+    gpio_wakeup_test_init();
+#endif
 
     return 0;
 }

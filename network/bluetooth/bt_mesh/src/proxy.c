@@ -63,6 +63,17 @@ static const struct bt_mesh_le_adv_param fast_adv_param = {
 };
 
 static bool proxy_adv_enabled;
+static bool proxy_adv_stoped;
+
+void bt_mesh_proxy_adv_enabled(void)
+{
+    proxy_adv_stoped = false;
+}
+void bt_mesh_proxy_adv_disabled(void)
+{
+    bt_mesh_proxy_adv_stop();
+    proxy_adv_stoped = true;
+}
 
 #if defined(CONFIG_BT_MESH_GATT_PROXY)
 static void proxy_send_beacons(struct k_work *work);
@@ -1312,6 +1323,10 @@ static s32_t gatt_proxy_advertise(struct bt_mesh_subnet *sub)
 s32_t bt_mesh_proxy_adv_start(void)
 {
     BT_DBG("");
+
+    if (proxy_adv_stoped) {
+        return K_NO_WAIT;
+    }
 
     if (gatt_svc == MESH_GATT_NONE) {
         return K_FOREVER;

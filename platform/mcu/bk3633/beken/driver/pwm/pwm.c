@@ -202,6 +202,7 @@ static void init_pwm_param(pwm_param_t *pwm_param, UINT8 enable)
             || (pwm_param->channel >= PWM_COUNT)
             || ((pwm_param->duty_cycle > pwm_param->end_value) & enable))
     {
+        PWM_WARN("init_pwm_param fail\r\n");
         return;
     }
 
@@ -227,16 +228,22 @@ static void init_pwm_param(pwm_param_t *pwm_param, UINT8 enable)
 	
     pwm_icu_configuration(pwm_param, enable);
 
-    *pwm_reg &= ~(0x7 << (5 * channel_offset + posPWM0_Reg0x0_pwm0_mode));
-    *pwm_reg |= ((pwm_param->cfg.bits.mode & 0x7) << (5 * channel_offset + posPWM0_Reg0x0_pwm0_mode)); //set mode
+    if(enable)
+    {
+        //pwm restart might fail if duty_cycle was cleared when disabled  --Leonardo
 
-    *pwm_reg &= ~(0x3 << (2 * channel_offset + posPWM0_Reg0x0_pwm0_cpedg_sel));
-    *pwm_reg |= ((pwm_param->cpedg_sel & 0x3) << (2 * channel_offset + posPWM0_Reg0x0_pwm0_cpedg_sel));//set cpedg_sel
-    
-    *pwm_reg &= ~(0x1 << (channel_offset + posPWM0_Reg0x0_pwm0_ctnu_mod));
-    *pwm_reg |= ((pwm_param->contiu_mode & 0x1) << (channel_offset + posPWM0_Reg0x0_pwm0_ctnu_mod));
+        *pwm_reg &= ~(0x7 << (5 * channel_offset + posPWM0_Reg0x0_pwm0_mode));
+        *pwm_reg |= ((pwm_param->cfg.bits.mode & 0x7) << (5 * channel_offset + posPWM0_Reg0x0_pwm0_mode)); //set mode
 
-    pwm_duty_cycle(pwm_param);
+        *pwm_reg &= ~(0x3 << (2 * channel_offset + posPWM0_Reg0x0_pwm0_cpedg_sel));
+        *pwm_reg |= ((pwm_param->cpedg_sel & 0x3) << (2 * channel_offset + posPWM0_Reg0x0_pwm0_cpedg_sel));//set cpedg_sel
+        
+        *pwm_reg &= ~(0x1 << (channel_offset + posPWM0_Reg0x0_pwm0_ctnu_mod));
+        *pwm_reg |= ((pwm_param->contiu_mode & 0x1) << (channel_offset + posPWM0_Reg0x0_pwm0_ctnu_mod));
+
+        pwm_duty_cycle(pwm_param);
+    }
+
 
     if(pwm_param->cfg.bits.int_en)
     {
@@ -321,7 +328,7 @@ UINT32 pwm_ctrl(UINT32 cmd, void *param)
     UINT32 value;
     pwm_param_t *p_param;
     pwm_capture_t *p_capture;
-    //os_printf("%s, cmd 0x%x.\n", __func__, cmd);
+
     switch(cmd)
     {
     case CMD_PWM_UNIT_ENABLE:

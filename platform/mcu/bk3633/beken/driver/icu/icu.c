@@ -52,27 +52,19 @@ static void icu_get_sleep_mode(MCU_SLEEP_MODE* mode)
 void cpu_reduce_voltage_sleep()
 {
     uint32_t tmp_reg;
-    //set_AON_GPIO_Reg0x4_GPIO4_Config(0x002); //set GPIO4 OUTPUT HIGH
-    //set_AON_GPIO_Reg0x4_GPIO4_Config(0x000); //set GPIO4 OUTPUT LOW
+
     set_SYS_Reg0x1_gotosleep(1);
     set_SYS_Reg0x1_gotosleep(0);
 
-//    set_PMU_Reg0x14_voltage_ctrl_work_aon(0x06);
-//    set_PMU_Reg0x14_voltage_ctrl_work_core(0x06);
-    //ICU_PRT("rv:%x\r\n",addPMU_Reg0x14);
-
-   set_PMU_Reg0x14_voltage_ctrl_sleep_aon(03);
-//    
-   set_PMU_Reg0x14_voltage_ctrl_sleep_core(0x03);
-       
-   setf_PMU_Reg0x14_sleep_sel; // don't set if use reduce viltage sleep
+    set_PMU_Reg0x14_voltage_ctrl_sleep_aon(03);
+    set_PMU_Reg0x14_voltage_ctrl_sleep_core(0x03);
+    setf_PMU_Reg0x14_sleep_sel; // don't set if use reduce viltage sleep
 
            
     set_SYS_Reg0x2_core_sel(0x01);
     set_SYS_Reg0x2_core_div(0x0);
     
     setf_SYS_Reg0x17_enb_busrt_sel;
-    
     setf_SYS_Reg0x17_CLK96M_PWD;
     setf_SYS_Reg0x17_HP_LDO_PWD;
     setf_SYS_Reg0x17_cb_bias_pwd;
@@ -80,12 +72,8 @@ void cpu_reduce_voltage_sleep()
 
     tmp_reg = addSYS_Reg0x17 | 0x08;
     
-    //set_AON_GPIO_Reg0x4_GPIO4_Config(0x002); //set GPIO4 OUTPUT HIGH
-    //set_AON_GPIO_Reg0x4_GPIO4_Config(0x000); 
-    //set_AON_GPIO_Reg0x4_GPIO4_Config(0x002); //set GPIO4 OUTPUT HIGH
-    //set_AON_GPIO_Reg0x4_GPIO4_Config(0x000); 
-    set_PMU_Reg0x14_voltage_ctrl_work_aon(0x03);
-    set_PMU_Reg0x14_voltage_ctrl_work_core(0x03);
+    set_PMU_Reg0x14_voltage_ctrl_work_aon(0x05);
+    set_PMU_Reg0x14_voltage_ctrl_work_core(0x05);
     
     set_SYS_Reg0x2_core_sel(0x00);
     
@@ -309,9 +297,9 @@ UINT32 icu_ctrl(UINT32 cmd, void *param)
                     reg |= ICU_I2S_CLK_PWD_MASK;
                     break;
 
-                case CLK_PWR_DEV_SPI:
+/*                 case CLK_PWR_DEV_SPI:
                     reg |= ICU_SPI_CLK_PWD_MASK;
-                    break;
+                    break; */
 
                 default:
                     break;

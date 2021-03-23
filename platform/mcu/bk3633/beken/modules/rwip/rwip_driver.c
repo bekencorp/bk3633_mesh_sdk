@@ -643,7 +643,8 @@ void rwip_driver_init(bool reset)
         rwip_env.lp_cycle_wakeup_delay = twext;
 
         // Set the external wakeup parameter
-        ip_deepslcntl_extwkupdsb_setf(rwip_env.ext_wakeup_enable ? false : true);
+        //ip_deepslcntl_extwkupdsb_setf(rwip_env.ext_wakeup_enable ? false : true);
+        ip_deepslcntl_extwkupdsb_setf(0);
     }
     else
     {
