@@ -32,17 +32,8 @@
 
 #include "uart_pub.h"      	// UART initialization
 #include "func_pub.h"
-
-//#include "boot.h"      // boot definition
 #include "rwip.h"      // RW SW initialization
-//#include "syscntl.h"   // System control initialization
-//#include "emi.h"       // EMI initialization
-#include "intc.h"      // Interrupt initialization
-#include "timer.h"     // TIMER initialization
-#include "icu.h"
-#include "uart.h"      	// UART initialization
-#include "flash.h"     // Flash initialization
-//#include "led.h"       // Led initialization
+
 #if (BLE_EMB_PRESENT || BT_EMB_PRESENT)
 #include "rf.h"        // RF initialization
 #endif // BLE_EMB_PRESENT || BT_EMB_PRESENT
@@ -51,28 +42,8 @@
 #include "app.h"       // application functions
 #endif // BLE_APP_PRESENT
 
-//#include "nvds.h"         // NVDS definitions
-
-//#include "reg_assert_mgr.h"
-#include "BK3633_RegList.h"
-//#include "RomCallFlash.h"
-#include "gpio.h"
-#include "pwm.h"
-//#include "audio.h"
-//#include "app_task.h"
-//#include "ir.h"
-//#include "oads.h"
-// #include "wdt.h"
 #include "user_config.h"
 #include "intc_pub.h"
-#include "rwble.h"
-//#include "lld_util.h"
-
-//#include "ke_event.h"
-#include "ke_timer.h"
-#include "app_task.h"
-
-//#include "rf_test.h"
 #include "fake_clock_pub.h"
 #include "em_map.h"
 #include "icu_pub.h"
@@ -87,19 +58,10 @@
  */
 
 
-
-
 /*
  * STRUCTURE DEFINITIONS
  ****************************************************************************************
  */
-
-/// Description of unloaded RAM area content
-struct unloaded_area_tag
-{
-    // status error
-    uint32_t error;
-};
 
 
 /*
@@ -107,38 +69,11 @@ struct unloaded_area_tag
  ****************************************************************************************
  */
 
-// Creation of uart external interface api
-struct rwip_eif_api uart_api;
-
-#if !(BLE_EMB_PRESENT) && !(BT_EMB_PRESENT)
-// Creation of uart second external interface api
-
-#endif // !BLE_EMB_PRESENT && !(BT_EMB_PRESENT)
-
-#if (PLF_DEBUG)
-/// Variable to enable infinite loop on assert
-volatile int dbg_assert_block = 1;
-#endif //PLF_DEBUG
-
-
-/// Variable storing the reason of platform reset
-uint32_t error = RESET_NO_ERROR;
-
-uint32_t critical_sec_cnt = 0;
-
 /*
  * LOCAL FUNCTION DECLARATIONS
  ****************************************************************************************
  */
 extern void Delay_ms(int num) ;
-
-static void Stack_Integrity_Check(void);
-
-//extern void code_sanity_check(void);
-
-#if (UART_DRIVER)
-void uart_rx_handler(uint8_t *buf, uint8_t len);
-#endif
 
 #if ((UART_PRINTF_EN) &&(UART_DRIVER))
 void assert_err(const char *condition, const char * file, int line)
@@ -198,22 +133,6 @@ void dump_data(uint8_t* data, uint16_t length)
 }
 #endif //UART_PRINTF_EN
 
-#if 1
-/*
- * LOCAL FUNCTION DEFINITIONS
- ****************************************************************************************
- */
-
-//0102210630355cff0078b69d5538dd22
-uint8_t encrypt_key_array[16] = 
-{
-	0x01, 0x02, 0x21, 0x06,
-	0x30, 0x35, 0x5c, 0xff,
-	0x00, 0x78, 0xb6, 0x9d,
-	0x55, 0x38, 0xdd, 0x22
-};
-#endif
-
 /*
  * EXPORTED FUNCTION DEFINITIONS
  ****************************************************************************************
@@ -258,11 +177,7 @@ void platform_reset(uint32_t error)
  * @return status   exit status
  *******************************************************************************
  */
-//float abcd = 0.5;
-//extern struct rom_env_tag rom_env;
 
-void rwip_eif_api_init(void);
-//int main(void)
 void ble_handler(void *arg)
 {
 	ble_hdr_arg_t *hdr_arg = (ble_hdr_arg_t *)arg;

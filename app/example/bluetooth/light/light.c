@@ -625,6 +625,26 @@ static void app_timer_cb(void *p_timer, void *args)
 }
 #endif //CONFIG_BT_MESH_JINGXUN
 
+#if _SLEEP_WAKE_TEST_
+struct k_delayed_work sleep_wake_test_t;
+static void sleep_wake_test_cb(void *p_timer, void *args)
+{
+    static int i = 1;
+    os_printf("%s %d\r\n", __func__, i);
+
+    if(i == 1)
+    {
+        sleep_mode_enable(1);
+        k_delayed_work_submit(&sleep_wake_test_t, 2000);
+    }
+    else if(i == 0)
+    {
+        sleep_mode_enable(0);
+    }
+
+    i--;
+}
+#endif
 
 int application_start(int argc, char **argv)
 {
@@ -643,13 +663,14 @@ int application_start(int argc, char **argv)
 #endif //CONFIG_BT_MESH_JINGXUN
     //aos_loop_run();
 
-
-    sleep_mode_enable(1);
-
 #if _GPIO_WAKEUP_TEST_
     gpio_wakeup_test_init();
 #endif
 
+#if _SLEEP_WAKE_TEST_
+    k_delayed_work_init(&sleep_wake_test_t, sleep_wake_test_cb);
+    k_delayed_work_submit(&sleep_wake_test_t, 2000);
+#endif
     return 0;
 }
 

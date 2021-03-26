@@ -313,7 +313,7 @@ static void adv_thread(void *p1, void *p2, void *p3)
                     } else {
                         k_sleep(1);
 #ifdef CONFIG_BT_MESH_CUSTOM_ADV
-                        break;
+                        //break;
 #endif
                     }
                 }

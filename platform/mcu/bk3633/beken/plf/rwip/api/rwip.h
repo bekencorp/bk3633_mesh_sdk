@@ -349,7 +349,7 @@ struct rwip_func_tag
 	void (*rwip_init)(uint32_t error);
 	void (*rwip_schedule)(void);
 	void (*rwip_set_bd_address)(struct bd_addr *bd_addr);
-    uint8_t (*rwip_sleep)(int32_t * dur);
+    uint8_t (*rwip_sleep)(int32_t * dur, int32_t max_slots);
     uint16_t (*rwip_sleep_flag)(void);
 };
 extern const struct rwip_func_tag rwip_func;
@@ -577,7 +577,7 @@ void rwip_sw_int_req(void);
  * @return  sleep status (@see enum rwip_sleep_state)
  ****************************************************************************************
  */
-uint8_t rwip_sleep(int32_t * dur);
+uint8_t rwip_sleep(int32_t * dur, int32_t max_slots);
 uint16_t rwip_sleep_flag(void);
 #if (BLE_EMB_PRESENT || BT_EMB_PRESENT)
 

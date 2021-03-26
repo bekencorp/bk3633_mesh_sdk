@@ -1113,12 +1113,11 @@ void rwip_isr(void)
     DBG_SWDIAG(ISR, RWIP, 0);
 }
 
-uint8_t rwip_sleep(int32_t * dur)
+uint8_t rwip_sleep(int32_t * dur, int32_t max_slots)
 {
     uint8_t sleep_res = RWIP_ACTIVE;
     #if (BLE_EMB_PRESENT || BT_EMB_PRESENT)
     int32_t sleep_duration = 0;
-//    int32_t sleep_duration1;
     rwip_time_t current_time;
     #endif // (BLE_EMB_PRESENT || BT_EMB_PRESENT)
 
@@ -1137,7 +1136,7 @@ uint8_t rwip_sleep(int32_t * dur)
             *dur = 0;
             break;
         }
-      //  uart_printf("%x:%x\r\n",rwip_env.prevent_sleep,ke_sleep_check());
+
         // Processor sleep can be enabled
         sleep_res = RWIP_CPU_SLEEP;
 
@@ -1215,15 +1214,24 @@ uint8_t rwip_sleep(int32_t * dur)
         /************************************************************************
          **************           CHECK SLEEP TIME                 **************
          ************************************************************************/
-//        sleep_duration1 = sleep_duration;
         sleep_duration -= RWIP_MINIMUM_SLEEP_TIME;
+
+        sleep_duration = co_min_s(sleep_duration, max_slots*2);
+
+        if(sleep_duration && sleep_duration*0.625/2 < 10)
+        {
+            //Incase sleep time less than 1 system tick 10ms
+            *dur = 0;
+            break;
+        }
+
         *dur = sleep_duration;
         sleep_duration = rwip_slot_2_lpcycles(sleep_duration);
 
         // check if sleep duration is sufficient according to wake-up delay
         // HW issue, if sleep duration = max(twosc,twext) + 1 the HW never wakes up, so we have to ensure that at least
         // sleep duration > max(twosc,twext) + 1 (all in lp clk cycle)
-        if(sleep_duration < rwip_env.lp_cycle_wakeup_delay * 2)
+        if(sleep_duration && (sleep_duration < rwip_env.lp_cycle_wakeup_delay * 2))
         {
             *dur = 0;
             break;
@@ -1263,13 +1271,6 @@ uint8_t rwip_sleep(int32_t * dur)
 
         // Program wake-up time
         ip_deepslwkup_set(sleep_duration);
-
-        // Mask all interrupts except sleep IRQ
-        ip_intcntl1_set(IP_SLPINTMSK_BIT);
-
-        // Clear possible pending IRQs
-        ip_intack1_clear(0xFFFFFFFF);
-      //  uart_printf("sleep:%d:%d\r\n",sleep_duration1,current_time.hs);
 
 
 /*         if(!rwip_env.ext_wakeup_enable)

@@ -36,8 +36,24 @@ void gpio_wakeup_test_init(void)
 
 void sleep_mode_enable(uint8_t enable)
 {
-    os_printf("sleep_mode_enable %d\r\n", enable);
+    //Don't use functions below in IDLE TASK
+
+    os_printf("%s %d\r\n", __func__, enable);
     sleep_flag = enable;
+
+    if(enable)
+    {
+        bt_mesh_scan_stop();
+        bt_mesh_proxy_adv_disabled();
+        bt_mesh_beacon_disable();
+
+    }
+    else
+    {
+        bt_mesh_scan_enable();
+        bt_mesh_proxy_adv_enabled();
+        bt_mesh_beacon_enable();
+    }
 }
 
 uint8_t get_sleep_flag(void)
@@ -48,7 +64,7 @@ uint8_t get_sleep_flag(void)
 void idle_mode(void)
 {
     MCU_SLEEP_MODE sleep_mode;
-    uint32_t slot = 0, tick_com;
+    uint32_t slot_h = 0, tick_com;
 
     if(!sleep_flag)
     {
@@ -64,13 +80,13 @@ void idle_mode(void)
 
     GLOBAL_INT_DISABLE();
 
-    uint8_t sleep = rwip_func.rwip_sleep(&slot);
-    tick_com = slot * RHINO_CONFIG_TICKS_PER_SECOND * 0.625/2000;
-    os_printf("sleep %d tick_com %d\r\n", sleep, tick_com);
+    uint8_t sleep = rwip_func.rwip_sleep(&slot_h, 0xFFFF);      //no less than 16 slots for now. if set to 0, sleep forever
+    tick_com = slot_h * RHINO_CONFIG_TICKS_PER_SECOND * 0.625/2000;
 
     switch(sleep)
     {
         case RWIP_DEEP_SLEEP:
+            os_printf("deep sleep tick_com %d\r\n", tick_com);
             fclk_disable(FCLK_PWM_ID);
             cpu_reduce_voltage_sleep();
             cpu_wakeup();
@@ -78,6 +94,12 @@ void idle_mode(void)
             while((rwip_func.rwip_sleep_flag() & RW_WAKE_UP_ONGOING) != 0);
 
             fclk_init(FCLK_PWM_ID, RHINO_CONFIG_TICKS_PER_SECOND);
+            if(!tick_com)
+            {
+                //At least compensate 1 tick to pend idle thread
+                tick_com = 1;
+            }
+
             fclk_update_tick(tick_com);
             tick_list_update(tick_com);
             break;

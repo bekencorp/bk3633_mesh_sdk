@@ -1385,7 +1385,7 @@ static void _genie_mesh_ready(int err)
 #endif
 
     //send event
-    // genie_event(GENIE_EVT_SDK_MESH_INIT, NULL);
+    genie_event(GENIE_EVT_SDK_MESH_INIT, NULL);
 }
 
 void genie_mesh_init(void)
