@@ -2,6 +2,7 @@
 #include <sys/errno.h>
 #include "hal/soc/soc.h"
 #include "board.h"
+#include "hal.h"
 
 extern hal_flash_init();
 extern int errno;
@@ -21,6 +22,10 @@ void hal_init(void)
 
     hal_uart_init(&uart_0);
     hal_flash_init();
+    
+    wdg_dev_t  wdg;
+    wdg.config.timeout = 0xffff;
+    hal_wdg_init(&wdg);
 }
 
 void hal_boot(hal_partition_t partition)
@@ -40,7 +45,6 @@ void hal_reboot(void)
     wdg.config.timeout = 1;
 
     hal_wdg_init(&wdg);
-
     while(1);
 }
 

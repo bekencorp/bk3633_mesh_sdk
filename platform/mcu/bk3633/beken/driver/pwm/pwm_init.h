@@ -16,9 +16,6 @@
 
 #include "BK3633_RegList.h"
 
-#define ENABLE_PWM							0
-
-#define PWM_CHANNEL_NUMBER_MAX       		6
 
 #define REG_PWM0_INTR                        addPWM0_Reg0x1
 #define REG_PWM1_INTR                        addPWM1_Reg0x1

@@ -25,19 +25,11 @@
 #include "net.h"
 #include "transport.h"
 #include "foundation.h"
-#include "gen_battery_cli.h"
-#include "gen_level_cli.h"
-#include "gen_def_trans_time_cli.h"
-#include "gen_power_onoff_cli.h"
-#include "gen_power_level_cli.h"
-#include "gen_location_cli.h"
-#include "gen_prop_cli.h"
-#include "scene_cli.h"
-#include "scheduler_cli.h"
-#include "light_lightness_cli.h"
+#include "gen_onoff_cli.h"
+#include "lightness_cli.h"
+#include "lightness_internal.h"
+#include "gen_lvl_cli.h"
 #include "light_ctl_cli.h"
-#include "light_hsl_cli.h"
-#include "light_lc_cli.h"
 
 #define CID_NVAL   0xffff
 #define CID_LOCAL  0x01a8
@@ -115,7 +107,11 @@ static struct bt_mesh_health_cli health_cli = {
 };
 #endif
 
-static u8_t dev_uuid[16] = { 0xdd, 0xdd };
+static u8_t dev_uuid[16] = { 0x01, 0x02, 0x03, 0x04, 0x05 };
+struct bt_mesh_onoff_cli onoff_cli = BT_MESH_ONOFF_CLI_INIT(NULL);
+struct bt_mesh_lightness_cli lightness_cli = BT_MESH_LIGHTNESS_CLI_INIT(NULL);
+struct bt_mesh_light_ctl_cli light_ctl_cli = BT_MESH_LIGHT_CTL_CLI_INIT(NULL);
+struct bt_mesh_lvl_cli lvl_cli = BT_MESH_LVL_CLI_INIT(NULL);
 
 static struct bt_mesh_model root_models[] = {
 #ifdef CONFIG_BT_MESH_CFG_SRV
@@ -130,61 +126,10 @@ static struct bt_mesh_model root_models[] = {
 #ifdef CONFIG_BT_MESH_HEALTH_CLI
         BT_MESH_MODEL_HEALTH_CLI(&health_cli),
 #endif
-#if 0
-#ifdef	CONFIG_BT_MESH_ALI_TMALL_GENIE
-#ifdef CONFIG_BT_MESH_GEN_ONOFF_CLI
-	MESH_MODEL_GEN_ONOFF_CLI(NULL, NULL),
-#endif
-#endif	/* CONFIG_BT_MESH_ALI_TMALL_GENIE*/
-#ifdef CONFIG_BT_MESH_GEN_BATTERY_CLI
-	MESH_MODEL_GEN_BATTERY_CLI(),
-#endif
-#ifdef CONFIG_BT_MESH_GEN_LEVEL_CLI
-    MESH_MODEL_GEN_LEVEL_CLI(),
-#endif
-#ifdef CONFIG_BT_MESH_GEN_DEF_TRANS_TIME_CLI
-    MESH_MODEL_GEN_DEF_TRAN_TIME_CLI(),
-#endif
-#ifdef CONFIG_BT_MESH_GEN_POWER_ONOFF_CLI
-	MESH_MODEL_GEN_POWER_ONOFF_CLI(),
-#endif
-#ifdef CONFIG_BT_MESH_GEN_POWER_LEVEL_CLI
-	MESH_MODEL_GEN_POWER_LEVEL_CLI(),
-#endif
-#ifdef CONFIG_BT_MESH_GEN_LOCATION_CLI
-	MESH_MODEL_GEN_LOCATION_CLI(),
-#endif
-#ifdef CONFIG_BT_MESH_GEN_PROP_CLI
-	MESH_MODEL_GEN_PROP_CLI(),
-#endif
-#ifdef CONFIG_BT_MESH_SENSOR_CLI
-//    MESH_MODEL_SENSOR_CLI(),
-#endif
-#ifdef CONFIG_BT_MESH_TIME_CLI
-//	MESH_MODEL_TIME_CLI(),
-#endif
-#ifdef CONFIG_BT_MESH_SCENE_CLI
-	MESH_MODEL_SCENE_CLI(),
-#endif
-#ifdef CONFIG_BT_MESH_SCHEDULER_CLI
-	MESH_MODEL_SCHEDULER_CLI(),
-#endif
-#ifdef CONFIG_BT_MESH_LIGHT_LIGHTNESS_CLI
-	MESH_MODEL_LIGHT_LIGHTNESS_CLI(),
-#endif
-#ifdef CONFIG_BT_MESH_LIGHT_CTL_CLI
-        MESH_MODEL_LIGHT_CTL_CLI(),
-#endif
-#ifdef CONFIG_BT_MESH_LIGHT_HSL_CLI
-        MESH_MODEL_LIGHT_HSL_CLI(),
-#endif
-#ifdef CONFIG_BT_MESH_LIGHT_XYL_CLI
-//        MESH_MODEL_LIGHT_XYL_CLI(),
-#endif
-#ifdef CONFIG_BT_MESH_LIGHT_LC_CLI
-        MESH_MODEL_LIGHT_LC_CLI(),
-#endif
-#endif
+BT_MESH_MODEL_ONOFF_CLI(&onoff_cli),
+BT_MESH_MODEL_LIGHTNESS_CLI(&lightness_cli),
+BT_MESH_MODEL_LIGHT_CTL_CLI(&light_ctl_cli),
+BT_MESH_MODEL_LVL_CLI(&lvl_cli),
 };
 #if 0
 static void vendor_model_get(struct bt_mesh_model *model,
@@ -722,7 +667,7 @@ static int cmd_init(int argc, char *argv[])
 {
 	int err = 0;
 	hci_driver_init();
-	ais_ota_bt_storage_init();
+	// ais_ota_bt_storage_init();
 
 #ifndef CONFIG_MESH_STACK_ALONE
 	err = bt_enable(bt_ready);
@@ -2987,6 +2932,635 @@ static int cmd_conn(int argc, char *argv[])
 }
 #endif
 
+
+
+void gen_onoff_get(int argc, char **argv)
+{
+	struct bt_mesh_onoff_status status = {0};
+	struct bt_mesh_msg_ctx ctx = {
+		.net_idx = 0x0,
+		.app_idx = 0x0,
+		.send_ttl = 0x2,
+		.addr    = strtoul(argv[1], NULL, 0),
+	};
+	int err;
+	err = bt_mesh_onoff_cli_get(&onoff_cli, &ctx, &status);
+	if (err) {
+		printk("err=%d", err);
+	}
+	printk("status: %d %d %d\n", status.present_on_off, status.target_on_off, status.remaining_time);
+	return;
+}
+
+void gen_onoff_set(int argc, char **argv)
+{
+	struct bt_mesh_onoff_set set;
+	struct bt_mesh_onoff_status status = {0};
+	struct bt_mesh_model_transition transition;
+	struct bt_mesh_msg_ctx ctx = {
+		.net_idx = 0x0,
+		.app_idx = 0x0,
+		.send_ttl = 0x2,
+		.addr    = strtoul(argv[1], NULL, 0),
+	};
+	int err;
+
+	set.on_off = !!(strtoul(argv[2], NULL, 0));
+	bool ack = strtoul(argv[3], NULL, 0);
+	if(argc > 4){
+		transition.time =
+			model_transition_decode(strtoul(argv[4], NULL, 0));      
+		transition.delay = model_delay_decode(strtoul(argv[5], NULL, 0));
+		set.transition = &transition;
+	} else {
+		set.transition = NULL;
+	}
+
+	printk("tt=%u delay=%u", transition.time, transition.delay);
+
+	if (ack) {
+		err = bt_mesh_onoff_cli_set(&onoff_cli, &ctx, &set, &status);
+		printk("status: %d %d %d\n", status.present_on_off, status.target_on_off, status.remaining_time);
+	} else {
+		err = bt_mesh_onoff_cli_set_unack(&onoff_cli, &ctx, &set);
+	}
+	if (err) {
+		printk("err=%d", err);
+	}
+}
+
+void light_lightness_get(int argc, char **argv)
+{
+	struct bt_mesh_lightness_status status = {0};
+	struct bt_mesh_msg_ctx ctx = {
+		.net_idx = 0x0,
+		.app_idx = 0x0,
+		.send_ttl = 0x2,
+		.addr    = strtoul(argv[1], NULL, 0),
+	};
+	int err;
+
+	err = bt_mesh_lightness_cli_light_get(&lightness_cli, &ctx, &status);
+	if (err) {
+		printk("err=%d", err);
+	}
+	printk("status: %d %d %d\n", status.current, status.target, status.remaining_time);
+}
+
+
+void light_lightness_set(int argc, char **argv)
+{
+	struct bt_mesh_lightness_set set;
+	struct bt_mesh_lightness_status status = {0};
+	struct bt_mesh_model_transition transition;
+	struct bt_mesh_msg_ctx ctx = {
+		.net_idx = 0x0,
+		.app_idx = 0x0,
+		.send_ttl = 0x2,
+		.addr    = strtoul(argv[1], NULL, 0),
+	};
+	int err;
+
+	set.lvl = strtoul(argv[2], NULL, 0);
+	bool ack = strtoul(argv[3], NULL, 0);
+	if(argc > 4){
+		transition.time =
+			model_transition_decode(strtoul(argv[4], NULL, 0));      
+		transition.delay = model_delay_decode(strtoul(argv[5], NULL, 0));
+		set.transition = &transition;
+	} else {
+		set.transition = NULL;
+	}
+
+	if (ack) {
+		err = bt_mesh_lightness_cli_light_set(&lightness_cli, &ctx,
+						      &set, &status);
+		printk("status: %d %d %d\n", status.current, status.target, status.remaining_time);
+	} else {
+		err = bt_mesh_lightness_cli_light_set_unack(&lightness_cli,
+							    &ctx, &set);
+	}
+	if (err) {
+		printk("err=%d", err);
+	}
+	
+}
+
+void light_lightness_linear_get(int argc, char **argv)
+{
+	struct bt_mesh_lightness_status status = {0};
+	uint16_t current, target;
+	struct bt_mesh_msg_ctx ctx = {
+		.net_idx = 0x0,
+		.app_idx = 0x0,
+		.send_ttl = 0x2,
+		.addr    = strtoul(argv[1], NULL, 0),
+	};
+	int err;
+	err = lightness_cli_light_get(&lightness_cli, &ctx, LINEAR, &status);
+	if (err) {
+		printk("err=%d", err);
+	}
+
+	current = light_to_repr(status.current, LINEAR);
+	target = light_to_repr(status.target, LINEAR);
+	printk("status: %d %d %d %d\n", status.current, status.target, current, target);
+}
+
+
+void light_lightness_linear_set(int argc, char **argv)
+{
+	uint16_t current, target;
+	struct bt_mesh_lightness_set set;
+	struct bt_mesh_lightness_status status={0};
+	struct bt_mesh_model_transition transition;
+	struct bt_mesh_msg_ctx ctx = {
+		.net_idx = 0x0,
+		.app_idx = 0x0,
+		.send_ttl = 0x2,
+		.addr    = strtoul(argv[1], NULL, 0),
+	};
+	int err;
+
+	set.lvl = strtoul(argv[2], NULL, 0);
+	bool ack = strtoul(argv[3], NULL, 0);
+	if(argc > 4){
+		transition.time =
+			model_transition_decode(strtoul(argv[4], NULL, 0));      
+		transition.delay = model_delay_decode(strtoul(argv[5], NULL, 0));
+		set.transition = &transition;
+	} else {
+		set.transition = NULL;
+	}
+
+	if (ack) {
+		err = lightness_cli_light_set(&lightness_cli, &ctx, LINEAR,
+					      &set, &status);
+
+		current = light_to_repr(status.current, LINEAR);
+		target = light_to_repr(status.target, LINEAR);
+
+		printk("status: %d %d %d %d %d\n", status.current, status.target, current, target, status.remaining_time);
+	} else {
+		err = lightness_cli_light_set_unack(&lightness_cli, &ctx,
+						    LINEAR, &set);
+	}
+	if (err) {
+		printk("err=%d", err);
+	}
+}
+
+void light_lightness_last_get(int argc, char **argv)
+{
+	uint16_t status;
+	struct bt_mesh_msg_ctx ctx = {
+		.net_idx = 0x0,
+		.app_idx = 0x0,
+		.send_ttl = 0x2,
+		.addr    = strtoul(argv[1], NULL, 0),
+	};
+	int err;
+
+	err = bt_mesh_lightness_cli_last_get(&lightness_cli, &ctx, &status);
+	if (err) {
+		printk("err=%d", err);
+	}
+	printk("status: %d \n", status);
+}
+
+void light_lightness_default_get(int argc, char **argv)
+{
+	uint16_t status;
+	struct bt_mesh_msg_ctx ctx = {
+		.net_idx = 0x0,
+		.app_idx = 0x0,
+		.send_ttl = 0x2,
+		.addr    = strtoul(argv[1], NULL, 0),
+	};
+	int err;
+	err = bt_mesh_lightness_cli_default_get(&lightness_cli, &ctx, &status);
+	if (err) {
+		printk("err=%d", err);
+	}
+	printk("status: %d \n", status);
+}
+
+void light_lightness_default_set(int argc, char **argv)
+{
+	uint16_t status;
+	struct bt_mesh_msg_ctx ctx = {
+		.net_idx = 0x0,
+		.app_idx = 0x0,
+		.send_ttl = 0x2,
+		.addr    = strtoul(argv[1], NULL, 0),
+	};
+	int err;
+
+	uint16_t default_light = strtoul(argv[2], NULL, 0);
+	if (strtoul(argv[3], NULL, 0)) {
+		err = bt_mesh_lightness_cli_default_set(&lightness_cli, &ctx,
+							default_light, &status);
+		printk("status: %d \n", status);
+	} else {
+		err = bt_mesh_lightness_cli_default_set_unack(&lightness_cli,
+							      &ctx, default_light); 
+	}
+	if (err) {
+		printk("err=%d", err);
+	}
+}
+
+void light_lightness_range_get(int argc, char **argv)
+{
+	struct bt_mesh_lightness_range_status status = {0};
+	struct bt_mesh_msg_ctx ctx = {
+		.net_idx = 0x0,
+		.app_idx = 0x0,
+		.send_ttl = 0x2,
+		.addr    = strtoul(argv[1], NULL, 0),
+	};
+	int err;
+
+	err = bt_mesh_lightness_cli_range_get(&lightness_cli, &ctx, &status);
+	if (err) {
+		printk("err=%d", err);
+	}
+	printk("status: %d %d %d\n", status.status, status.range.min, status.range.max);
+}
+
+void light_lightness_range_set(int argc, char **argv)
+{
+	struct bt_mesh_lightness_range_status status = {0};
+	struct bt_mesh_lightness_range set;
+	struct bt_mesh_msg_ctx ctx = {
+		.net_idx = 0x0,
+		.app_idx = 0x0,
+		.send_ttl = 0x2,
+		.addr    = strtoul(argv[1], NULL, 0),
+	};
+	int err;
+	set.min = strtoul(argv[2], NULL, 0); ;
+	set.max = strtoul(argv[3], NULL, 0); 
+
+	if (strtoul(argv[4], NULL, 0)) {
+		err = bt_mesh_lightness_cli_range_set(&lightness_cli, &ctx,
+						      &set, &status);
+		printk("status: %d %d %d\n", status.status, status.range.min, status.range.max);
+	} else {
+		err = bt_mesh_lightness_cli_range_set_unack(&lightness_cli,
+							    &ctx, &set);
+	}
+	if (err) {
+		printk("err=%d", err);
+	}
+}
+
+void light_ctl_states_get(int argc, char **argv)
+{
+	struct bt_mesh_light_ctl_status status = {0};
+	struct bt_mesh_msg_ctx ctx = {
+		.net_idx = 0x0,
+		.app_idx = 0x0,
+		.send_ttl = 0x2,
+		.addr    = strtoul(argv[1], NULL, 0),
+	};
+	int err;
+	err = bt_mesh_light_ctl_get(&light_ctl_cli, &ctx, &status);
+
+	if (err) {
+		printk("err=%d", err);
+	}
+
+	printk("status: %d %d %d %d %d\n", status.current_light, status.current_temp,\
+	 								 status.target_light, status.target_temp, status.remaining_time);
+}
+
+
+void light_ctl_states_set(int argc, char **argv)
+{
+	struct bt_mesh_light_ctl_status status;
+	struct bt_mesh_model_transition transition;
+	struct bt_mesh_light_ctl_set set;
+	struct bt_mesh_msg_ctx ctx = {
+		.net_idx = 0x0,
+		.app_idx = 0x0,
+		.send_ttl = 0x2,
+		.addr    = strtoul(argv[1], NULL, 0),
+	};
+	int err;
+
+	set.params.light =  strtoul(argv[2], NULL, 0);
+	set.params.temp =  strtoul(argv[3], NULL, 0);
+	set.params.delta_uv =  strtoul(argv[4], NULL, 0);
+	bool ack = strtoul(argv[5], NULL, 0);
+	if(argc > 5){
+		transition.time =
+			model_transition_decode(strtoul(argv[6], NULL, 0));      
+		transition.delay = model_delay_decode(strtoul(argv[7], NULL, 0));
+		set.transition = &transition;
+	} else {
+		set.transition = NULL;
+	}
+
+	printk("tt=%u delay=%u", transition.time, transition.delay);
+
+	if (ack) {
+		err = bt_mesh_light_ctl_set(&light_ctl_cli, &ctx, &set,
+					    &status);
+		printk("status: %d %d %d %d %d\n", status.current_light, status.current_temp,\
+	 								 status.target_light, status.target_temp, status.remaining_time);
+
+	} else {
+		err = bt_mesh_light_ctl_set_unack(&light_ctl_cli, &ctx, &set);
+	}
+	if (err) {
+		printk("err=%d", err);
+	}
+}
+
+void light_ctl_temperature_get(int argc, char **argv)
+{
+	struct bt_mesh_light_temp_status status= {0};
+	struct bt_mesh_msg_ctx ctx = {
+		.net_idx = 0x0,
+		.app_idx = 0x0,
+		.send_ttl = 0x2,
+		.addr    = strtoul(argv[1], NULL, 0),
+	};
+	int err;
+
+	err = bt_mesh_light_temp_get(&light_ctl_cli, &ctx, &status);
+
+	if (err) {
+		printk("err=%d", err);
+	}
+	printk("status: %d %d %d %d %d\n", status.current.temp, status.current.delta_uv,\
+	 								 status.target.temp, status.target.delta_uv, status.remaining_time);
+
+	return;
+}
+
+void light_ctl_temperature_set(int argc, char **argv)
+{
+	struct bt_mesh_light_temp_status status = {0};
+	struct bt_mesh_model_transition transition;
+	struct bt_mesh_light_temp_set set;
+	struct bt_mesh_msg_ctx ctx = {
+		.net_idx = 0x0,
+		.app_idx = 0x0,
+		.send_ttl = 0x2,
+		.addr    = strtoul(argv[1], NULL, 0),
+	};
+	int err;
+	set.params.temp = strtoul(argv[2], NULL, 0);
+	set.params.delta_uv = strtoul(argv[3], NULL, 0);
+	bool ack = strtoul(argv[4], NULL, 0);
+	if(argc > 4){
+		transition.time =
+			model_transition_decode(strtoul(argv[5], NULL, 0));      
+		transition.delay = model_delay_decode(strtoul(argv[6], NULL, 0));
+		set.transition = &transition;
+	} else {
+		set.transition = NULL;
+	}
+
+	printk("tt=%u delay=%u", transition.time, transition.delay);
+
+	if (argc) {   //argv[4] :cmd->ack 
+		err = bt_mesh_light_temp_set(&light_ctl_cli, &ctx, &set,
+					     &status);
+		printk("status: %d %d %d %d %d\n", status.current.temp, status.current.delta_uv,\
+	 								 status.target.temp, status.target.delta_uv, status.remaining_time);
+	} else {
+		err = bt_mesh_light_temp_set_unack(&light_ctl_cli, &ctx, &set);
+	}
+	if (err) {
+		printk("err=%d", err);
+	}
+}
+
+void light_ctl_default_get(int argc, char **argv)
+{
+	struct bt_mesh_light_ctl status = {0};
+	struct bt_mesh_msg_ctx ctx = {
+		.net_idx = 0x0,
+		.app_idx = 0x0,
+		.send_ttl = 0x2,
+		.addr    = strtoul(argv[1], NULL, 0),
+	};
+	int err;
+	err = bt_mesh_light_ctl_default_get(&light_ctl_cli, &ctx, &status);
+	printk("status: %d %d %d \n", status.light, status.temp, status.delta_uv);
+	if (err) {
+		printk("err=%d", err);
+	}
+}
+
+void light_ctl_default_set(int argc, char **argv)
+{
+	struct bt_mesh_light_ctl status;
+	struct bt_mesh_light_ctl set;
+	struct bt_mesh_msg_ctx ctx = {
+		.net_idx = 0x0,
+		.app_idx = 0x0,
+		.send_ttl = 0x2,
+		.addr    = strtoul(argv[1], NULL, 0),
+	};
+	int err;
+
+	set.light = strtoul(argv[2], NULL, 0);
+	set.temp = strtoul(argv[3], NULL, 0);
+	set.delta_uv = strtoul(argv[4], NULL, 0);
+
+	if (strtoul(argv[5], NULL, 0)) {
+		err = bt_mesh_light_ctl_default_set(&light_ctl_cli, &ctx, &set,
+						    &status);
+		printk("status: %d %d %d\n", status.light, status.temp, status.delta_uv);
+	} else {
+		err = bt_mesh_light_ctl_default_set_unack(&light_ctl_cli, &ctx,
+							  &set);
+	}
+	if (err) {
+		printk("err=%d", err);
+	}
+}
+
+void light_ctl_temp_range_get(int argc, char **argv)
+{
+	struct bt_mesh_light_temp_range_status status = {0};
+	struct bt_mesh_msg_ctx ctx = {
+		.net_idx = 0x0,
+		.app_idx = 0x0,
+		.send_ttl = 0x2,
+		.addr    = strtoul(argv[1], NULL, 0),
+	};
+	int err;
+	err = bt_mesh_light_temp_range_get(&light_ctl_cli, &ctx, &status);
+
+	if (err) {
+		printk("err=%d", err);
+	}
+	printk("status: %d %d %d\n", status.status, status.range.min, status.range.max);
+}
+
+void light_ctl_temp_range_set(int argc, char **argv)
+{
+	struct bt_mesh_light_temp_range_status status;
+	struct bt_mesh_light_temp_range set;
+	struct bt_mesh_msg_ctx ctx = {
+		.net_idx = 0x0,
+		.app_idx = 0x0,
+		.send_ttl = 0x2,
+		.addr    = strtoul(argv[1], NULL, 0),
+	};
+	int err;
+	set.min = strtoul(argv[2], NULL, 0);
+	set.max = strtoul(argv[3], NULL, 0);
+
+	if (strtoul(argv[4], NULL, 0)) {  
+		err = bt_mesh_light_temp_range_set(&light_ctl_cli, &ctx, &set,
+						   &status);
+		printk("status: %d %d %d\n", status.status, status.range.min, status.range.max);
+	} else {
+		err = bt_mesh_light_temp_range_set_unack(&light_ctl_cli, &ctx,
+							 &set);
+	}
+	if (err) {
+		printk("err=%d", err);
+	}
+}
+
+void gen_lvl_get(int argc, char **argv)
+{
+	struct bt_mesh_lvl_status status = {0};
+	struct bt_mesh_msg_ctx ctx = {
+		.net_idx = 0x0,
+		.app_idx = 0x0,
+		.send_ttl = 0x2,
+		.addr    = strtoul(argv[1], NULL, 0),
+	};
+	int err;
+
+	err = bt_mesh_lvl_cli_get(&lvl_cli, &ctx, &status);
+	if (err) {
+		printk("err=%d", err);
+	}
+
+	printk("status: %d %d %d\n", status.current, status.target, status.remaining_time);
+}
+
+void gen_lvl_set(int argc, char **argv)
+{
+	struct bt_mesh_lvl_set set;
+	struct bt_mesh_lvl_status status = {0};
+	struct bt_mesh_model_transition transition;
+	struct bt_mesh_msg_ctx ctx = {
+		.net_idx = 0x0,
+		.app_idx = 0x0,
+		.send_ttl = 0x2,
+		.addr    = strtoul(argv[1], NULL, 0),
+	};
+	int err;
+	set.lvl = strtoul(argv[2], NULL, 0);
+	bool ack = strtoul(argv[3], NULL, 0);
+	if(argc > 3){
+		transition.time =
+			model_transition_decode(strtoul(argv[4], NULL, 0));      
+		transition.delay = model_delay_decode(strtoul(argv[5], NULL, 0));
+		set.transition = &transition;
+	} else {
+		set.transition = NULL;
+	}
+
+	printk("tt=%u delay=%u", transition.time, transition.delay);
+
+	if (ack) {
+		err = bt_mesh_lvl_cli_set(&lvl_cli, &ctx, &set, &status);
+		printk("status: %d %d %d\n", status.current, status.target, status.remaining_time);
+	} else {
+		err = bt_mesh_lvl_cli_set_unack(&lvl_cli, &ctx, &set);
+	}
+
+	if (err) {
+		printk("err=%d", err);
+	}
+}
+
+void gen_lvl_delta_set(int argc, char **argv)
+{
+	struct bt_mesh_lvl_delta_set set;
+	struct bt_mesh_lvl_status status = {0};
+	struct bt_mesh_model_transition transition;
+	struct bt_mesh_msg_ctx ctx = {
+		.net_idx = 0x0,
+		.app_idx = 0x0,
+		.send_ttl = 0x2,
+		.addr    = strtoul(argv[1], NULL, 0),
+	};
+	int err;
+	set.delta = strtoul(argv[2], NULL, 0);
+	bool ack = strtoul(argv[3], NULL, 0);
+	if(argc > 3){
+		transition.time =
+			model_transition_decode(strtoul(argv[4], NULL, 0));      
+		transition.delay = model_delay_decode(strtoul(argv[5], NULL, 0));
+		set.transition = &transition;
+	} else {
+		set.transition = NULL;
+	}
+
+	printk("tt=%u delay=%u", transition.time, transition.delay);
+
+	if (ack) {
+		err = bt_mesh_lvl_cli_delta_set(&lvl_cli, &ctx, &set, &status);
+		printk("status: %d %d %d\n", status.current, status.target, status.remaining_time);
+	} else {
+		err = bt_mesh_lvl_cli_delta_set_unack(&lvl_cli, &ctx, &set);
+	}
+
+	if (err) {
+		printk("err=%d", err);
+	}
+}
+
+void gen_lvl_move_set(int argc, char **argv)
+{
+	struct bt_mesh_lvl_move_set set;
+	struct bt_mesh_lvl_status status;
+	struct bt_mesh_model_transition transition;
+	struct bt_mesh_msg_ctx ctx = {
+		.net_idx = 0x0,
+		.app_idx = 0x0,
+		.send_ttl = 0x2,
+		.addr    = strtoul(argv[1], NULL, 0),
+	};
+	int err;
+	set.delta = strtoul(argv[2], NULL, 0);
+	bool ack = strtoul(argv[3], NULL, 0);
+	if(argc > 3){
+		transition.time =
+			model_transition_decode(strtoul(argv[4], NULL, 0));      
+		transition.delay = model_delay_decode(strtoul(argv[5], NULL, 0));
+		set.transition = &transition;
+	} else {
+		set.transition = NULL;
+	}
+
+	printk("tt=%u delay=%u", transition.time, transition.delay);
+
+	if (ack) {
+		err = bt_mesh_lvl_cli_move_set(&lvl_cli, &ctx, &set, &status);
+		printk("status: %d %d %d\n", status.current, status.target, status.remaining_time);
+
+	} else {
+		err = bt_mesh_lvl_cli_move_set_unack(&lvl_cli, &ctx, &set);
+	}
+
+	if (err) {
+		printk("err=%d", err);
+	}
+}
+
 static const struct mesh_shell_cmd mesh_commands[] = {
 	{ "init", cmd_init, NULL },
 	{ "timeout", cmd_timeout, "[timeout in seconds]" },
@@ -3110,7 +3684,30 @@ static const struct mesh_shell_cmd mesh_commands[] = {
 	{ "wl", cmd_white_list, "cmd_white_list" },
 	{ "conn", cmd_conn, "cmd_conn" },
 #endif
-
+	{ "gen_onoff_get", gen_onoff_get,  "<addr>" },
+	{ "gen_onoff_set", gen_onoff_set,  "<addr> ..." },
+	{ "light_lightness_get", light_lightness_get,  "<addr>" },
+	{ "light_lightness_set", light_lightness_set,  "<addr>" },
+	{ "light_lightness_linear_get", light_lightness_linear_get,  "<addr>" },
+	{ "light_lightness_linear_set", light_lightness_linear_set,  "<addr>" },
+	{ "light_lightness_last_get", light_lightness_last_get,  "<addr>" },
+	{ "light_lightness_default_get", light_lightness_default_get,  "<addr>" },
+	{ "light_lightness_default_set", light_lightness_default_set,  "<addr>" },
+	{ "light_lightness_range_get", light_lightness_range_get,  "<addr>" },
+	{ "light_lightness_range_set", light_lightness_range_set,  "<addr>" },
+	{ "light_ctl_states_get", light_ctl_states_get,  "<addr>" },
+	{ "light_ctl_states_set", light_ctl_states_set,  "<addr>" },
+	{ "light_ctl_temperature_get", light_ctl_temperature_get,  "<addr>" },
+	{ "light_ctl_temperature_set", light_ctl_temperature_set,  "<addr>" },
+	{ "light_ctl_default_get", light_ctl_default_get,  "<addr>" },
+	{ "light_ctl_default_set", light_ctl_default_set,  "<addr>" },
+	{ "light_ctl_temp_range_get", light_ctl_temp_range_get,  "<addr>" },
+	{ "light_ctl_temp_range_set", light_ctl_temp_range_set,  "<addr>" },
+	{ "gen_lvl_get", gen_lvl_get,  "<addr>" },
+	{ "gen_lvl_set", gen_lvl_set,  "<addr>" },
+	{ "gen_lvl_delta_set", gen_lvl_delta_set,  "<addr>" },
+	{ "gen_lvl_move_set", gen_lvl_move_set,  "<addr>" },
+	
 	{ NULL, NULL, NULL}
 };
 

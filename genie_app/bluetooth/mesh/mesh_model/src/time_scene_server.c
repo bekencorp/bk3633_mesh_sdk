@@ -532,7 +532,6 @@ static void scene_recall(struct bt_mesh_model *model,
                          struct bt_mesh_msg_ctx *ctx,
                          struct net_buf_simple *buf)
 {
-#if 1
     struct bt_mesh_scene_srv *srv = model->user_data;
     struct scene_register *scene = NULL;
     uint8_t tid = 0U, trans_time = 0U, delay = 0U;
@@ -543,15 +542,13 @@ static void scene_recall(struct bt_mesh_model *model,
 
     if (srv == NULL || srv->state == NULL) {
         BT_ERR("%s, Invalid model user data", __func__);
-        BT_ERR("++++ return %s ++++\n", __func__);
         return;
     }
 
-    BT_ERR("++++ start %s ++++\n", __func__);
+    BT_ERR("++++ %s ++++\n", __func__);
     scene_number = net_buf_simple_pull_le16(buf);
     if (scene_number == INVALID_SCENE_NUMBER) {
         BT_ERR("Invalid Scene Number 0x0000");
-        BT_ERR("++++ return %s ++++\n", __func__);
         return;
     }
     tid = net_buf_simple_pull_u8(buf);
@@ -573,7 +570,6 @@ static void scene_recall(struct bt_mesh_model *model,
             send_scene_status(model, ctx, false);
         }
         send_scene_status(model, ctx, true);
-        BT_ERR("++++ return %s ++++\n", __func__);
         return;
     }
     srv->state->status_code = SCENE_SUCCESS;
@@ -584,7 +580,6 @@ static void scene_recall(struct bt_mesh_model *model,
             send_scene_status(model, ctx, false);
         }
         send_scene_status(model, ctx, true);
-        BT_ERR("++++ return %s ++++\n", __func__);
         /* In this condition, no event will be callback to application layer */
         return;
     }
@@ -618,7 +613,6 @@ static void scene_recall(struct bt_mesh_model *model,
         };
 
        // bt_mesh_time_scene_server_unlock();
-       BT_ERR("++++ return %s ++++\n", __func__);
         return;
     }
 
@@ -649,8 +643,6 @@ static void scene_recall(struct bt_mesh_model *model,
     // bt_mesh_time_scene_server_unlock();
 
     bt_mesh_server_start_transition(&srv->transition);
-    BT_ERR("++++ end %s ++++\n", __func__);
-#endif
     return;
 }
 
@@ -678,7 +670,7 @@ static void scene_action(struct bt_mesh_model *model,
         model->pub->addr = ctx->addr;
     }
 
-    BT_ERR(" +++ %s, recv_op 0x%x, scene_number %d++++\n", __func__, ctx->recv_op, scene_number);
+    BT_ERR(" +++ %s, recv_op 0x%x ++++\n", __func__, ctx->recv_op);
     switch (ctx->recv_op) {
     case BLE_MESH_MODEL_OP_SCENE_STORE:
     case BLE_MESH_MODEL_OP_SCENE_STORE_UNACK: {

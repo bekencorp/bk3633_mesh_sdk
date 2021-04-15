@@ -29,6 +29,7 @@ void idle_task(void *arg)
 #if (RHINO_CONFIG_CPU_PWR_MGMT > 0)
         cpu_pwr_down();
 #endif
+        hal_wdg_reload(NULL);
     }
 }
 

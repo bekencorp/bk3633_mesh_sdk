@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2018-2020 Alibaba Group Holding Limited
  */
-#include <misc/byteorder.h>
+
 #include "genie_app.h"
 //#include "mesh_hal_ble.h"
 #include "mesh/cfg_srv.h"
@@ -91,7 +91,7 @@ static E_GENIE_EVENT _genie_event_handle_sw_reset(void)
 {
     _genie_reset_prov();
     bt_mesh_adv_stop();
-#if 1
+#if 0
     aos_reboot();
 #endif
     bt_mesh_prov_enable(BT_MESH_PROV_GATT | BT_MESH_PROV_ADV);
@@ -126,10 +126,7 @@ static E_GENIE_EVENT _genie_event_handle_hw_reset_done(void)
     return GENIE_EVT_SDK_MESH_PBADV_START;
 }
 
-#ifdef CONFIG_BT_MESH_JINGXUN
-extern struct k_delayed_work app_timer;
-#endif // CONFIG_BT_MESH_JINGXUN
-
+extern int ota_service_register(void);
 static E_GENIE_EVENT _genie_event_handle_mesh_init(void)
 {
     //check provsioning status
@@ -205,20 +202,17 @@ static E_GENIE_EVENT _genie_event_handle_mesh_init(void)
     if((read_flag & 0x1F) == 0x1D) {            ////(0x1F)
 #endif
         BT_INFO(">>>proved<<<");
-#ifdef CONFIG_BT_MESH_JINGXUN
-		k_delayed_work_submit(&app_timer, 3000);
-#endif // CONFIG_BT_MESH_JINGXUN
 #if CONFIG_MESH_SEQ_COUNT_INT
         seq += CONFIG_MESH_SEQ_COUNT_INT;
 #endif
-#if (defined CONFIG_BT_MESH_TELINK) || (defined CONFIG_BT_MESH_JINGXUN)
-        bt_mesh_proved_reset_flag_set(1);
-#endif /* CONFIG_BT_MESH_TELINK||CONFIG_BT_MESH_JINGXUN */
         bt_mesh_provision(netkey.key, netkey.net_index, netkey.flag, netkey.ivi, seq, addr, devkey);
         extern void genie_appkey_register(u16_t net_idx, u16_t app_idx, const u8_t val[16], bool update);
         genie_appkey_register(appkey.net_index, appkey.key_index, appkey.key, appkey.flag);
 
 #ifdef CONFIG_GENIE_OTA
+        ais_service_register();
+#endif
+#ifdef CONFIG_BEKEN_OTA
         ota_service_register();
 #endif
         /* check hb */
@@ -247,6 +241,9 @@ static E_GENIE_EVENT _genie_event_handle_mesh_init(void)
             return GENIE_EVT_HW_RESET_START;
         }
 #ifdef CONFIG_GENIE_OTA
+        ais_service_register();
+#endif
+#ifdef CONFIG_BEKEN_OTA
         ota_service_register();
 #endif
         bt_mesh_prov_enable(BT_MESH_PROV_GATT | BT_MESH_PROV_ADV);
@@ -373,9 +370,6 @@ static E_GENIE_EVENT _genie_event_handle_appkey_add(uint8_t *p_status)
 
 static E_GENIE_EVENT _genie_event_handle_sub_add(void)
 {
-    for (int i = 0; i < sizeof(g_sub_list) / sizeof(g_sub_list[0]); i++) {
-        BT_ERR("g_sub_list[%d]: 0x%x\n", i, g_sub_list[i]);
-    }
     genie_flash_write_sub(g_sub_list);
     return GENIE_EVT_SDK_SUB_ADD;
 }
@@ -703,7 +697,7 @@ void genie_event(E_GENIE_EVENT event, void *p_arg)
                     break;
                 }
             }
-        } 
+        }
             break;
         case GENIE_EVT_SDK_SUB_DEL: {
             int i;

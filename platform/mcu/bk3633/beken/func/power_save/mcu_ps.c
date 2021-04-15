@@ -3,7 +3,6 @@
 //#include "rw_pub.h"
 #include "rtos_pub.h"
 #include "arm_arch.h"
-#include "sys_ctrl_pub.h"
 #include "mcu_ps.h"
 #include "mcu_ps_pub.h"
 //#include "power_save_pub.h"

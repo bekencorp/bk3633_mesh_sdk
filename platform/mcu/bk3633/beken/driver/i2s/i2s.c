@@ -72,9 +72,9 @@ static void i2s_active(int enable)
    
    param = IRQ_I2S_PCM_BIT;
    if(enable)
-   		sddev_control(ICU_DEV_NAME, CMD_ICU_INT_ENABLE, &param);
+   		intc_enable(param);
    else
-    	sddev_control(ICU_DEV_NAME, CMD_ICU_INT_DISABLE, &param);
+    	intc_disable(param);
   	
 }
 
@@ -163,7 +163,7 @@ UINT8 is_i2s_active(void)
 
 static UINT32 i2s_ctrl(UINT32 cmd, void *param)
 {
-    UINT8 ret = I2S_SUCCESS;
+    UINT8 ret = DRIV_SUCCESS;
 
     switch(cmd)
     {
@@ -186,7 +186,7 @@ static UINT32 i2s_ctrl(UINT32 cmd, void *param)
         i2s_set_level((i2s_level_t *)param);
         break;
     default:
-        ret = I2S_FAILURE;
+        ret = DRIV_FAIL;
         break;
     }
     return ret;

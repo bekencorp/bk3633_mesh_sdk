@@ -48,6 +48,7 @@
 #include "reg_blecore.h"      // BLE Core registers
 #include "user_config.h"
 #include "debug_uart.h"
+#include "reg_ipcore.h"
 
 /*
  * DEFINES
@@ -62,7 +63,8 @@
 /// Environment structure for RW BLE interrupt handler
 struct rwble_env_tag
 {
-    uint32_t irq_mask;
+    uint32_t irq_mask0;
+    uint32_t irq_mask1;
 };
 
 /*
@@ -71,7 +73,7 @@ struct rwble_env_tag
  */
 
 /// Environment of the RW BLE interrupt handler
-//static struct rwble_env_tag rwble_env;
+static struct rwble_env_tag rwble_env;
 
 /*
  * GLOBAL VARIABLES
@@ -174,24 +176,31 @@ __BLEIRQ void rwble_isr(void)
 
     DBG_SWDIAG(ISR, BLE, 0);
 }
-#if 0
+
 void rwble_sleep_enter(void)
 {
     // Keep currently enabled interrupts
-    rwble_env.irq_mask = ble_intcntl0_get();
-
+    rwble_env.irq_mask1 = ip_intcntl1_get();
+    rwble_env.irq_mask0 = ble_intcntl0_get();  
+    
     // Mask all interrupts
     ble_intcntl0_set(0);
     // Clear possible pending IRQs
     ble_intack0_clear(0xFFFFFFFF);
-}
 
+    // Mask all interrupts except sleep IRQ
+    ip_intcntl1_set(IP_SLPINTMSK_BIT);
+    // Clear possible pending IRQs
+    ip_intack1_clear(0xFFFFFFFF);
+}
 
 void rwble_sleep_wakeup_end(void)
 {
     // Restore enabled interrupts
-    ble_intcntl0_set(rwble_env.irq_mask);
+    ble_intcntl0_set(rwble_env.irq_mask0 | ble_intcntl0_get());
+
+    ip_intcntl1_set( (rwble_env.irq_mask1 | ip_intcntl1_get()) );
 }
-#endif
+
 #endif //(BT_DUAL_MODE || BLE_STD_MODE) 
 ///@} RWBTINT

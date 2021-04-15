@@ -16,7 +16,7 @@
 
 #include <bluetooth.h>
 #include <api/mesh.h>
-#include "ais_ota.h"
+// #include "ais_ota.h"
 
 #if 1
 #define CID_INTEL            0x0002
@@ -232,7 +232,6 @@ static const struct bt_mesh_prov prov = {
     .complete = prov_complete,
 };
 
-// bool bt_ready_count = false;
 static void bt_ready(int err)
 {
     int ret;
@@ -251,7 +250,7 @@ static void bt_ready(int err)
     }
 
     bt_mesh_prov_enable(BT_MESH_PROV_GATT | BT_MESH_PROV_ADV);
-    // bt_ready_count = true;
+
     printk("Mesh initialized\n");
 }
 

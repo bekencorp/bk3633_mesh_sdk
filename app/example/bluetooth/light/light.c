@@ -4,24 +4,8 @@
  * Copyright (C) 2015-2018 Alibaba Group Holding Limited
  */
 
-#include <aos/aos.h>
-#include <aos/kernel.h>
-
-#include <misc/byteorder.h>
-#include <hal/soc/gpio.h>
-#include <hal/soc/pwm.h>
-#include "inc/time_scene_server.h"
-#ifdef BOARD_BK3633DEVKIT
-#include "gpio_pub.h"
-#endif
-
 #include "light_board.h"
-#include "uart_test_cmd.h"
 
-#ifdef CONFIG_BT_MESH_JINGXUN
-u8  app_time_flag;
-struct k_delayed_work app_timer;
-#endif CONFIG_BT_MESH_JINGXUN
 
 led_flash_t g_flash_para;
 
@@ -44,21 +28,21 @@ struct bt_mesh_time_setup_srv time_setup_srv_0 = {
 };
 
 struct scene_register scene_reg[5] = {
-    [0] = {.scene_number = 0x0000,
-           .scene_value = NET_BUF_SIMPLE(2 + 30),
-          },
-    [1] = {.scene_number = 0x0000,
-           .scene_value = NET_BUF_SIMPLE(2 + 30),
-          },
-    [2] = {.scene_number = 0x0000,
-           .scene_value = NET_BUF_SIMPLE(2 + 30),
-          },
-    [3] = {.scene_number = 0x0000,
-           .scene_value = NET_BUF_SIMPLE(2 + 30),
-          },
-    [4] = {.scene_number = 0x0000,
-           .scene_value = NET_BUF_SIMPLE(2 + 30),
-          },
+//    [0] = {.scene_number = 1,
+//           .scene_value = NET_BUF_SIMPLE(2 + 10),
+//          },
+//    [1] = {.scene_number = 2,
+//           .scene_value = NET_BUF_SIMPLE(2 + 10),
+//          },
+//    [2] = {.scene_number = 3,
+//           .scene_value = NET_BUF_SIMPLE(2 + 10),
+//          },
+//    [3] = {.scene_number = 4,
+//           .scene_value = NET_BUF_SIMPLE(2 + 10),
+//          },
+//    [4] = {.scene_number = 5,
+//           .scene_value = NET_BUF_SIMPLE(2 + 10),
+//          },
 };
 
 struct bt_mesh_scenes_state scenes_srv_state_0 = {
@@ -191,7 +175,7 @@ static void light_state_store(struct k_work *work)
 
     aos_free(p_read);
 
-#if CONFIG_GENIE_OTA
+#if CONFIG_BEKEN_OTA
     if (g_powerup[0].last_onoff == 0 && ota_update_complete_get() == 1) {
         //Means have ota, wait for reboot while light off
         aos_reboot();
@@ -211,22 +195,6 @@ void mesh_sub_init(u16_t *p_sub)
     p_sub[0] = DEFAULT_MESH_GROUP1;
     p_sub[1] = DEFAULT_MESH_GROUP2;
 }
-
-#ifdef CONFIG_GENIE_OTA
-bool ota_check_reboot(void)
-{
-    // the device will reboot when it is off
-    if (g_elem_state[0].state.onoff[T_CUR] == 0) {
-        // save light para, always off
-        g_powerup[0].last_onoff = 0;
-        genie_flash_write_userdata(GFI_MESH_POWERUP, (uint8_t *)g_powerup, sizeof(g_powerup));
-        LIGHT_DBG("Allow to reboot!");
-        return true;
-    }
-    LIGHT_DBG("no reboot!");
-    return false;
-}
-#endif
 
 void _init_light_para(void)
 {
@@ -621,26 +589,6 @@ void user_event(E_GENIE_EVENT event, void *p_arg)
     }
 }
 
-#ifdef CONFIG_BT_MESH_JINGXUN
-u8 JX_model_flag =0;
-void vendor_C7_ack(u8_t tid);
-
-static void app_timer_cb(void *p_timer, void *args)
-{
-	static uint16_t times = 0;
-
-	times++;
-	JX_model_flag =1;
-
-    app_time_flag = 0;
-//	k_delayed_work_submit(&app_timer, 1000);
-	vendor_C7_ack(times);
-
-    //BT_DBG(" ++++++++++++++++++++++ %s, times %d flag = %d ++++++++++++++++\r\n", 
-     //        __func__,times, app_time_flag);
-}
-#endif //CONFIG_BT_MESH_JINGXUN
-
 int application_start(int argc, char **argv)
 {
     /* genie initilize */
@@ -648,14 +596,10 @@ int application_start(int argc, char **argv)
 
     led_startup();
 
-#if CONFIG_UART_TEST_CMD
-    uart_test_init();
-#endif
+    common_module_init();
 
     BT_INFO("BUILD_TIME:%s", __DATE__","__TIME__);
-#ifdef CONFIG_BT_MESH_JINGXUN
-	k_delayed_work_init(&app_timer, app_timer_cb);
-#endif //CONFIG_BT_MESH_JINGXUN
+
     //aos_loop_run();
 
     return 0;

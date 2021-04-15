@@ -85,9 +85,13 @@ void fclk_reset_count(void)
     current_seconds = 0;
 }
 
-UINT32 fclk_cal_endvalue(UINT32 mode)
+
+void fclk_disable(UINT8 pwm_id)
 {
-    return fclk_second / ticks_per_second;
+    pwm_param_t pwm_drv_desc;
+    memset(&pwm_drv_desc, 0, sizeof(pwm_param_t));
+    pwm_drv_desc.channel         = pwm_id;
+    sddev_control(PWM_DEV_NAME, CMD_PWM_DEINIT_PARAM, &pwm_drv_desc);
 }
 
 void fclk_init(UINT8 pwm_id, UINT16 ticks_per_sec)
@@ -103,19 +107,8 @@ void fclk_init(UINT8 pwm_id, UINT16 ticks_per_sec)
     pwm_drv_desc.p_Int_Handler   = fclk_hdl;
 
     ///select base clock
-/*     if(ticks_per_second >= 250)
-    {
-    	fclk_second = 16000000ul;
-    	pwm_drv_desc.cfg.bits.clk = PWM_CLK_16M;
-    	pwm_drv_desc.end_value    = fclk_second / ticks_per_second;
-    }
-    else
-    {
-    	fclk_second = 32000ul;
-    	pwm_drv_desc.cfg.bits.clk = PWM_CLK_32K;
-    	pwm_drv_desc.end_value    = fclk_second / ticks_per_second;
-    } */
-    fclk_second = 16000000ul;
+
+    fclk_second = 16000000ul/ticks_per_second;
     pwm_drv_desc.cfg.bits.clk = PWM_CLK_16M;
     pwm_drv_desc.end_value = 160000;
     pwm_drv_desc.contiu_mode = 0;
@@ -123,10 +116,10 @@ void fclk_init(UINT8 pwm_id, UINT16 ticks_per_sec)
     pwm_drv_desc.pre_divid = 0;
 
     pwm_drv_desc.duty_cycle = pwm_drv_desc.end_value/2;
-    second_countdown = fclk_second / ticks_per_second;
+    second_countdown = fclk_second;
 
     os_printf("setting PWM%d timer for OS, base clock:%dKMz, %d ticks/s\r\n",
-    		   pwm_id, fclk_second/1000, ticks_per_sec);
+    		   pwm_id, fclk_second/10000, ticks_per_sec);
 
     sddev_control(PWM_DEV_NAME, CMD_PWM_INIT_PARAM, &pwm_drv_desc);
 }

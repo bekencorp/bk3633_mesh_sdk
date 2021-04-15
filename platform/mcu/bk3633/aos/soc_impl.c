@@ -4,6 +4,7 @@
 
 #include <k_api.h>
 #include <assert.h>
+#include "idle_mode.h"
 
 #if (RHINO_CONFIG_HW_COUNT > 0)
 void soc_hw_timer_init(void)
@@ -110,6 +111,7 @@ void krhino_idle_hook(void)
 	UINT32 mcu_ps_tick = 24;
 	UINT32 mcu_miss_tick = 0;
 
+    idle_mode();
 #if (NX_POWERSAVE)
     GLOBAL_INT_DECLARATION();
     CPSR_ALLOC();
@@ -204,7 +206,7 @@ void soc_err_proc(kstat_t err)
 {
     (void)err;
     ktask_t *task = krhino_cur_task_get();
-    printf("\r\ntask : %s, prio : 0x%x, panic %d!\r\n", task->task_name, task->prio, err);
+    printf("\r\ntask : %s, state: %d, prio : 0x%x, panic %d!\r\n", task->task_name, task->task_state, task->prio, err);
     krhino_overview();
 #if (RHINO_CONFIG_MM_DEBUG > 0)
     dumpsys_mm_info_func(0);

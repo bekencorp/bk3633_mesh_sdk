@@ -76,14 +76,14 @@ static void discard_buffer(void)
 	for (i = 1; i < ARRAY_SIZE(bt_mesh.frnd); i++) {
 		if (bt_mesh.frnd[i].queue_size > frnd->queue_size) {
 			frnd = &bt_mesh.frnd[i];
-		}
+        }
 	}
 
 	buf = net_buf_slist_get(&frnd->queue);
 	__ASSERT_NO_MSG(buf != NULL);
 	BT_WARN("Discarding buffer %p for LPN 0x%04x", buf, frnd->lpn);
 	net_buf_unref(buf);
-	/* should reduce queue size when discard buffer*/
+	/* should reduce queue size when discard buffer */
 	frnd->queue_size--;
 }
 

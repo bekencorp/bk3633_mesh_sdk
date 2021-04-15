@@ -145,7 +145,7 @@ void ke_event_flush(void);
  */
 void ke_event_schedule(void);
 
-
+void ke_event_run(void);
 
 /// @} EVT
 

@@ -254,6 +254,29 @@ void k_timer_stop(k_timer_t *timer)
     timer->timeout = 0;
 }
 
+void k_round_timer_start(k_timer_t *timer, uint32_t timeout)
+{
+    int ret;
+    ASSERT(timer, "round timer is NULL");
+    BT_DBG("round timer %p,round timeout %u", timer, timeout);
+
+    k_timer_stop(&timer->timer);
+
+    timer->timeout  = timeout;
+    timer->start_ms = (uint32_t)aos_now_ms();
+
+    ret = krhino_timer_change(&timer->timer, krhino_ms_to_ticks(timeout),
+                              krhino_ms_to_ticks(timeout));
+    if (ret) {
+        BT_DBG("fail to change round timeout");
+    }
+
+    ret = krhino_timer_start(&timer->timer);
+    if (ret) {
+        BT_DBG("fail to start round timer");
+    }
+}
+
 bool k_timer_is_started(k_timer_t *timer)
 {
     ASSERT(timer, "timer is NULL");

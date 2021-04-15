@@ -147,7 +147,7 @@
 #endif // (BLE_EMB_PRESENT || BT_EMB_PRESENT)
 
 __attribute__((section("STACK_FUNC")))
-const struct rwip_func_tag rwip_func = {rwip_isr, rwip_init, rwip_schedule, rwip_set_bd_address};
+const struct rwip_func_tag rwip_func = {rwip_isr, rwip_init, rwip_schedule, rwip_set_bd_address, rwip_sleep, rwip_sleep_flag};
 
 #if (DISPLAY_SUPPORT)
 ///Table of HW image names for display
@@ -909,7 +909,7 @@ void rwip_schedule(void)
 {
     #if (BLE_EMB_PRESENT || BT_EMB_PRESENT)
     // If system is waking up, delay the handling up to the Bluetooth clock is available and corrected
-    if ((rwip_env.prevent_sleep & RW_WAKE_UP_ONGOING) == 0)
+    if ((rwip_env.prevent_sleep & (RW_WAKE_UP_ONGOING | RW_BLE_ACTIVE_MODE)) == 0)
     #endif // (BLE_EMB_PRESENT || BT_EMB_PRESENT)
     {
         // schedule all pending events
@@ -991,7 +991,7 @@ void rwip_isr(void)
     // Check interrupt status and call the appropriate handlers
     uint32_t irq_stat      = ip_intstat1_get();
 
-    //UART_PRINTF("%s, irq_stat(0x%x) \r\n\r\n", __func__, irq_stat );
+    //rom_env.os_print("%s, irq_stat(0x%x) \r\n\r\n", __func__, irq_stat );
     // General purpose timer interrupt - half slot accuracy
     if (irq_stat & IP_FINETGTINTSTAT_BIT)
     {
@@ -1017,7 +1017,7 @@ void rwip_isr(void)
 
         DBG_SWDIAG(IP_ISR, TIMESTAMPINT, 0);
     }
-#if 0
+#if 1
     // Clock
     if (irq_stat & IP_CLKNINTSTAT_BIT) // clock interrupt
     {
@@ -1065,7 +1065,7 @@ void rwip_isr(void)
 
         // Handle wake-up
         rwip_wakeup();
-        rwip_prevent_sleep_clear(RW_BLE_ACTIVE_MODE);
+        rwip_prevent_sleep_clear(RW_BLE_ACTIVE_MODE);   //RW_BLE_SLEEP_ONGOING
         DBG_SWDIAG(IP_ISR, SLPINT, 0);
     }
 
@@ -1113,13 +1113,11 @@ void rwip_isr(void)
     DBG_SWDIAG(ISR, RWIP, 0);
 }
 
-#if 0
-uint8_t rwip_sleep(void)
+uint8_t rwip_sleep(int32_t * dur, int32_t max_slots)
 {
     uint8_t sleep_res = RWIP_ACTIVE;
     #if (BLE_EMB_PRESENT || BT_EMB_PRESENT)
-    int32_t sleep_duration;
-//    int32_t sleep_duration1;
+    int32_t sleep_duration = 0;
     rwip_time_t current_time;
     #endif // (BLE_EMB_PRESENT || BT_EMB_PRESENT)
 
@@ -1134,8 +1132,11 @@ uint8_t rwip_sleep(void)
          ************************************************************************/
         // Check if some kernel processing is ongoing (during wakeup, kernel events are not processed)
         if (((rwip_env.prevent_sleep & RW_WAKE_UP_ONGOING) == 0) && !ke_sleep_check())
+        {
+            *dur = 0;
             break;
-      //  uart_printf("%x:%x\r\n",rwip_env.prevent_sleep,ke_sleep_check());
+        }
+
         // Processor sleep can be enabled
         sleep_res = RWIP_CPU_SLEEP;
 
@@ -1146,7 +1147,10 @@ uint8_t rwip_sleep(void)
          ************************************************************************/
         // First check if no pending procedure prevent from going to sleep
         if (rwip_env.prevent_sleep != 0)
+        {
+            *dur = 0;
             break;
+        }
 
         #if (BLE_EMB_PRESENT || BT_EMB_PRESENT)
         DBG_SWDIAG(SLEEP, ALGO, 2);
@@ -1201,6 +1205,7 @@ uint8_t rwip_sleep(void)
         // at least one half slot.
         if(sleep_duration <= RWIP_MINIMUM_SLEEP_TIME)
         {
+            *dur = 0;
             break;
         }
 
@@ -1209,15 +1214,26 @@ uint8_t rwip_sleep(void)
         /************************************************************************
          **************           CHECK SLEEP TIME                 **************
          ************************************************************************/
-//        sleep_duration1 = sleep_duration;
         sleep_duration -= RWIP_MINIMUM_SLEEP_TIME;
+
+        sleep_duration = co_min_s(sleep_duration, max_slots*2);
+
+        if(sleep_duration && sleep_duration*0.625/2 < 10)
+        {
+            //Incase sleep time less than 1 system tick 10ms
+            *dur = 0;
+            break;
+        }
+
+        *dur = sleep_duration;
         sleep_duration = rwip_slot_2_lpcycles(sleep_duration);
 
         // check if sleep duration is sufficient according to wake-up delay
         // HW issue, if sleep duration = max(twosc,twext) + 1 the HW never wakes up, so we have to ensure that at least
         // sleep duration > max(twosc,twext) + 1 (all in lp clk cycle)
-        if(sleep_duration < rwip_env.lp_cycle_wakeup_delay * 2)
+        if(sleep_duration && (sleep_duration < rwip_env.lp_cycle_wakeup_delay * 2))
         {
+            *dur = 0;
             break;
         }
 
@@ -1253,21 +1269,18 @@ uint8_t rwip_sleep(void)
         rwble_sleep_enter();
         #endif // (BLE_EMB_PRESENT)
 
+        // sleep_duration = 0;
+
         // Program wake-up time
         ip_deepslwkup_set(sleep_duration);
 
-        // Mask all interrupts except sleep IRQ
-        ip_intcntl1_set(IP_SLPINTMSK_BIT);
 
-        // Clear possible pending IRQs
-        ip_intack1_clear(0xFFFFFFFF);
-      //  uart_printf("sleep:%d:%d\r\n",sleep_duration1,current_time.hs);
-
-
-        if(!rwip_env.ext_wakeup_enable)
+/*         if(!rwip_env.ext_wakeup_enable)
         {
             ip_deepslcntl_extwkupdsb_setf(1);
-        }
+        } */
+
+        ip_deepslcntl_extwkupdsb_setf(0);
 
 
         DBG_SWDIAG(SLEEP, SLEEP, 1);
@@ -1276,8 +1289,8 @@ uint8_t rwip_sleep(void)
          **************               SWITCH OFF RF                **************
          ************************************************************************/
         rwip_rf.sleep();
-        
-        rwip_prevent_sleep_set(RW_BLE_ACTIVE_MODE) ;
+
+        rwip_prevent_sleep_set(RW_BLE_ACTIVE_MODE) ;    //RW_BLE_SLEEP_ONGOING
         #endif // (BLE_EMB_PRESENT || BT_EMB_PRESENT)
 
     } while(0);
@@ -1288,7 +1301,6 @@ uint8_t rwip_sleep(void)
     }
     return sleep_res;
 }
-#endif
 
 void rwip_set_bd_address(struct bd_addr *bd_addr)
 {

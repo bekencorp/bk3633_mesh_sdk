@@ -9,7 +9,7 @@ platform_static_partition_s bk3633_static_partition[] =
 {
     {STATIC_SECTION_OTA, 0xFC, 0},
     {STATIC_SECTION_MAC, 0x100, 0xFC},
-
+    {STATIC_SECTION_TRITUPLE, 0x100, 0x1FC},
 };
 
 static int static_partition_get_section(static_section_t in_section, uint32_t* offset, uint32_t* size)

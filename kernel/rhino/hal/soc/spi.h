@@ -5,12 +5,16 @@
 #ifndef HAL_SPI_H
 #define HAL_SPI_H
 
-#define HAL_SPI_MODE_MASTER 1  /* spi communication is master mode */
-#define HAL_SPI_MODE_SLAVE  2  /* spi communication is slave mode */
+#include "spi_pub.h"
+#include "icu_pub.h"
 
 typedef struct {
-    uint32_t mode;        /* spi communication mode */
-    uint32_t freq;        /* communication frequency Hz */
+    spi_msten mode;        /* spi communication mode */
+    spi_ckpha ckpha;
+    spi_ckpol ckpol;
+    spi_charformat charformat;
+    uint8_t clk_sel;
+    uint8_t freq_div;
 } spi_config_t;
 
 typedef struct {
@@ -18,6 +22,8 @@ typedef struct {
     spi_config_t config;  /* spi config */
     void        *priv;    /* priv data */
 } spi_dev_t;
+
+int8_t hal_spi_register(spi_port port, uint8_t* txbuf, uint8_t* rxbuf);
 
 /**
  * Initialises the SPI interface for a given SPI device
@@ -78,6 +84,8 @@ int32_t hal_spi_send_recv(spi_dev_t *spi, uint8_t *tx_data, uint8_t *rx_data,
  * @return  0 : on success, EIO : if an error occurred
  */
 int32_t hal_spi_finalize(spi_dev_t *spi);
+
+int8_t hal_spi_trans_complete(void);
 
 #endif /* HAL_SPI_H */
 

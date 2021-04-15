@@ -146,7 +146,7 @@ static inline void adv_send(struct net_buf *buf)
     }
 
     BT_DBG("Advertising started. Sleeping %u ms", duration);
-    
+
     k_sleep(duration);
 
 exit:
@@ -312,9 +312,15 @@ static void adv_thread(void *p1, void *p2, void *p3)
                         break;
                     } else {
                         k_sleep(1);
+#ifdef CONFIG_BT_MESH_CUSTOM_ADV
+                        //break;
+#endif
                     }
                 }
                 bt_mesh_proxy_adv_stop();
+#ifdef CONFIG_BT_MESH_CUSTOM_ADV
+                bt_mesh_custom_adv_send();
+#endif
             }
         } else {
             buf = net_buf_get(&adv_queue, K_FOREVER);
@@ -370,7 +376,7 @@ struct net_buf *bt_mesh_adv_create_from_pool(struct net_buf_pool *pool,
     BT_MESH_ADV(buf) = adv;
 
     memset(adv, 0, sizeof(*adv));
-
+ 
     adv->type         = type;
     adv->count        = xmit_count;
     adv->adv_int      = xmit_int;
@@ -412,7 +418,7 @@ void bt_mesh_adv_send(struct net_buf *buf, const struct bt_mesh_send_cb *cb,
 
 const bt_addr_le_t *bt_mesh_pba_get_addr(void)
 {
-	return dev_addr;
+    return dev_addr;
 }
 
 static void bt_mesh_scan_cb(const bt_mesh_addr_le_t *addr, s8_t rssi,
@@ -428,7 +434,7 @@ static void bt_mesh_scan_cb(const bt_mesh_addr_le_t *addr, s8_t rssi,
 
     //BT_DBG("len %u: %s", buf->len, bt_hex(buf->data, buf->len));
 
-	dev_addr = (bt_addr_le_t *)addr;
+    dev_addr = (bt_addr_le_t *)addr;
 
     while (buf->len > 1) {
         struct net_buf_simple_state state;
@@ -509,7 +515,7 @@ static void bt_mesh_scan_cb(const bt_mesh_addr_le_t *addr, s8_t rssi,
                 default:
                     break;
             }
-    	}
+        }
 
         net_buf_simple_restore(buf, &state);
         net_buf_simple_pull(buf, len);

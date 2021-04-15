@@ -23,6 +23,7 @@ typedef enum {
     UART_CMD_NONE                       = 0x8A00,
     UART_CMD_ERASE_REBOOT               = 0x8A01,
     UART_CMD_REBOOT                     = 0x8a02,
+    UART_CMD_LNP_SET                    = 0x8a03,
 } uart_cmd_opcode_e;
 
 struct uart_command {
@@ -43,4 +44,5 @@ int uart_test_init(void);
 
 void erase_reboot_uart_cmd_handler(char *para);
 void reboot_uart_cmd_handler(char *para);
+void lpn_set_uart_cmd_handler(char *para);
 #endif  //__UART_TEST_CMD_H

@@ -74,7 +74,7 @@ static struct bt_gatt_service gap_svc = BT_GATT_SERVICE(gap_attrs);
 
 static struct bt_gatt_ccc_cfg sc_ccc_cfg[BT_GATT_CCC_MAX] = {};
 
-static void sc_ccc_cfg_changed(const struct bt_gatt_attr *attr, struct bt_conn *conn, 
+static void sc_ccc_cfg_changed(const struct bt_gatt_attr *attr, struct bt_conn *conn,
 			       u16_t value)
 {
 	BT_DBG("value 0x%04x", value);
@@ -804,6 +804,8 @@ int bt_gatt_notify(struct bt_conn *conn, const struct bt_gatt_attr *attr,
 	nfy.type = BT_GATT_CCC_NOTIFY;
 	nfy.data = data;
 	nfy.len = len;
+
+	printf("\r\n %s %d len:%d data:%s", __func__, __LINE__, len, data);
 
 	bt_gatt_foreach_attr(attr->handle, 0xffff, notify_cb, &nfy);
 

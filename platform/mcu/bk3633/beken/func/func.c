@@ -1,23 +1,11 @@
-#include "include.h"
 #include "func_pub.h"
-#include "intc.h"
-//#include "rwnx.h"
+//#include "intc.h"
 #include "uart_pub.h"
-//#include "lwip_intf.h"
-//#include "param_config.h"
-#include "saradc_pub.h"
 #include "RomCallFlash.h"
 #include "app.h"
 #include "gpio.h"
 #include "rf.h"
 #include "k_mm.h"
-#if CFG_ROLE_LAUNCH
-#include "role_launch.h"
-#endif
-
-#if CFG_SUPPORT_CALIBRATION
-//#include "bk7011_cal_pub.h"
-#endif
 
 #if CFG_UART_DEBUG
 #include "uart_debug_pub.h"

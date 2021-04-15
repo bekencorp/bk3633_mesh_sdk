@@ -1,8 +1,9 @@
 NAME := light
 
-$(NAME)_COMPONENTS  += genie_app bluetooth.bt_host bluetooth.bt_mesh yloop cli
+$(NAME)_COMPONENTS  += genie_app bluetooth.bt_host bluetooth.bt_mesh yloop cli app.common
 
 $(NAME)_INCLUDES += ../ \
+					../../../common \
 					../../../../genie_app \
 					../../../../genie_app/base \
 					../../../../genie_app/bluetooth/host \
@@ -11,8 +12,7 @@ $(NAME)_INCLUDES += ../ \
 
 $(NAME)_SOURCES  := light.c	\
 					light_board.c \
-					uart_cmd_handler.c
-
+					uart_cmd_handler.c \
 #ble = 1
 #bt_mesh = 1
 en_bt_smp = 0
@@ -40,6 +40,7 @@ GLOBAL_DEFINES += CONFIG_BT_MESH_RELAY
 GLOBAL_DEFINES += CONFIG_BT_MESH_ALI_TMALL_GENIE
 #GLOBAL_DEFINES += CONFIG_BT_MESH_TELINK
 #GLOBAL_DEFINES += CONFIG_BT_MESH_JINGXUN
+GLOBAL_DEFINES += CONFIG_BT_MESH_CUSTOM_ADV
 
 # Mesh foundation model select
 GLOBAL_DEFINES += CONFIG_BT_MESH_CFG_SRV
@@ -61,10 +62,10 @@ MESH_MODEL_GEN_ONOFF_SRV = 1
 MESH_MODEL_LIGHTNESS_SRV = 1
 MESH_MODEL_GEN_ONPOWERUP_SRV = 1
 MESH_MODEL_CTL_SRV = 1
-MESH_MODEL_VENDOR_SRV = 1
+#MESH_MODEL_VENDOR_SRV = 1
 MESH_MODEL_HSL_SRV = 1
-BLE_MESH_TIME_SCENE_SERVER = 1
-GLOBAL_DEFINES += CONFIG_BT_DEVICE_NAME=\"Mesh_JX_light\"
+#BLE_MESH_TIME_SCENE_SERVER = 1
+GLOBAL_DEFINES += CONFIG_BT_DEVICE_NAME=\"TUYA_light\"
 
 GLOBAL_DEFINES += PROJECT_SW_VERSION=0x00010104
 #GLOBAL_DEFINES += PROJECT_SECRET_KEY=\"00112233445566770011223344556677\"
@@ -74,7 +75,7 @@ GLOBAL_DEFINES += PROJECT_SW_VERSION=0x00010104
 #GLOBAL_DEFINES += CONIFG_OLD_FLASH_PARA
 #GLOBAL_DEFINES += GENIE_ULTRA_PROV
 
-genie_ota = 1
+beken_ota = 1
 #genie_vendor_timer = 1
 
 #GLOBAL_DEFINES += CONFIG_BT_MESH_DEBUG_LIGHT
@@ -82,7 +83,10 @@ genie_ota = 1
 #GLOBAL_DEFINES += CONFIG_BT_MESH_DEBUG_EVENT
 #GLOBAL_DEFINES += CONFIG_BT_MESH_DEBUG_OTA
 
-uart_test_cmd = 1
+#uart_test_cmd = 1
+button = 1
+hw_timer = 1
+spi_driver = 0
 
 ifeq ($(uart_test_cmd),1)
 GLOBAL_DEFINES += CONFIG_UART_TEST_CMD

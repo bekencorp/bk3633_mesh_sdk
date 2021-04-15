@@ -288,10 +288,10 @@ void ble_handler(void *arg)
     UART_PRINTF("Initialize RW SW stack\r\n");
     // Initialize RW SW stack
     rwip_func.rwip_init(0);
-
     // Set the CPU default clock to 80M Hz.
-    UINT32 param = ICU_MCU_CLK_SEL_80M;
-    sddev_control(ICU_DEV_NAME, CMD_ICU_MCU_CLK_SEL, &param);
+    // UINT32 param = ICU_MCU_CLK_SEL_80M; //ICU_MCU_CLK_SEL_16M;
+    // sddev_control(ICU_DEV_NAME, CMD_ICU_MCU_CLK_SEL, &param);
+    // core_peri_clk_freq_set(4, 4);   //3, 1
     //flash_init();
 
     if(hdr_arg->public_addr)
@@ -319,21 +319,25 @@ void ble_handler(void *arg)
      ***************************************************************************
      */
 	UART_PRINTF("ble driver start!\r\n");
-	
+
     krhino_add_mm_region(g_kmm_head, 
                         (void *)(REG_EM_ET_BASE_ADDR + EM_BLE_END + 1), (size_t)(EM_BT_SIZE -  EM_BLE_END - 4));
 
 	if(hdr_arg->ready_sem)	krhino_sem_give(hdr_arg->ready_sem);
 	krhino_sem_give(&ke_event_sem);
-    while(1) 
+
+    // gpio_triger(0x30);
+    // sleep_mode_enable(1);
+    // k_sleep(1);
+    while(1)
     {
     	cont_loop_cnt++;
 		if(!krhino_sem_take(&ke_event_sem, -1)) {
 			cont_loop_cnt = 0;
 		}
 
-    	//schedule all pending events
-		rwip_func.rwip_schedule();
+        //schedule all pending events
+        rwip_func.rwip_schedule();
     }
 }
 

@@ -3,7 +3,6 @@
 
 #include "dd_pub.h"
 
-#include "sys_ctrl_pub.h"
 #include "uart_pub.h"
 #include "gpio_pub.h"
 #include "icu_pub.h"
@@ -12,22 +11,10 @@
 #include "flash_pub.h"
 #include "spi_pub.h"
 #include "i2s_pub.h"
-#include "saradc_pub.h"
-
-#if CFG_USE_AUDIO
-#include "audio_pub.h"
-#endif
-
-#if CFG_GENERAL_DMA
-#include "general_dma_pub.h"
-#endif
+#include "timer_pub.h"
 
 #if CFG_USE_STA_PS
 #include "power_save_pub.h"
-#endif
-
-#ifdef CFG_SUPPORT_BLE
-#include "ble_pub.h"
 #endif
 
 
@@ -49,7 +36,13 @@ static DD_INIT_S dd_init_tbl[] =
     
     {PWM_DEV_NAME,          pwm_init,                   pwm_exit},
 
-    // {SPI_DEV_NAME,          spi_init,                   spi_exit},
+#ifdef __HW_TIMER_DRIVER__
+	{TIMER_DEV_NAME,        timer_init,                 timer_exit},
+#endif
+
+#ifdef __SPI_DRIVER__
+    {SPI_DEV_NAME,          spi_init,                   spi_exit},
+#endif
 
     //{I2S_DEV_NAME,          i2s_init,                   i2s_exit},
 

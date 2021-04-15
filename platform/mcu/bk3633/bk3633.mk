@@ -92,6 +92,16 @@ $(NAME)_SOURCES  +=  hal/pwm.c
 $(NAME)_SOURCES  +=  hal/beken_rhino.c
 $(NAME)_SOURCES  +=  port/static_partition.c
 
+ifeq ($(hw_timer),1)
+$(NAME)_SOURCES	 +=  hal/hw_timer.c
+GLOBAL_DEFINES += __HW_TIMER_DRIVER__
+endif
+
+ifeq ($(spi_driver),1)
+$(NAME)_SOURCES  +=  hal/hal_spi.c
+GLOBAL_DEFINES += __SPI_DRIVER__
+endif
+
 ifeq ($(ble), 1)
 $(NAME)_SOURCES  +=  port/ota_port.c
 $(NAME)_SOURCES  +=  port/ota_crc.c

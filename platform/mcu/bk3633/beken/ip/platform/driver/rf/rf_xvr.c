@@ -419,54 +419,33 @@ static void rf_force_agc_enable(bool en)
 }
 #endif //CFG_BLE
 
-
 //======================================
 extern volatile uint32_t XVR_ANALOG_REG_BAK[32];
 
 void  xvr_reg_initial(void) 
 {
-    addXVR_Reg0x0 = 0xC4B0323F  ;
-    XVR_ANALOG_REG_BAK[0] = 0xC4B0323F;
-    addXVR_Reg0x1 = 0x8295C200  ;
-    XVR_ANALOG_REG_BAK[1] = 0x8295C200;
-    addXVR_Reg0x2 = 0x2F42A000  ;
-    XVR_ANALOG_REG_BAK[2] = 0x2F42A000;
-    addXVR_Reg0x3 = 0x60035C62  ;
-    XVR_ANALOG_REG_BAK[3] = 0x60035C62;
-    addXVR_Reg0x4 = 0xFF56AACF  ;
-    XVR_ANALOG_REG_BAK[4] = 0xFF56AACF;//0xFFD6BBCC
-    addXVR_Reg0x5 = 0x4620501F  ;
-    XVR_ANALOG_REG_BAK[5] = 0x4620501F; //0x4620501F 03.31 // 0x4420501F 04.01
-    addXVR_Reg0x6 = 0x8097CE20  ;
-    XVR_ANALOG_REG_BAK[6] = 0x8097CE20;
-    addXVR_Reg0x7 = 0xAA023DC0  ;
-    XVR_ANALOG_REG_BAK[7] = 0xAA023DC0;
-    addXVR_Reg0x8 = 0x0FB0C02F  ;
-    XVR_ANALOG_REG_BAK[8] = 0x0FB0C02F;//8B0C02F
-    addXVR_Reg0x9 = 0x7093220C  ;
-    XVR_ANALOG_REG_BAK[9] = 0x7093220C;
-    addXVR_Reg0xa = 0x9C27585B  ;
-    XVR_ANALOG_REG_BAK[0xa] = 0x9C27585B;
-    addXVR_Reg0xb = 0x0FD93F23  ;
-    XVR_ANALOG_REG_BAK[0xb] = 0x0FD93F23;
-    addXVR_Reg0xc = 0x80001008  ;
-    XVR_ANALOG_REG_BAK[0xc] = 0x80001008;
-    addXVR_Reg0xd = 0xC442BF23  ;
-    XVR_ANALOG_REG_BAK[0xd] = 0xC442BF23;
-    addXVR_Reg0xe = 0x00309350  ;
-    XVR_ANALOG_REG_BAK[0xe] = 0x00309350;
-    addXVR_Reg0xf = 0x3126E978  ;
-    XVR_ANALOG_REG_BAK[0xf] = 0x3126E978;
+    addXVR_Reg0x0 = 0xC4B0323F  ;XVR_ANALOG_REG_BAK[0] = 0xC4B0323F;
+    addXVR_Reg0x1 = 0x8295C200  ;XVR_ANALOG_REG_BAK[1] = 0x8295C200;
+    addXVR_Reg0x2 = 0x2F42A000  ;XVR_ANALOG_REG_BAK[2] = 0x2F42A000;
+    addXVR_Reg0x3 = 0x60035C62  ;XVR_ANALOG_REG_BAK[3] = 0x60035C62;
+    addXVR_Reg0x4 = 0xFF56AACF  ;XVR_ANALOG_REG_BAK[4] = 0xFF56AACF;//0xFFD6BBCC
+    addXVR_Reg0x5 = 0x4620501F  ;XVR_ANALOG_REG_BAK[5] = 0x4620501F; //0x4620501F 03.31 // 0x4420501F 04.01
+    addXVR_Reg0x6 = 0x8097CE20  ;XVR_ANALOG_REG_BAK[6] = 0x8097CE20;
+    addXVR_Reg0x7 = 0xAA023DC0  ;XVR_ANALOG_REG_BAK[7] = 0xAA023DC0;
+    addXVR_Reg0x8 = 0x0FB0C02F  ;XVR_ANALOG_REG_BAK[8] = 0x0FB0C02F;//8B0C02F
+    addXVR_Reg0x9 = 0x7093220C  ;XVR_ANALOG_REG_BAK[9] = 0x7093220C;
+    addXVR_Reg0xa = 0x9C27585B  ;XVR_ANALOG_REG_BAK[0xa] = 0x9C27585B;
+    addXVR_Reg0xb = 0x0FD93F23  ;XVR_ANALOG_REG_BAK[0xb] = 0x0FD93F23;
+    addXVR_Reg0xc = 0x80001008  ;XVR_ANALOG_REG_BAK[0xc] = 0x80001008;
+    addXVR_Reg0xd = 0xC442BF23  ;XVR_ANALOG_REG_BAK[0xd] = 0xC442BF23;
+    addXVR_Reg0xe = 0x00309350  ;XVR_ANALOG_REG_BAK[0xe] = 0x00309350;
+    addXVR_Reg0xf = 0x3126E978  ;XVR_ANALOG_REG_BAK[0xf] = 0x3126E978;
 
 
-	addXVR_Reg0x1c = 0x999CDDC5  ;
-	XVR_ANALOG_REG_BAK[0x1c] = 0x999CDDC5;
-	addXVR_Reg0x1d = 0xEA8501C0  ;
-	XVR_ANALOG_REG_BAK[0x1d] = 0xEA8501C0;
-	addXVR_Reg0x1e = 0x80010180  ;
-	XVR_ANALOG_REG_BAK[0x1e] = 0x80010180;
-	addXVR_Reg0x1f = 0x00000000  ;
-	XVR_ANALOG_REG_BAK[0x1f] = 0x00000000;
+	addXVR_Reg0x1c = 0x999CDDC5  ;XVR_ANALOG_REG_BAK[0x1c] = 0x999CDDC5;
+	addXVR_Reg0x1d = 0xEA8501C0  ;XVR_ANALOG_REG_BAK[0x1d] = 0xEA8501C0;
+	addXVR_Reg0x1e = 0x80010180  ;XVR_ANALOG_REG_BAK[0x1e] = 0x80010180;
+	addXVR_Reg0x1f = 0x00000000  ;XVR_ANALOG_REG_BAK[0x1f] = 0x00000000;
   
     addXVR_Reg0x20 = 0x8E89BED6;// REG_20
     addXVR_Reg0x21 = 0x96000000;//0x96000000;// REG_21
@@ -527,6 +506,25 @@ void  xvr_reg_initial(void)
     addPMU_Reg0x13 = 0XFFFFFF80;
     
     kmod_calibration();
+#if 1   
+  //  addXVR_Reg0x6 = 0x85a7cc00;XVR_ANALOG_REG_BAK[0x6] = 0x85a7cc00;
+    
+    addXVR_Reg0x6 = 0x80b7ce20;XVR_ANALOG_REG_BAK[0x6] = 0x80b7ce20;
+   
+    addXVR_Reg0x7 = 0xAA023FC0;XVR_ANALOG_REG_BAK[0x7] = 0xAA023FC0;
+  //  
+    addXVR_Reg0xa = 0x9C03785f;XVR_ANALOG_REG_BAK[0xa] = 0x9C03785f;
+   //
+    addXVR_Reg0x1c = 0x919CDDC5;XVR_ANALOG_REG_BAK[0x1c] = 0x919CDDC5;
+#endif
+
+    XVR_ANALOG_REG_BAK[9] &= ~(0x01 << 26);
+    addXVR_Reg0x9 = XVR_ANALOG_REG_BAK[9];
+
+    XVR_ANALOG_REG_BAK[0x1e]  |= 0x80000000;
+    addXVR_Reg0x1e = XVR_ANALOG_REG_BAK[0x1e];
+    CLK32K_AutoCali_init();
+    Delay_ms(50);
 }
 
 void rf_init(struct rwip_rf_api *api)
@@ -991,3 +989,19 @@ void kmod_calibration(void)
     addXVR_Reg0x24 &= ~(0x1<< 31);
 }
 
+void CLK32K_AutoCali_init(void)
+{
+    XVR_ANALOG_REG_BAK[0xc] &= ~(0x01 << 15);
+    addXVR_Reg0xc = XVR_ANALOG_REG_BAK[0xc]; 
+
+    XVR_ANALOG_REG_BAK[0xc] |= (0x01 << 15);
+    addXVR_Reg0xc = XVR_ANALOG_REG_BAK[0xc];
+
+    XVR_ANALOG_REG_BAK[0xc] |= (0x1388 << 16);
+    XVR_ANALOG_REG_BAK[0xc] |= (0x1 << 14);    
+    addXVR_Reg0xc = XVR_ANALOG_REG_BAK[0xc]; 
+    addXVR_Reg0xc = 0x13881004; 
+    Delay_ms(10);
+    XVR_ANALOG_REG_BAK[0xc] = 0x1388d004;
+    addXVR_Reg0xc = 0x1388d004;
+}

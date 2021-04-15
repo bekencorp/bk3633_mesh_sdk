@@ -7,7 +7,7 @@
 
 
 #define LIGHTNESS_MAX                 (0xFFFF)
-#define LIGHTNESS_DEFAULT             (round(LIGHTNESS_MAX * 1))      //100%
+#define LIGHTNESS_DEFAULT             (round(LIGHTNESS_MAX * 0.8))      //80%
 #define LIGHTNESS_OPC_NUM 10
 #define LIGHTNESS_SETUP_OPC_NUM 5
 

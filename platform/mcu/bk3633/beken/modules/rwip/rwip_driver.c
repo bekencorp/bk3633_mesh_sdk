@@ -77,7 +77,7 @@
 /// Parameters API
 struct rwip_param_api      rwip_param;
 
-struct rwip_env_tag        rwip_env;
+__attribute__((section("STACK_RAM"))) struct rwip_env_tag        rwip_env;
 #if 1//(BLE_EMB_PRESENT || BT_EMB_PRESENT)
 /// Local supported commands
 struct rwip_prio rwip_priority[RWIP_PRIO_IDX_MAX]={
@@ -210,7 +210,7 @@ int32_t rwip_slot_2_lpcycles(int32_t hs_cnt)
 
     // So reduce little bit sleep duration in order to allow fine time compensation
     // Note compensation will be in range of [1 , 2[ lp cycles if there is no external wake-up
-    lpcycles--;
+    lpcycles -= 10;
 
     return(lpcycles);
 }
@@ -356,7 +356,7 @@ void rwip_sw_int_handler(void)
  * Compute and apply the clock correction according to duration of the deep sleep.
  ****************************************************************************************
  */
-void rwip_wakeup(void)
+__ATTR_ARM void rwip_wakeup(void)
 {
     uint16_t fintetime_correction;
     // duration in half us
@@ -429,18 +429,18 @@ void rwip_wakeup_end(void)
     #if (BLE_EMB_PRESENT)
     // Wake-up BLE core
     
-/*     #if	(ROM_REGISTER_CALLBACK)
-    if(rom_env.rwble_sleep_wakeup_end != NULL)
+    //#if	(ROM_REGISTER_CALLBACK)
+/*     if(rom_env.rwble_sleep_wakeup_end != NULL)
     {
         rom_env.rwble_sleep_wakeup_end();
     }
-    #else
+    #else */
     rwble_sleep_wakeup_end();
-    #endif //(ROM_REGISTER_CALLBACK) */
+    //#endif //(ROM_REGISTER_CALLBACK)
     #endif // (BLE_EMB_PRESENT)
   //  uart_printf("wakeup_end:%d:%d:%d\r\n",current_time.hs,rwip_env.timer_hs_target,rwip_env.timer_hus_target);
     // Re-enable default common interrupts
-    ip_intcntl1_set(IP_FIFOINTMSK_BIT | IP_CRYPTINTMSK_BIT | IP_ERRORINTMSK_BIT | IP_SWINTMSK_BIT);
+    //ip_intcntl1_set(IP_FIFOINTMSK_BIT | IP_CRYPTINTMSK_BIT | IP_ERRORINTMSK_BIT | IP_SWINTMSK_BIT);
 
     if(rwip_env.timer_hs_target != RWIP_INVALID_TARGET_TIME)
     {
@@ -486,8 +486,8 @@ void rwip_wakeup_end(void)
 
     // Wake up is complete now, so we allow the deep sleep again
     rwip_prevent_sleep_clear(RW_WAKE_UP_ONGOING);
-
-//    led_reset(6);
+    // If the Controller has event to be sent, give the controller a semphore to run the task.
+    ke_event_run();
 }
 
 /*
@@ -644,7 +644,8 @@ void rwip_driver_init(bool reset)
         rwip_env.lp_cycle_wakeup_delay = twext;
 
         // Set the external wakeup parameter
-        ip_deepslcntl_extwkupdsb_setf(rwip_env.ext_wakeup_enable ? false : true);
+        //ip_deepslcntl_extwkupdsb_setf(rwip_env.ext_wakeup_enable ? false : true);
+        ip_deepslcntl_extwkupdsb_setf(0);
     }
     else
     {
@@ -678,6 +679,12 @@ void rwip_prevent_sleep_clear(uint16_t prv_slp_bit)
     rwip_env.prevent_sleep &= ~prv_slp_bit;
     GLOBAL_INT_RESTORE();
 }
+
+__ATTR_ARM uint16_t rwip_sleep_flag(void)
+{
+    return rwip_env.prevent_sleep;
+}
+
 #if (BLE_EMB_PRESENT || BT_EMB_PRESENT)
 
 bool rwip_active_check(void)

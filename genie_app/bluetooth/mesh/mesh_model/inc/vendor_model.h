@@ -17,12 +17,46 @@
 #define VENDOR_OP_ATTR_TRANS_INDICATE    0xCE
 #define VENDOR_OP_ATTR_TRANS_ACK         0xCD
 
-#define VENDOR_OP_C7_INDICATE            0xC7
 
-#define ONOFF_T           0x0100
-#define LIGHTNESS_T       0x0121
-#define TEMPERATURE_T     0x0122
-#define DEVICE_EVENT_T    0xF009
+
+#define VD_HW_ATTR_GET                  0xD0//网关→设备 网关查询设备状态
+#define VD_HW_ATTR_SET                  0xD1//网关→设备 网关设置设备状态
+#define VD_HW_ATTR_SET_NOACK            0xD2//网关→设备 网关设置设备状态 不需回复
+#define VD_HW_ATTR_SET_STATUS           0xD3//设备→网关 设备回复网关的设置状态D1
+#define VD_HW_ATTR_NOTIFY               0xD4//设备→网关 设备状态改变后的主动上报 需要回复
+#define VD_HW_ATTR_NOTIFY_STATUS        0xD5//网关→设备 网关回复设备上报的状态改变消息
+#define VD_HW_ATTR_NOTIFY_NOACK         0xD6//设备→网关 设备状态改变后的主动上报 不需回复
+#define VD_HW_ATTR_GET_STATUS           0xD7//设备→网关 设备回复网关的get消息D7
+
+#define ONOFF_T						0x0100
+#define LIGHTNESS_T					0x0121
+#define TEMPERATURE_T				0x0122
+
+#define SECOND_ONOFF				0x0124//第二开关属性，用作灵动开关
+#define THIRD_ONOFF					0x0125//第三开关属性，用作背光开关
+#define DYMIC_SWITCH_ONOFF			SECOND_ONOFF//第二开关属性，用作灵动开关
+#define BACKLIGHT_ONOFF				THIRD_ONOFF//第三开关属性，用作背光开关
+
+#define DEVICE_EVENT_T				0xF009
+
+#define ATTR_GET_ALL                (0xE001)//获取设备所有属性
+#define ATTR_COLOR_MODE             (0xE002)//设备颜色模式
+#define ATTR_VERSION                (0xE005)//软硬件版本信息
+
+#define ATTR_HSL					(0x0123)
+
+#define ATTR_RGB					(0XE004)
+
+#define ATTR_SCENE					(0xF004)
+#define ATTR_SCENE_LEN			    (4)
+
+#define ATTR_EVENT                  (0xF009)
+#define EVENT_ID_RESET              (0x23)//硬件复位事件
+
+#define ATTR_EVENT_DOOR              (0xE101)
+#define ATTR_EVENT_TAMPER            (0xE102)
+#define ATTR_EVENT_SENSOR            (0xE103)
+#define ATTR_EVENT_RESET             (0xE104)
 
 /* Event List - Refer to Device Event List defined in https://yuque.antfin-inc.com/iotconnect/wwfb/dbyytw#1c38cf1b */
 #define EL_FAULT_T        0x00 /* malfunction event */
@@ -31,9 +65,9 @@
 #define EL_HW_RESET_T     0x23 /* hardware reset event */
 
 
-#define VENDOR_MODEL_MSG_DFT_RETRY_TIMES 6
-#define VENDOR_MODEL_MSG_MAX_RETRY_TIMES 10
-#define VENDOR_MODEL_MSG_RETRY_PERIOD 400
+#define VENDOR_MODEL_MSG_DFT_RETRY_TIMES	6
+#define VENDOR_MODEL_MSG_MAX_RETRY_TIMES	10
+#define VENDOR_MODEL_MSG_RETRY_PERIOD		400
 
 /**
  * p_elem: pointer to the element which the messsage want to be sent to

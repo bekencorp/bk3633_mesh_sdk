@@ -745,6 +745,7 @@ void EccPoint_mult(uECC_word_t * result, const uECC_word_t * point,
 	XYcZ_initial_double(Rx[1], Ry[1], Rx[0], Ry[0], initial_Z, curve);
 
 	for (i = num_bits - 2; i > 0; --i) {
+		k_sleep(1);
 		nb = !uECC_vli_testBit(scalar, i);
 		XYcZ_addC(Rx[1 - nb], Ry[1 - nb], Rx[nb], Ry[nb], curve);
 		XYcZ_add(Rx[nb], Ry[nb], Rx[1 - nb], Ry[1 - nb], curve);

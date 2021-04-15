@@ -1,14 +1,25 @@
+/**
+****************************************************************************************
+*
+* @file pwm_pub.h
+*
+* @brief icu initialization and specific functions
+*
+* Copyright (C) Beken Leonardo 2021
+*
+* $Rev: $
+*
+****************************************************************************************
+*/
+
 #ifndef _PWM_PUB_H_
 #define _PWM_PUB_H_
 
-#include "typedef.h"
+#include "driver_pub.h"
 
-#define PWM_FAILURE                (1)
-#define PWM_SUCCESS                (0)
 
 #define PWM_DEV_NAME                "pwm"
 
-#define PWM_CMD_MAGIC              (0xe230000)
 enum
 {
     CMD_PWM_UNIT_ENABLE = PWM_CMD_MAGIC + 1,

@@ -1,13 +1,13 @@
 /*
- *
+ * 
  */
 
 #ifndef _MODEL_LIGHT_CTL_SRV_H_
 #define _MODEL_LIGHT_CTL_SRV_H_
 
-#define CTL_TEMP_MIN		800//0x0320
-#define CTL_TEMP_MAX		20000//0x4E20
-#define CTL_TEMP_DEFAULT	CTL_TEMP_MAX
+#define CTL_TEMP_MIN 0x0320
+#define CTL_TEMP_MAX 0x4E20
+#define CTL_TEMP_DEFAULT CTL_TEMP_MAX
 
 
 #define CTL_OPC_NUM 6

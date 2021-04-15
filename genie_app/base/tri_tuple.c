@@ -55,12 +55,19 @@ E_GENIE_FLASH_ERRCODE genie_flash_read_trituple(uint32_t *p_pid, uint8_t *p_mac,
 
     BT_DBG("");
 
-    ret = genie_flash_read_reliable(GFI_MESH_TRITUPLE, data, GENIE_SIZE_TRI_TRUPLE);
+    static_partition_write_addr_head(STATIC_SECTION_TRITUPLE);
+    ret = static_partition_read(STATIC_SECTION_TRITUPLE, data, GENIE_SIZE_TRI_TRUPLE);
     RETURN_WHEN_ERR(ret, ret);
 
     memcpy(p_pid, data, GENIE_SIZE_PID);
-    memcpy(p_key, data+GENIE_SIZE_PID, GENIE_SIZE_KEY);
-    memcpy(p_mac, data+GENIE_SIZE_PID+GENIE_SIZE_KEY, GENIE_SIZE_MAC);
+    //memcpy(p_key, data+GENIE_SIZE_PID, GENIE_SIZE_KEY);
+    //memcpy(p_mac, data+GENIE_SIZE_PID+GENIE_SIZE_KEY, GENIE_SIZE_MAC);
+    memcpy(p_mac, data + GENIE_SIZE_PID, GENIE_SIZE_MAC);
+    memcpy(p_key, data + GENIE_SIZE_PID + GENIE_SIZE_MAC, GENIE_SIZE_KEY);
+
+    printf("p_pid:%s\n", bt_hex(p_pid, GENIE_SIZE_PID));
+    printf("p_key:%s\n", bt_hex(p_key, GENIE_SIZE_KEY));
+    printf("p_mac:%s\n", bt_hex(p_mac, GENIE_SIZE_MAC));
     return GENIE_FLASH_SUCCESS;
 }
 
@@ -123,23 +130,6 @@ uint8_t *genie_tri_tuple_get_uuid(void)
     BT_DBG("uuid: %s", bt_hex(g_uuid, 16));
     return g_uuid;
 #endif
-#if (CONFIG_BT_MESH_JINGXUN)
-    u32_t pid = 0x47aeb9d5;
-    g_uuid[0] = 0x00;
-    g_uuid[1] = (u8_t)pid;
-    g_uuid[2] = (u8_t)(pid >> 8);
-    g_uuid[3] = (u8_t)(pid >> 16);
-    g_uuid[4] = (u8_t)(pid >> 24);
-    g_uuid[5] = 0x00;
-    g_uuid[6] = 0x01;
-
-    for(i = 0; i < 6; i++) {
-        g_uuid[i+7] = g_mac[i];
-    }
-    g_uuid[13] = 0x00;
-    g_uuid[14] = 0x00;
-    g_uuid[15] = 0x01;
-#else
    for (i = 0; i < 6; i++) {
         g_uuid[i] = g_mac[i];
     }
@@ -149,11 +139,11 @@ uint8_t *genie_tri_tuple_get_uuid(void)
     g_uuid[8] = 0x64;// PID
     g_uuid[9] = 0x66; g_uuid[10] = 0x76; g_uuid[11] = 0x6f;g_uuid[12] = 0x61;
     g_uuid[13] = 0x72;g_uuid[14] = 0x63; g_uuid[15] = 0x61; //RFU
-#endif
-    printf("uuid: %s\n", bt_hex(g_uuid, 16));
+    BT_DBG("uuid: %s", bt_hex(g_uuid, 16));
     return g_uuid;
 }
-#ifdef GENIE_OLD_AUTH
+
+#ifdef CONFIG_BT_MESH_ALI_TMALL_GENIE
 uint8_t *genie_tri_tuple_get_auth(void)
 {
     int ret;
@@ -368,7 +358,7 @@ void genie_tri_tuple_show(void)
 
 void ultra_prov_get_auth(const uint8_t random_hex[16], const uint8_t key[16], uint8_t cfm[16])
 {
-#ifdef GENIE_OLD_AUTH
+#ifdef CONFIG_BT_MESH_ALI_TMALL_GENIE
     genie_tri_tuple_get_auth();
 #else
     genie_tri_tuple_get_auth(random_hex);

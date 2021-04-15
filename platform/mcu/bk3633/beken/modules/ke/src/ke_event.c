@@ -75,7 +75,7 @@ struct ke_event_env_tag
 /// KE EVENT environment
 static struct ke_event_env_tag ke_event_env;
 
-ksem_t ke_event_sem;
+__attribute__((section("STACK_RAM"))) ksem_t ke_event_sem;
 
 /*
  * LOCAL FUNCTION DEFINITIONS
@@ -179,6 +179,13 @@ uint32_t ke_event_get_all(void)
 void ke_event_flush(void)
 {
     ke_event_env.event_field = 0;
+}
+
+void ke_event_run(void)
+{
+    if (rom_env.krhino_sem_give && (ke_event_get_all() != 0)) {
+        rom_env.krhino_sem_give(&ke_event_sem);
+    }
 }
 
 void ke_event_schedule(void)

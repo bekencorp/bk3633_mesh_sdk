@@ -1,12 +1,9 @@
 #ifndef _I2S_PUB_H_
 #define _I2S_PUB_H_
 
-#define I2S_FAILURE                (1)
-#define I2S_SUCCESS                (0)
-
 #define I2S_DEV_NAME                "i2s"
 
-#define I2S_CMD_MAGIC              (0xe280000)
+
 enum
 {
 	I2S_HW_SET = I2S_CMD_MAGIC + 1,
