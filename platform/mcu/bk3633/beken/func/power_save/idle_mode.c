@@ -45,7 +45,7 @@ uint8_t get_sleep_flag(void)
 
 uint8_t get_rw_sleep_flag(void)
 {
-    return ((rwip_func.rwip_sleep_flag() & RW_WAKE_UP_ONGOING) != 0);
+    return ((rwip_func.rwip_sleep_flag() & (RW_WAKE_UP_ONGOING | RW_BLE_SLEEP_ONGOING)) != 0);
 }
 
 void idle_mode(void)
@@ -80,11 +80,6 @@ os_printf("%s %d sleep %d %d\r\n",__func__, __LINE__, sleep, tick_com);
             os_printf("deep sleep tick_com %d\r\n", tick_com);
             fclk_disable(FCLK_PWM_ID);
             cpu_reduce_voltage_sleep();
-            while(get_rw_sleep_flag())
-            {
-                ;
-            }
-
             sleep_mode_enable(0);
             cpu_wakeup();
 
@@ -113,4 +108,10 @@ os_printf("%s %d sleep %d %d\r\n",__func__, __LINE__, sleep, tick_com);
     }
 
     GLOBAL_INT_RESTORE();
+
+    while(get_rw_sleep_flag())
+    {
+        os_printf("wake up ongoing\r\n");
+    }
+
 }

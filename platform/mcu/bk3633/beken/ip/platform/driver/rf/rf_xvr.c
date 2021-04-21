@@ -425,10 +425,31 @@ extern volatile uint32_t XVR_ANALOG_REG_BAK[32];
 void  xvr_reg_initial(void) 
 {
     addXVR_Reg0x0 = 0xC4B0323F  ;XVR_ANALOG_REG_BAK[0] = 0xC4B0323F;
-    addXVR_Reg0x1 = 0x8295C200  ;XVR_ANALOG_REG_BAK[1] = 0x8295C200;
+
+
+#ifdef CONFIG_DUT_TEST_CMD
+	if(get_dut_flag()) //dut mode
+	{
+	    addXVR_Reg0x1 = 0x8295C200  ; XVR_ANALOG_REG_BAK[1] = 0x8295C200;
+	}
+	else
+#endif
+	{
+    	addXVR_Reg0x1 = 0x8295C200  ;XVR_ANALOG_REG_BAK[1] = 0x8295C200;
+	}
     addXVR_Reg0x2 = 0x2F42A000  ;XVR_ANALOG_REG_BAK[2] = 0x2F42A000;
     addXVR_Reg0x3 = 0x60035C62  ;XVR_ANALOG_REG_BAK[3] = 0x60035C62;
-    addXVR_Reg0x4 = 0xFF56AACF  ;XVR_ANALOG_REG_BAK[4] = 0xFF56AACF;//0xFFD6BBCC
+
+#ifdef CONFIG_DUT_TEST_CMD
+	if(get_dut_flag()) //dut mode
+	{
+		addXVR_Reg0x4 = 0xFFD741CF; XVR_ANALOG_REG_BAK[4] = 0xFFD741CF;//0xFFD6BBCC
+	}
+	else 
+#endif
+	{
+    	addXVR_Reg0x4 = 0xFF56AACF  ;XVR_ANALOG_REG_BAK[4] = 0xFF56AACF;//0xFFD6BBCC
+	}
     addXVR_Reg0x5 = 0x4620501F  ;XVR_ANALOG_REG_BAK[5] = 0x4620501F; //0x4620501F 03.31 // 0x4420501F 04.01
     addXVR_Reg0x6 = 0x8097CE20  ;XVR_ANALOG_REG_BAK[6] = 0x8097CE20;
     addXVR_Reg0x7 = 0xAA023DC0  ;XVR_ANALOG_REG_BAK[7] = 0xAA023DC0;
@@ -506,6 +527,7 @@ void  xvr_reg_initial(void)
     addPMU_Reg0x13 = 0XFFFFFF80;
     
     kmod_calibration();
+	
 #if 1   
   //  addXVR_Reg0x6 = 0x85a7cc00;XVR_ANALOG_REG_BAK[0x6] = 0x85a7cc00;
     
@@ -525,6 +547,8 @@ void  xvr_reg_initial(void)
     addXVR_Reg0x1e = XVR_ANALOG_REG_BAK[0x1e];
     CLK32K_AutoCali_init();
     Delay_ms(50);
+    // Fix the Frequency deviation is too large issue.
+    xtal_cal_set(0x4E);
 }
 
 void rf_init(struct rwip_rf_api *api)
@@ -954,7 +978,8 @@ void kmod_calibration(void)
 
     value = ((value >> 16) & 0x1fff);
 
-    value_kcal_result =  ((500*256/value)&0x1ff) ; 
+	value_kcal_result =  ((500*256/value)&0x1ff) ; 
+
     addXVR_Reg0x30 &= (~(0x1ff<<8));
     addXVR_Reg0x30 |= (value_kcal_result<<8);
     
@@ -988,6 +1013,49 @@ void kmod_calibration(void)
     
     addXVR_Reg0x24 &= ~(0x1<< 31);
 }
+
+
+/*****************
+[F] = 8.23dBm+0.9,
+[E] = 7.86dBm+0.9,
+[D] = 7.47dBm+0.9,
+[C] = 7.05dBm+0.9,
+[B] = 6.60dBm+0.9,
+[A] = 6.12dBm+0.9,
+[9] = 5.50dBm+0.9,
+[8] = 4.80dBm+0.9;
+[7] = 3.80dBm+0.9,
+[6] = 2.60dBm+0.9,
+[5] = 1.26dBm+0.9,
+[4] = -0.30dBm+0.9,
+[3] = -2.60dBm+0.9,
+[2] = -5.55dBm+0.9,
+[1] = -9.50dBm+0.9
+[0] = -14.6dBm+0.9}
+;
+*********************/
+void rf_power_set(uint8_t leave)
+{ 
+	uint8_t rf_power_level;
+    rf_power_level = leave & 0x0F;
+    addXVR_Reg0x24 &= ~(0x01 << 20);
+    addXVR_Reg0x24 &= ~(0xF << 7);
+    addXVR_Reg0x24 |= (rf_power_level << 7);  
+}
+
+
+
+///defuat cal_data 0x35, range: 0x00~0x7f
+void xtal_cal_set(uint8_t cal_data)
+{
+    if(cal_data>0x7f)
+    {
+        cal_data=0x7f;
+    }
+    XVR_ANALOG_REG_BAK[3] = 0x60000C62|(cal_data<<12);
+    addXVR_Reg0x3 = XVR_ANALOG_REG_BAK[3] ;
+}
+
 
 void CLK32K_AutoCali_init(void)
 {

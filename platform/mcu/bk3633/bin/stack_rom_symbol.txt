@@ -4,5 +4,5 @@ ke_msg_func = 0x00001228;
 ke_task_func = 0x00001230;
 ke_time_func = 0x0000123c;
 hci_func = 0x0000121c;
-ke_event_sem = 0x004000b0;
-rom_env = 0x004000d4;
+ke_event_sem = 0x004000b8;
+rom_env = 0x004000dc;

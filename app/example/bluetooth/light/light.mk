@@ -92,3 +92,8 @@ ifeq ($(uart_test_cmd),1)
 GLOBAL_DEFINES += CONFIG_UART_TEST_CMD
 $(NAME)_SOURCES += 	uart_test_cmd.c
 endif
+
+ifeq ($(dut_test_cmd),1)
+GLOBAL_DEFINES += CONFIG_DUT_TEST_CMD
+$(NAME)_SOURCES += 	dut_test.c
+endif

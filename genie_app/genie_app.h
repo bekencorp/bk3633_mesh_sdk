@@ -29,5 +29,6 @@
  *        involks this api to initialize AIS/Mesh procedure for bussiness.
  */
 void genie_init(void);
+void dut_init(void);
 
 #endif  //_GENIE_APP_H_

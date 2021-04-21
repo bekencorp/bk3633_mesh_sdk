@@ -303,8 +303,17 @@ int aos_kernel_init(kinit_t *kinit)
     krhino_task_cpu_usage_init();
 #endif
 
-    printf("app start \r\n\r\n");
-    application_start(kinit->argc, kinit->argv);
+#ifdef CONFIG_DUT_TEST_CMD
+	check_and_set_dut_flag();
+	if(get_dut_flag())
+	{
+		dut_test_start(kinit->argc, kinit->argv);
+	}
+	else
+#endif
+	{
+    	application_start(kinit->argc, kinit->argv);
+	}
 #endif
 
     return 0;

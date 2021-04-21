@@ -70,6 +70,13 @@ typedef struct {
     void         *priv;    /* priv data */
 } uart_dev_t;
 
+#define HCI_DATA_LEN 100
+typedef struct 
+{
+	uint8_t dut_data[HCI_DATA_LEN];
+	uint8_t dut_len;
+}DUT_TEST_BUG_T; 
+
 /**
  * Initialises a UART interface
  *

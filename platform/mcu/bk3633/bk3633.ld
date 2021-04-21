@@ -14,12 +14,12 @@ OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")
 OUTPUT_ARCH(arm)
 ENTRY(_vector_start);
 /* PARTITION_APP_CPU_ADDR */
-_vector_start = 0x15A60;
+_vector_start = 0x16A60;
 
 SECTIONS
 {
 /* vectors go to vectors region */
-	.vectors 0x15A60 : /*Do not change the section order, for image*/
+	.vectors 0x16A60 : /*Do not change the section order, for image*/
 	{
       KEEP(*(sys.vectors))
       KEEP(*(sys.handlers))

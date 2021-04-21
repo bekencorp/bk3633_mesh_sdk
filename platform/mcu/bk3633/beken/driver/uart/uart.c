@@ -53,6 +53,8 @@ static DD_OPERATIONS uart2_op =
 };
 #endif
 
+volatile DUT_TEST_BUG_T *gp_dut_data;
+
 UINT8 uart_is_tx_fifo_empty(UINT8 uport)
 {
 	UINT32 param;
@@ -167,11 +169,11 @@ void uart_hw_init(UINT8 uport)
     UINT32 conf_reg_addr, fifo_conf_reg_addr;
     UINT32 flow_conf_reg_addr, wake_conf_reg_addr, intr_reg_addr;
 
-    baud_div = UART_CLOCK / UART_BAUD_RATE;
-    baud_div = baud_div - 1;
-
     if(UART1_PORT == uport)
     {
+        baud_div = UART_CLOCK / UART_BAUD_RATE;
+    	baud_div = baud_div - 1;
+	
         conf_reg_addr = REG_UART1_CONFIG;
         fifo_conf_reg_addr = REG_UART1_FIFO_CONFIG;
         flow_conf_reg_addr = REG_UART1_FLOW_CONFIG;
@@ -180,6 +182,9 @@ void uart_hw_init(UINT8 uport)
     }
     else
     {
+	    baud_div = UART_CLOCK / UART_BAUDRATE_115200; //uart2 baud rate use 115200 
+    	baud_div = baud_div - 1;
+		
         conf_reg_addr = REG_UART2_CONFIG;
         fifo_conf_reg_addr = REG_UART2_FIFO_CONFIG;
         flow_conf_reg_addr = REG_UART2_FLOW_CONFIG;
@@ -768,6 +773,21 @@ void uart2_isr(void)
 
     if(status & (RX_FIFO_NEED_READ_STA | UART_RX_STOP_END_STA))
     {
+
+#ifdef CONFIG_DUT_TEST_CMD
+		UINT32 read_data;
+		if(get_dut_flag() && gp_dut_data != NULL)
+		{
+			while(REG_READ(REG_UART2_FIFO_STATUS) & FIFO_RD_READY)
+		    {
+		        UART_READ_BYTE(UART2_PORT, read_data);
+				gp_dut_data->dut_data[gp_dut_data->dut_len] = (uint8_t)read_data;
+				gp_dut_data->dut_len++;
+		    }
+		}
+		else
+#endif
+		{
 #if (!CFG_SUPPORT_RTT)
         uart_read_fifo_frame(UART2_PORT, uart[UART2_PORT].rx);
 #endif
@@ -776,12 +796,13 @@ void uart2_isr(void)
         {
             void *param = uart_receive_callback[1].param;
 
-            uart_receive_callback[1].callback(UART2_PORT, param);
-        }
-        else
-        {
-        	uart_read_byte(UART2_PORT); /*drop data for rtt*/
-        }
+	            uart_receive_callback[1].callback(UART2_PORT, param);
+	        }
+	        else
+	        {
+	        	uart_read_byte(UART2_PORT); /*drop data for rtt*/
+	        }
+		}
     }
 
 	if(status & TX_FIFO_NEED_WRITE_STA)

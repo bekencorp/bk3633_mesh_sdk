@@ -1758,7 +1758,20 @@ static void hci_cmd_complete(struct net_buf *buf)
     u8_t                            status;//, ncmd = evt->ncmd;
 
     BT_DBG("opcode 0x%04x", opcode);
-    
+
+#ifdef CONFIG_DUT_TEST_CMD
+	if(get_dut_flag())
+	{
+		bk_send_byte(UART2_PORT, 0x04);
+	    bk_send_byte(UART2_PORT, 0x0E);
+		bk_send_byte(UART2_PORT, buf->len);
+
+		for(int i = 0; i < buf->len; i++)
+		{
+		   bk_send_byte(UART2_PORT, buf->data[i]);
+		}
+	}
+#endif
     net_buf_pull(buf, sizeof(*evt));
 
     /* All command return parameters have a 1-byte status in the

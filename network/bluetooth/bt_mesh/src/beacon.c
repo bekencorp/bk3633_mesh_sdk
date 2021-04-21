@@ -43,6 +43,32 @@
 
 static struct k_delayed_work beacon_timer;
 static uint32_t unprov_beacon_interval = K_MSEC(500);
+static bool beacon_is_disable = false;
+static bool beacon_is_start = false;
+
+static void beacon_start_cb(u16_t duration, int err, void *cb_data);
+static void beacon_stop_cb(int err, void *user_data);
+
+static const struct bt_mesh_send_cb beacon_send_cb = {
+	.start = beacon_start_cb,
+    .end = beacon_stop_cb,
+};
+
+static void beacon_start_cb(u16_t duration, int err, void *cb_data)
+{
+    if (beacon_is_disable) {
+        bt_mesh_adv_stop();
+        return;
+    }
+
+    beacon_is_start = true;
+    return;
+}
+
+static void beacon_stop_cb(int err, void *user_data)
+{
+    beacon_is_start = false;
+}
 
 uint32_t unprov_beacon_interval_get()
 {
@@ -83,7 +109,7 @@ static void beacon_complete(int err, void *user_data)
     struct bt_mesh_subnet *sub = user_data;
 
     BT_DBG("err %d", err);
-
+    beacon_is_start = false;
     sub->beacon_sent = k_uptime_get_32();
 }
 
@@ -168,6 +194,7 @@ void bt_mesh_beacon_create_with_flag(struct bt_mesh_subnet *sub,
 static int secure_beacon_send(void)
 {
     static const struct bt_mesh_send_cb send_cb = {
+        .start = beacon_start_cb,
         .end = beacon_complete,
     };
     u32_t now = k_uptime_get_32();
@@ -283,7 +310,7 @@ static int unprovisioned_beacon_send(void)
     net_buf_add_be16(buf, oob_info);
     net_buf_add_mem(buf, uri_hash, 4);
 
-    bt_mesh_adv_send(buf, NULL, NULL);
+    bt_mesh_adv_send(buf, &beacon_send_cb, NULL);
     net_buf_unref(buf);
 
     if (prov->uri) {
@@ -339,6 +366,9 @@ static void update_beacon_observation(void)
 
 static void beacon_send(struct k_work *work)
 {
+    if (beacon_is_disable) {
+        return;
+    }
     /* Don't send anything if we have an active provisioning link */
     if (IS_ENABLED(CONFIG_BT_MESH_PROV) && bt_prov_active()) {
         k_delayed_work_submit(&beacon_timer, unprov_beacon_interval_get());
@@ -490,6 +520,7 @@ void bt_mesh_beacon_enable(void)
 {
     int i;
 
+    beacon_is_disable = false;
     if (!bt_mesh_is_provisioned()) {
         k_work_submit(&beacon_timer.work);
         return;
@@ -514,6 +545,11 @@ void bt_mesh_beacon_enable(void)
 void bt_mesh_beacon_disable(void)
 {
     if (!bt_mesh.ivu_initiator) {
+        beacon_is_disable = true;
         k_delayed_work_cancel(&beacon_timer);
+    }
+    // Check if the beacon adv have been.
+    if (beacon_is_start) {
+        bt_mesh_adv_stop();
     }
 }

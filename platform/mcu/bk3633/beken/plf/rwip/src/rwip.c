@@ -1065,7 +1065,7 @@ void rwip_isr(void)
 
         // Handle wake-up
         rwip_wakeup();
-        rwip_prevent_sleep_clear(RW_BLE_ACTIVE_MODE);   //RW_BLE_SLEEP_ONGOING
+        rwip_prevent_sleep_clear(RW_BLE_SLEEP_ONGOING);
         DBG_SWDIAG(IP_ISR, SLPINT, 0);
     }
 
@@ -1214,7 +1214,7 @@ uint8_t rwip_sleep(int32_t * dur, int32_t max_slots)
         /************************************************************************
          **************           CHECK SLEEP TIME                 **************
          ************************************************************************/
-        sleep_duration -= RWIP_MINIMUM_SLEEP_TIME;
+        //sleep_duration -= RWIP_MINIMUM_SLEEP_TIME;
 
         sleep_duration = co_min_s(sleep_duration, max_slots*2);
 
@@ -1290,7 +1290,7 @@ uint8_t rwip_sleep(int32_t * dur, int32_t max_slots)
          ************************************************************************/
         rwip_rf.sleep();
 
-        rwip_prevent_sleep_set(RW_BLE_ACTIVE_MODE) ;    //RW_BLE_SLEEP_ONGOING
+        rwip_prevent_sleep_set(RW_BLE_SLEEP_ONGOING) ;
         #endif // (BLE_EMB_PRESENT || BT_EMB_PRESENT)
 
     } while(0);

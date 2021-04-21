@@ -21,8 +21,12 @@ static int volatile uart_test_enable   = 1;
 static const struct uart_command uart_test_cmds[] = {
     {UART_CMD_ERASE_REBOOT,               erase_reboot_uart_cmd_handler},
     {UART_CMD_REBOOT,                     reboot_uart_cmd_handler},
-    {UART_CMD_LNP_SET,                    lpn_set_uart_cmd_handler}
-
+    {UART_CMD_LNP_SET,                    lpn_set_uart_cmd_handler},
+    
+    {UART_CMD_XTAL_CAL_SET,               set_xtal_cal_cmd_handler},
+	{UART_CMD_XTAL_CAL_SAVE,              save_xtal_cal_cmd_handler},
+	{UART_CMD_RF_POWER_SET,               set_rf_power_cmd_handler},
+	{UART_CMD_RF_POWER_SAVE,              save_rf_power_cmd_handler}
 };
 
 static int uart_get_input(char *inbuf, unsigned int *bp)
