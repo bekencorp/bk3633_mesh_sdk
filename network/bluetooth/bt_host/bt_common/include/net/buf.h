@@ -650,7 +650,11 @@ struct net_buf *net_buf_alloc_debug(struct net_buf_pool *pool, s32_t timeout,
 #define	net_buf_alloc(_pool, _timeout) \
 	net_buf_alloc_debug(_pool, _timeout, __func__, __LINE__)
 #else
+#ifdef CONFIG_BT_MESH_REDUCE_RAM
+struct net_buf *net_buf_alloc(unsigned int size, u16_t buf_size);
+#else
 struct net_buf *net_buf_alloc(struct net_buf_pool *pool, s32_t timeout);
+#endif
 #endif
 
 /**
@@ -686,13 +690,19 @@ struct net_buf *net_buf_get(struct k_fifo *fifo, s32_t timeout);
  */
 static inline void net_buf_destroy(struct net_buf *buf)
 {
+#ifndef CONFIG_BT_MESH_REDUCE_RAM
 	struct net_buf_pool *pool = net_buf_pool_get(buf->pool_id);
+#endif
 	unsigned int key;
 
 	/* adv_buf_pool may be accessed from multiple threads, so let's
            add inter-thread protection here for adv_buf. */
 	key = irq_lock();
+#ifdef CONFIG_BT_MESH_REDUCE_RAM
+    krhino_mm_free(buf);
+#else
 	k_lifo_put(&pool->free, buf);
+#endif
 	irq_unlock(key);
 }
 

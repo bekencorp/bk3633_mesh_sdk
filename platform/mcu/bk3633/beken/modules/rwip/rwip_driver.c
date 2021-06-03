@@ -190,7 +190,7 @@ __STATIC uint32_t rwip_lpcycles_2_hus(uint32_t lpcycles, uint32_t *error_corr)
  *
  ****************************************************************************************
  */
-int32_t rwip_slot_2_lpcycles(int32_t hs_cnt)
+__ATTR_ARM int32_t rwip_slot_2_lpcycles(int32_t hs_cnt)
 {
     int32_t lpcycles;
 
@@ -199,7 +199,7 @@ int32_t rwip_slot_2_lpcycles(int32_t hs_cnt)
     ASSERT_ERR(hs_cnt < (0xFFFFFFFF / 10));
 
     // Compute the low power clock cycles - case of a 32kHz clock
-    lpcycles = hs_cnt * 10;
+    lpcycles = (hs_cnt * 10) ;
     #else //HZ32000
     // Sanity check: The number of slots should not be too high to avoid overflow
     ASSERT_ERR(hs_cnt < (0xFFFFFFFF >> 10));
@@ -210,7 +210,7 @@ int32_t rwip_slot_2_lpcycles(int32_t hs_cnt)
 
     // So reduce little bit sleep duration in order to allow fine time compensation
     // Note compensation will be in range of [1 , 2[ lp cycles if there is no external wake-up
-    lpcycles -= 10;
+    lpcycles--;
 
     return(lpcycles);
 }
@@ -438,7 +438,7 @@ void rwip_wakeup_end(void)
     rwble_sleep_wakeup_end();
     //#endif //(ROM_REGISTER_CALLBACK)
     #endif // (BLE_EMB_PRESENT)
-  //  uart_printf("wakeup_end:%d:%d:%d\r\n",current_time.hs,rwip_env.timer_hs_target,rwip_env.timer_hus_target);
+
     // Re-enable default common interrupts
     //ip_intcntl1_set(IP_FIFOINTMSK_BIT | IP_CRYPTINTMSK_BIT | IP_ERRORINTMSK_BIT | IP_SWINTMSK_BIT);
 
@@ -666,7 +666,7 @@ void rwip_driver_init(bool reset)
     #endif // (BLE_EMB_PRESENT || BT_EMB_PRESENT)
 }
 
-void rwip_prevent_sleep_set(uint16_t prv_slp_bit)
+__ATTR_ARM void rwip_prevent_sleep_set(uint16_t prv_slp_bit)
 {
     GLOBAL_INT_DISABLE();
     rwip_env.prevent_sleep |= prv_slp_bit;
@@ -830,6 +830,11 @@ __ATTR_ARM void rwip_sw_int_req(void)
     ip_intcntl1_swintmsk_setf(1);
     // start the SW interrupt
     ip_rwdmcntl_swint_req_setf(1);
+}
+
+__ATTR_ARM void rwip_set_hs_target_time(uint32_t target)
+{
+    rwip_env.timer_hus_target = target;
 }
 
 

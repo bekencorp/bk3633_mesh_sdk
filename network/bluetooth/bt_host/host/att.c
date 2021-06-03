@@ -70,8 +70,10 @@ struct bt_attr_data
     u16_t offset;
 };
 
+#ifndef CONFIG_BT_MESH_REDUCE_RAM
 /* Pool for incoming ATT packets */
 NET_BUF_POOL_DEFINE(prep_pool, CONFIG_BT_ATT_PREPARE_COUNT, BT_ATT_MTU, sizeof(struct bt_attr_data), NULL);
+#endif
 #endif /* CONFIG_BT_ATT_PREPARE_COUNT */
 
 enum
@@ -1302,7 +1304,11 @@ static u8_t prep_write_cb(const struct bt_gatt_attr *attr, void *user_data)
     }
 
     /* Copy data into the outstanding queue */
+#ifdef CONFIG_BT_MESH_REDUCE_RAM
+    data->buf = net_buf_alloc(sizeof(struct net_buf) + BT_ATT_MTU + ROUND_UP(sizeof(struct bt_attr_data), 4), BT_ATT_MTU);
+#else
     data->buf = net_buf_alloc(&prep_pool, K_NO_WAIT);
+#endif
     if (!data->buf) {
         data->err = BT_ATT_ERR_PREPARE_QUEUE_FULL;
         return BT_GATT_ITER_STOP;

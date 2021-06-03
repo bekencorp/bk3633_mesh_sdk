@@ -422,34 +422,13 @@ static void rf_force_agc_enable(bool en)
 //======================================
 extern volatile uint32_t XVR_ANALOG_REG_BAK[32];
 
-void  xvr_reg_initial(void) 
+void  xvr_reg_initial(void)
 {
     addXVR_Reg0x0 = 0xC4B0323F  ;XVR_ANALOG_REG_BAK[0] = 0xC4B0323F;
-
-
-#ifdef CONFIG_DUT_TEST_CMD
-	if(get_dut_flag()) //dut mode
-	{
-	    addXVR_Reg0x1 = 0x8295C200  ; XVR_ANALOG_REG_BAK[1] = 0x8295C200;
-	}
-	else
-#endif
-	{
-    	addXVR_Reg0x1 = 0x8295C200  ;XVR_ANALOG_REG_BAK[1] = 0x8295C200;
-	}
+    addXVR_Reg0x1 = 0x8295C200  ;XVR_ANALOG_REG_BAK[1] = 0x8295C200;
     addXVR_Reg0x2 = 0x2F42A000  ;XVR_ANALOG_REG_BAK[2] = 0x2F42A000;
     addXVR_Reg0x3 = 0x60035C62  ;XVR_ANALOG_REG_BAK[3] = 0x60035C62;
-
-#ifdef CONFIG_DUT_TEST_CMD
-	if(get_dut_flag()) //dut mode
-	{
-		addXVR_Reg0x4 = 0xFFD741CF; XVR_ANALOG_REG_BAK[4] = 0xFFD741CF;//0xFFD6BBCC
-	}
-	else 
-#endif
-	{
-    	addXVR_Reg0x4 = 0xFF56AACF  ;XVR_ANALOG_REG_BAK[4] = 0xFF56AACF;//0xFFD6BBCC
-	}
+    addXVR_Reg0x4 = 0xFF56AACF  ;XVR_ANALOG_REG_BAK[4] = 0xFF56AACF;//0xFFD6BBCC
     addXVR_Reg0x5 = 0x4620501F  ;XVR_ANALOG_REG_BAK[5] = 0x4620501F; //0x4620501F 03.31 // 0x4420501F 04.01
     addXVR_Reg0x6 = 0x8097CE20  ;XVR_ANALOG_REG_BAK[6] = 0x8097CE20;
     addXVR_Reg0x7 = 0xAA023DC0  ;XVR_ANALOG_REG_BAK[7] = 0xAA023DC0;
@@ -496,7 +475,7 @@ void  xvr_reg_initial(void)
     addXVR_Reg0x38 = 0X00000000;// REG_38
     addXVR_Reg0x39 = 0X00000000;// REG_39
     addXVR_Reg0x3a = 0x00128000;// REG_3A
-    addXVR_Reg0x3b = 0x36341048;// REG_3B 0x22341048
+    addXVR_Reg0x3b = 0x36341248;//0x36341048;// REG_3B 0x22341048
     addXVR_Reg0x3c = 0x01FF1c80;// REG_3C
     addXVR_Reg0x3d = 0x00000000;// REG_3D
     addXVR_Reg0x3e = 0X0000D940;// REG_3E
@@ -519,8 +498,6 @@ void  xvr_reg_initial(void)
     addXVR_Reg0x4e = 0xFDFBFAF8;// REG_4E
     addXVR_Reg0x4f = 0xFFFFFFFE;// REG_4F
     
-    
-        
     addPMU_Reg0x10 |= (0X1 << 8);
     addPMU_Reg0x12 &= ~(0X1 << 8);
     
@@ -546,9 +523,7 @@ void  xvr_reg_initial(void)
     XVR_ANALOG_REG_BAK[0x1e]  |= 0x80000000;
     addXVR_Reg0x1e = XVR_ANALOG_REG_BAK[0x1e];
     CLK32K_AutoCali_init();
-    Delay_ms(50);
-    // Fix the Frequency deviation is too large issue.
-    xtal_cal_set(0x4E);
+    Delay_ms(5);
 }
 
 void rf_init(struct rwip_rf_api *api)
@@ -802,13 +777,13 @@ void rf_init(struct rwip_rf_api *api)
     #endif //CFG_BLE
     
 
-   void  rf_debug_gpio_init(uint8_t GPIO_C_D);
-   rf_debug_gpio_init(1);
+//    void  rf_debug_gpio_init(uint8_t GPIO_C_D);
+//    rf_debug_gpio_init(1);
 }
 
 void Delay_us(int num)
 {
-    int x, y;
+    volatile int x, y;
     for(y = 0; y < num; y ++ )
     {
         for(x = 0; x < 10; x++);
@@ -817,7 +792,7 @@ void Delay_us(int num)
 
 void Delay(int num)
 {
-    int x, y;
+    volatile int x, y;
     for(y = 0; y < num; y ++ )
     {
         for(x = 0; x < 50; x++);
@@ -826,7 +801,7 @@ void Delay(int num)
 
 void Delay_ms(int num) //sync from svn revision 18
 {
-    int x, y;
+    volatile int x, y;
     for(y = 0; y < num; y ++ )
     {
         for(x = 0; x < 3260; x++);
@@ -938,6 +913,7 @@ void kmod_calibration(void)
 	
     uint32_t value;
     uint32_t value_kcal_result;
+    uint32_t value_addXVR_Reg0x24;
 
 // start
     addXVR_Reg0x30 &= ~(0x3 << 0);
@@ -953,27 +929,29 @@ void kmod_calibration(void)
     
     addXVR_Reg0x24 &= ~(0x7f);
     addXVR_Reg0x24 |= (0x2 << 0);
+    value_addXVR_Reg0x24 = addXVR_Reg0x24;
+    addXVR_Reg0x24 &= ~(0xf << 7);
     
 
     
-    Delay_ms(10);
+    Delay_ms(1);
     addXVR_Reg0x25 |= (1<<12);
-    Delay_ms(10);
+    Delay_ms(1);
     addXVR_Reg0x25 |= (1<<13);
-    Delay_ms(10);
+    Delay_ms(1);
     addXVR_Reg0x25 |= (1<<11);
     
-    Delay_ms(10);
+    Delay_ms(1);
     XVR_ANALOG_REG_BAK[3] &= ~(0x1 << 6);
     addXVR_Reg0x3 = XVR_ANALOG_REG_BAK[3];
-    Delay_ms(10);
+    Delay_ms(1);
     XVR_ANALOG_REG_BAK[3] |= (0x1 << 7);
     addXVR_Reg0x3 = XVR_ANALOG_REG_BAK[3];
-    Delay_ms(10);
+    Delay_ms(1);
     addXVR_Reg0x25 |= (1<<16);
     
     ///////////////////////////start end
-    Delay_ms(200);
+    Delay_ms(15);   //the minimum value to delay is 10.
     value = addXVR_Reg0x12;
 
     value = ((value >> 16) & 0x1fff);
@@ -1000,6 +978,7 @@ void kmod_calibration(void)
     
     addXVR_Reg0x25 &= ~(1<<12); 
     
+    addXVR_Reg0x24 = value_addXVR_Reg0x24;
     addXVR_Reg0x24 |= (0x1 << 17);
     
     ////////////////////////
@@ -1069,7 +1048,75 @@ void CLK32K_AutoCali_init(void)
     XVR_ANALOG_REG_BAK[0xc] |= (0x1 << 14);    
     addXVR_Reg0xc = XVR_ANALOG_REG_BAK[0xc]; 
     addXVR_Reg0xc = 0x13881004; 
-    Delay_ms(10);
+    Delay_ms(1);
     XVR_ANALOG_REG_BAK[0xc] = 0x1388d004;
     addXVR_Reg0xc = 0x1388d004;
 }
+
+#ifdef CONFIG_DUT_TEST_CMD
+
+/* k is the index frq, frq =2402+ k*2 MHz, k=0, ¡­ ,39 */
+void rf_fcc_tx_test(uint8_t k)
+{
+	// Exchange memory buffer to be filled
+    // System ram buffer to be filled
+	uint32_t val = addXVR_Reg0x24;
+
+	if(get_dut_flag() == 0) //dut mode
+	{
+		printf("application mode can not fcc test ! \r\n");
+		return;
+	}
+
+	if(k > 39)
+	{
+		printf("the frq index k is %d error! \r\n", k);
+		return;
+	}
+
+	printf("rf_fcc_tx_test: %d\r\n", k);
+
+    set_fcc_testing_flg(1);
+
+    val &=0x780;
+
+    val |= (uint32_t)((k + 1)<< 1);
+
+	if(addXVR_Reg0x24 != val)
+	{
+		addXVR_Reg0x25 &= 0xFFF00000 ;  // Clear XVR Test    //clear [19:0]
+
+        Delay_ms(10);
+
+		addXVR_Reg0x24 = val;
+	}
+    addXVR_Reg0x25 |= (0x1<<12) |(0x1<<13);
+
+}
+
+void rf_fcc_tx_test_stop(void)
+{
+    uint32_t var=addXVR_Reg0x24;
+
+	if(!get_dut_flag()) //dut mode
+	{
+		printf("application mode can not fcc test !\r\n");
+		return;
+	}
+
+    if(get_fcc_testing_flg())
+    {
+    	printf("stop fcc test \r\n");
+        set_fcc_testing_flg(0);
+
+        var &=0x00000780;
+        var |= 0x000E0002;
+        addXVR_Reg0x24 = var ; // 1M
+        addXVR_Reg0x25 &= ~((0x1 << 11)|(0x1 << 12)|(0x1 << 13)); // close all fcc rf test
+    }
+	else
+	{
+		printf("rf fcc test has stop \r\n");
+	}
+}
+#endif

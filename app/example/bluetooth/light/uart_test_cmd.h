@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define UART_TEST_TASK_STACK    2048
+#define UART_TEST_TASK_STACK    1048
 
 #define UART_CMD_READ_PERIOD    200
 

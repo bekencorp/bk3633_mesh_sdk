@@ -43,11 +43,16 @@
 #define WARN_ALLOC_INTERVAL K_FOREVER
 #endif
 
+#ifndef CONFIG_BT_MESH_REDUCE_RAM
 extern struct net_buf_pool hci_cmd_pool;
 extern struct net_buf_pool hci_rx_pool;
 extern struct net_buf_pool acl_tx_pool;
+#endif
 
 #ifdef CONFIG_BT_MESH
+#ifdef CONFIG_BT_MESH_REDUCE_RAM
+struct net_buf_pool *net_buf_pool_list[] = {NULL};
+#else
 extern struct net_buf_pool adv_buf_pool;
 #ifdef CONFIG_BT_MESH_FRIEND
 extern struct net_buf_pool friend_buf_pool;
@@ -60,8 +65,13 @@ struct net_buf_pool *net_buf_pool_list[] = { &hci_cmd_pool
                                            , &friend_buf_pool
 #endif
                                            };
+#endif
+#else
+#ifdef CONFIG_BT_MESH_REDUCE_RAM
+struct net_buf_pool *net_buf_pool_list[] = { NULL};
 #else
 struct net_buf_pool *net_buf_pool_list[] = { &hci_cmd_pool, &hci_rx_pool, &acl_tx_pool };
+#endif
 #endif
 
 struct net_buf_pool *net_buf_pool_get(int id)
@@ -127,21 +137,31 @@ void net_buf_reset(struct net_buf *buf)
 struct net_buf *net_buf_alloc_debug(struct net_buf_pool *pool, s32_t timeout,
 				    const char *func, int line)
 #else
+#ifdef CONFIG_BT_MESH_REDUCE_RAM
+struct net_buf *net_buf_alloc(unsigned int size, u16_t buf_size)
+#else
 struct net_buf *net_buf_alloc(struct net_buf_pool *pool, s32_t timeout)
+#endif
 #endif
 {
 	struct net_buf *buf;
 	unsigned int key;
 
+#ifndef CONFIG_BT_MESH_REDUCE_RAM
 	NET_BUF_ASSERT(pool);
 
 	NET_BUF_DBG("%s():%d: pool %p timeout %d", func, line, pool, timeout);
+#endif
 
 	/* We need to lock interrupts temporarily to prevent race conditions
 	 * when accessing pool->uninit_count.
 	 */
 	key = irq_lock();
+#ifdef CONFIG_BT_MESH_REDUCE_RAM
+	buf = krhino_mm_alloc(size);
+#endif
 
+#ifndef CONFIG_BT_MESH_REDUCE_RAM
 	/* If there are uninitialized buffers we're guaranteed to succeed
 	 * with the allocation one way or another.
 	 */
@@ -198,23 +218,32 @@ struct net_buf *net_buf_alloc(struct net_buf_pool *pool, s32_t timeout)
 #else
 	buf = k_lifo_get(&pool->free, timeout);
 #endif
+#endif
+
 	if (!buf) {
 		NET_BUF_ERR("%s():%d: Failed to get free buffer", func, line);
         irq_unlock(key);
 		return NULL;
 	}
 
+#ifndef CONFIG_BT_MESH_REDUCE_RAM
 success:
-	NET_BUF_DBG("allocated buf %p", buf);
+#endif
+    NET_BUF_DBG("allocated buf %p", buf);
 
 	buf->ref   = 1;
 	buf->flags = 0;
 	buf->frags = NULL;
 	net_buf_reset(buf);
+#ifdef CONFIG_BT_MESH_REDUCE_RAM
+    buf->size = buf_size;
+#endif
 
+#ifndef CONFIG_BT_MESH_REDUCE_RAM
 #if defined(CONFIG_NET_BUF_POOL_USAGE)
 	pool->avail_count--;
 	NET_BUF_ASSERT(pool->avail_count >= 0);
+#endif
 #endif
     irq_unlock(key);
 	return buf;
@@ -340,7 +369,9 @@ void net_buf_unref(struct net_buf *buf)
 
 	while (buf) {
 		struct net_buf *frags = buf->frags;
-		struct net_buf_pool *pool;
+#ifndef CONFIG_BT_MESH_REDUCE_RAM
+		struct net_buf_pool *pool;		
+#endif
 
 #if defined(CONFIG_NET_BUF_LOG)
 		if (!buf->ref) {
@@ -353,29 +384,33 @@ void net_buf_unref(struct net_buf *buf)
 			NET_BUF_ERR("buf %p double free!! \r\n", buf);
 			return;
 		}
-		
+#ifndef CONFIG_BT_MESH_REDUCE_RAM
 		NET_BUF_DBG("buf %p ref %u pool_id %u frags %p", buf, buf->ref,
 			    buf->pool_id, buf->frags);
-
+#endif
 		if (--buf->ref > 0) {
 			return;
 		}
 
 		buf->frags = NULL;
-
+#ifndef CONFIG_BT_MESH_REDUCE_RAM
 		pool = net_buf_pool_get(buf->pool_id);
+#endif
 
 #if defined(CONFIG_NET_BUF_POOL_USAGE)
 		pool->avail_count++;
 		NET_BUF_ASSERT(pool->avail_count <= pool->buf_count);
 #endif
 
+#ifdef CONFIG_BT_MESH_REDUCE_RAM		
+		net_buf_destroy(buf);
+#else
 		if (pool->destroy) {
 			pool->destroy(buf);
 		} else {
 			net_buf_destroy(buf);
 		}
-
+#endif
 		buf = frags;
 	}
 }
@@ -392,6 +427,9 @@ struct net_buf *net_buf_ref(struct net_buf *buf)
 
 struct net_buf *net_buf_clone(struct net_buf *buf, s32_t timeout)
 {
+#ifdef CONFIG_BT_MESH_REDUCE_RAM
+    return NULL;
+#else
 	struct net_buf_pool *pool;
 	struct net_buf *clone;
 
@@ -410,6 +448,7 @@ struct net_buf *net_buf_clone(struct net_buf *buf, s32_t timeout)
 	memcpy(net_buf_add(clone, buf->len), buf->data, buf->len);
 
 	return clone;
+#endif
 }
 
 struct net_buf *net_buf_frag_last(struct net_buf *buf)

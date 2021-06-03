@@ -79,7 +79,7 @@ void ke_flush(void);
  * @return      True if sleep is allowed, false otherwise
  ****************************************************************************************
  */
-bool ke_sleep_check(void);
+__ATTR_ARM bool ke_sleep_check(void);
 
 #if (KE_PROFILING)
 /**

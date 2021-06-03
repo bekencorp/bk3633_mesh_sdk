@@ -177,7 +177,7 @@ __BLEIRQ void rwble_isr(void)
     DBG_SWDIAG(ISR, BLE, 0);
 }
 
-void rwble_sleep_enter(void)
+__ATTR_ARM void rwble_sleep_enter(void)
 {
     // Keep currently enabled interrupts
     rwble_env.irq_mask1 = ip_intcntl1_get();

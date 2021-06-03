@@ -30,9 +30,9 @@
  *                                Macros
  * ======================================================================== */
 #define _FIQ_STACK_SIZE_ 	              0x7F0
-#define _IRQ_STACK_SIZE_ 	              0xFF0
-#define _SVC_STACK_SIZE_ 	              0x3F0
-#define _SYS_STACK_SIZE_ 	              0x3F0
+#define _IRQ_STACK_SIZE_ 	              0x7F0
+#define _SVC_STACK_SIZE_ 	              0x5F0
+#define _SYS_STACK_SIZE_ 	              0x5F0
 #define _UNUSED_STACK_SIZE_ 	          0x010
 
 #define BOOT_MODE_MASK     	              0x1F

@@ -54,6 +54,11 @@ void tick_list_rm(ktask_t *task)
     }
 }
 
+void tick_count_update(tick_i_t ticks)
+{
+    g_tick_count += ticks;
+}
+
 void tick_list_update(tick_i_t ticks)
 {
     CPSR_ALLOC();
@@ -71,6 +76,8 @@ void tick_list_update(tick_i_t ticks)
 
     tick_head_ptr = &g_tick_head;
     iter          =  tick_head_ptr->next;
+
+    //printf("%s, g_tick_count = %d\n", __func__, g_tick_count);
 
     while (RHINO_TRUE) {
         /* search all the time list if possible */

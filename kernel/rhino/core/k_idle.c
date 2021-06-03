@@ -16,6 +16,7 @@ void idle_task(void *arg)
 #endif
 
     while (RHINO_TRUE) {
+        hal_wdg_reload(NULL);
         RHINO_CPU_INTRPT_DISABLE();
 
         g_idle_count[cpu_cur_get()]++;

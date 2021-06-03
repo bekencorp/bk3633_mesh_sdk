@@ -131,7 +131,7 @@ int32_t hal_flash_erase(hal_partition_t in_partition, uint32_t off_set, uint32_t
             erase_size = BLOCK1_SIZE;
         }
 
-        //hal_wdg_reload(&wdg);
+        hal_wdg_reload(&wdg);
         hal_flash_lock();
         ddev_control(flash_hdl, cmd, (void *)&addr);
         hal_flash_unlock();
@@ -140,7 +140,7 @@ int32_t hal_flash_erase(hal_partition_t in_partition, uint32_t off_set, uint32_t
     }
 
 
-    //hal_wdg_reload(&wdg);
+    hal_wdg_reload(&wdg);
 	ddev_close(flash_hdl);
     
     return 0;
@@ -176,11 +176,11 @@ int32_t hal_flash_write(hal_partition_t in_partition, uint32_t *off_set, const v
     }
 
 	flash_hdl = ddev_open(FLASH_DEV_NAME, &status, 0);
-    // hal_wdg_reload(&wdg);
+    hal_wdg_reload(&wdg);
     hal_flash_lock();
     ddev_write(flash_hdl, in_buf, in_buf_len, start_addr);
     hal_flash_unlock();
-    //hal_wdg_reload(&wdg);
+    hal_wdg_reload(&wdg);
 	ddev_close(flash_hdl);
 
     *off_set += in_buf_len;
@@ -212,13 +212,13 @@ int32_t hal_flash_read(hal_partition_t in_partition, int32_t *off_set, void *out
     start_addr = partition_info->partition_start_addr + *off_set;
 
 	flash_hdl = ddev_open(FLASH_DEV_NAME, &status, 0);
-    // hal_wdg_reload(&wdg);
+    hal_wdg_reload(&wdg);
     hal_flash_lock();
     if (ddev_read(flash_hdl, out_buf, out_buf_len, start_addr) != 0) {
         return -1;
     }
     hal_flash_unlock();
-    // hal_wdg_reload(&wdg);
+    hal_wdg_reload(&wdg);
 	ddev_close(flash_hdl);
 
     *off_set += out_buf_len;

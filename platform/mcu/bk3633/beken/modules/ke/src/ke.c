@@ -109,7 +109,7 @@ void ke_flush(void)
     }
 }
 
-bool ke_sleep_check(void)
+__ATTR_ARM bool ke_sleep_check(void)
 {
     return (ke_event_get_all() == 0);
 }

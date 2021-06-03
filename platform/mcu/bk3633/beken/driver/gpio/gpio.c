@@ -94,14 +94,14 @@ static void gpio_enable_second_function(UINT32 func_mode)
         case GFUNC_MODE_UART1:
     	    gpio_config(GPIO_UART1_TX, OUTPUT, PULL_HIGH);
     	    gpio_config_func(GPIO_UART1_TX);
-    	    gpio_config(GPIO_UART1_RX, INPUT, PULL_NONE);
+    	    gpio_config(GPIO_UART1_RX, INPUT, PULL_HIGH);
     	    gpio_config_func(GPIO_UART1_RX);
             break;
 
         case GFUNC_MODE_UART2:
     	    gpio_config(GPIO_UART2_TX, OUTPUT, PULL_HIGH);
     	    gpio_config_func(GPIO_UART2_TX);
-    	    gpio_config(GPIO_UART2_RX, INPUT, PULL_NONE);
+    	    gpio_config(GPIO_UART2_RX, INPUT, PULL_HIGH);
     	    gpio_config_func(GPIO_UART2_RX);
             break;
 

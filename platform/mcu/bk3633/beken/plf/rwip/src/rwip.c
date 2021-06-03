@@ -147,7 +147,7 @@
 #endif // (BLE_EMB_PRESENT || BT_EMB_PRESENT)
 
 __attribute__((section("STACK_FUNC")))
-const struct rwip_func_tag rwip_func = {rwip_isr, rwip_init, rwip_schedule, rwip_set_bd_address, rwip_sleep, rwip_sleep_flag};
+const struct rwip_func_tag rwip_func = {rwip_isr, rwip_init, rwip_schedule, rwip_set_bd_address, rwip_sleep, rwip_sleep_flag, rwip_time_get};
 
 #if (DISPLAY_SUPPORT)
 ///Table of HW image names for display
@@ -909,7 +909,7 @@ void rwip_schedule(void)
 {
     #if (BLE_EMB_PRESENT || BT_EMB_PRESENT)
     // If system is waking up, delay the handling up to the Bluetooth clock is available and corrected
-    if ((rwip_env.prevent_sleep & (RW_WAKE_UP_ONGOING | RW_BLE_ACTIVE_MODE)) == 0)
+    if ((rwip_env.prevent_sleep & (RW_WAKE_UP_ONGOING | RW_BLE_ACTIVE_MODE | RW_BLE_SLEEP_ONGOING)) == 0)
     #endif // (BLE_EMB_PRESENT || BT_EMB_PRESENT)
     {
         // schedule all pending events
@@ -1113,7 +1113,7 @@ void rwip_isr(void)
     DBG_SWDIAG(ISR, RWIP, 0);
 }
 
-uint8_t rwip_sleep(int32_t * dur, int32_t max_slots)
+__ATTR_ARM uint8_t rwip_sleep(int32_t * dur, int32_t max_slots)
 {
     uint8_t sleep_res = RWIP_ACTIVE;
     #if (BLE_EMB_PRESENT || BT_EMB_PRESENT)
@@ -1148,6 +1148,8 @@ uint8_t rwip_sleep(int32_t * dur, int32_t max_slots)
         // First check if no pending procedure prevent from going to sleep
         if (rwip_env.prevent_sleep != 0)
         {
+            // rom_env.os_print("%s, L %d, prevent_sleep 0x%x\n",
+            //                  __func__, __LINE__, rwip_env.prevent_sleep);
             *dur = 0;
             break;
         }
@@ -1159,8 +1161,7 @@ uint8_t rwip_sleep(int32_t * dur, int32_t max_slots)
          **************           Retrieve Current time            **************
          ************************************************************************/
         current_time = rwip_time_get();
-        // remove the on-going slot for clock correction
-        current_time.hs += 1;
+    
         // Remove 1 more slot because next slot will be started at end of function
         if((HALF_SLOT_INV(current_time.hus)) < rwip_env.sleep_algo_dur)
         {
@@ -1200,14 +1201,7 @@ uint8_t rwip_sleep(int32_t * dur, int32_t max_slots)
             sleep_duration = co_min_s(sleep_duration, duration);
         }
 
-        // A timer ISR is not yet handled or will be raised soon
-        // note the sleep duration could be negative, that's why it's useful to check if a minimum requirement is ok
-        // at least one half slot.
-        if(sleep_duration <= RWIP_MINIMUM_SLEEP_TIME)
-        {
-            *dur = 0;
-            break;
-        }
+        
 
         DBG_SWDIAG(SLEEP, ALGO, 3);
 
@@ -1218,12 +1212,17 @@ uint8_t rwip_sleep(int32_t * dur, int32_t max_slots)
 
         sleep_duration = co_min_s(sleep_duration, max_slots*2);
 
-        if(sleep_duration && sleep_duration*0.625/2 < 10)
+        // A timer ISR is not yet handled or will be raised soon
+        // note the sleep duration could be negative, that's why it's useful to check if a minimum requirement is ok
+        // at least one half slot.
+        if(sleep_duration <= RWIP_MINIMUM_SLEEP_TIME)
         {
-            //Incase sleep time less than 1 system tick 10ms
+            // rom_env.os_print("%s, L %d, sleep_duration <= RWIP_MINIMUM_SLEEP_TIME\n",
+            //                  __func__, __LINE__);
             *dur = 0;
             break;
         }
+
 
         *dur = sleep_duration;
         sleep_duration = rwip_slot_2_lpcycles(sleep_duration);
@@ -1233,8 +1232,9 @@ uint8_t rwip_sleep(int32_t * dur, int32_t max_slots)
         // sleep duration > max(twosc,twext) + 1 (all in lp clk cycle)
         if(sleep_duration && (sleep_duration < rwip_env.lp_cycle_wakeup_delay * 2))
         {
-            *dur = 0;
-            break;
+            
+             *dur = 0;
+             break;
         }
 
         DBG_SWDIAG(SLEEP, ALGO, 4);
@@ -1288,12 +1288,23 @@ uint8_t rwip_sleep(int32_t * dur, int32_t max_slots)
         /************************************************************************
          **************               SWITCH OFF RF                **************
          ************************************************************************/
-        rwip_rf.sleep();
-
-        rwip_prevent_sleep_set(RW_BLE_SLEEP_ONGOING) ;
+        //rwip_rf.sleep();
+        // rf sleep.
+        ip_deepslcntl_set(ip_deepslcntl_get() |
+					#if 1
+				      0x07				);		//// IP_DEEP_SLEEP_ON_BIT | IP_RADIO_SLEEP_EN_BIT | IP_OSC_SLEEP_EN_BIT
+					#else
+                      IP_DEEP_SLEEP_ON_BIT |    // RW BT Core sleep
+                      IP_RADIO_SLEEP_EN_BIT |   // Radio sleep
+                      IP_OSC_SLEEP_EN_BIT);     // Oscillator sleep
+					#endif
+ 
+        rwip_prevent_sleep_set(RW_BLE_SLEEP_ONGOING);
         #endif // (BLE_EMB_PRESENT || BT_EMB_PRESENT)
 
     } while(0);
+
+    // rom_env.os_print("%s, nb_porg %d\n", __func__, sch_get_nb_prog());
 
     if(sleep_res != RWIP_DEEP_SLEEP)
     {

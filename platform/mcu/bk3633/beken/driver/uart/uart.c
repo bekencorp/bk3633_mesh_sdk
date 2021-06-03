@@ -869,7 +869,7 @@ void uart2_init(void)
     intr_status = REG_READ(REG_UART2_INTR_STATUS);
     REG_WRITE(REG_UART2_INTR_STATUS, intr_status);
 
-    intc_enable(IRQ_UART2);
+    //intc_enable(IRQ_UART2);
 }
 
 void uart2_exit(void)

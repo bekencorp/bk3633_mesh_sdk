@@ -69,7 +69,7 @@ bool rwble_activity_ongoing_check(void);
  * @brief Put RW-BLE Core into deep sleep
  ****************************************************************************************
  */
-void rwble_sleep_enter(void);
+__ATTR_ARM void rwble_sleep_enter(void);
 
 
 /**

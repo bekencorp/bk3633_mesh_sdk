@@ -269,5 +269,7 @@ void sch_prog_end_isr(uint8_t et_idx);
 __ATTR_ARM void lld_evt_start_scan_sch(struct sch_arb_elt_tag *elt);
 #endif //BLE_MESH_FULL_SCAN
 
+uint8_t sch_get_nb_prog(void);
+
 /// @} SCH_PROG
 #endif // SCH_PROG_H_

@@ -34,6 +34,8 @@ extern void do_swi( void );
 #include "power_save_pub.h"
 #endif
 
+#include "user_config.h"
+
 ISR_T _isrs[INTC_MAX_COUNT] = {0,};
 static UINT32 isrs_mask = 0;
 static ISR_LIST_T isr_hdr = {{&isr_hdr.isr, &isr_hdr.isr},};
@@ -219,9 +221,13 @@ void rf_ps_wakeup_isr_idle_int_cb()
     }
 #endif    
 }
-
+#include "rwip.h"
+#include "reg_intc.h"
+#define INT_STATUS_RWBLE_bit     (0x01<<20)
+#define REG_ICU_INT_FLAG                            &(addSYS_Reg0x12)
 void intc_irq(void)
 {
+#if 0
     UINT32 irq_status;
     INTC_PRT("%s\n", __func__);
     irq_status = sddev_control(ICU_DEV_NAME, CMD_GET_INTR_STATUS, 0);
@@ -237,13 +243,89 @@ void intc_irq(void)
     sddev_control(ICU_DEV_NAME, CMD_CLR_INTR_STATUS, &irq_status);
 
     intc_hdl_entry(irq_status);
+#endif 
+    
+	uint32_t irq_status = 0;
+	uint32_t IntStat = intc_status_get();
+
+    // call the function handler
+	if(IntStat & INT_STATUS_UART0_bit)
+	{
+		irq_status |= INT_STATUS_UART0_bit;
+        uart1_isr();
+	}
+    if(IntStat & INT_STATUS_UART2_bit)
+	{
+		irq_status |= INT_STATUS_UART2_bit;
+        uart2_isr();
+	}
+#if (ADC_DRIVER)
+    if(IntStat & INT_STATUS_ADC_bit)
+    {
+        irq_status |= INT_STATUS_ADC_bit;
+        adc_isr();
+    }
+#endif
+#if (AON_RTC_DRIVER)
+	if(IntStat & INT_STATUS_AON_RTC_bit)
+	{
+		irq_status |= INT_STATUS_AON_RTC_bit;
+		aon_rtc_isr();
+	}
+#endif
+
+
+#if (GPIO_DRIVER)
+	if(IntStat & INT_STATUS_AON_GPIO_bit)
+	{
+		irq_status |= INT_STATUS_AON_GPIO_bit;
+		gpio_isr();
+	}
+#endif
+#if (SPI_DRIVER)
+    if(IntStat & INT_STATUS_SPI0_bit)
+    {
+        irq_status |= INT_STATUS_SPI0_bit;
+        spi_isr();
+    }
+#endif
+#if (I2C_DRIVER)	
+    if(IntStat & INT_STATUS_I2C0_bit)
+    {
+        irq_status |= INT_STATUS_I2C0_bit;
+        i2c_isr();
+    }
+#endif
+#if (PWM_DRIVER)
+    if(IntStat & INT_STATUS_PWM0_bit)
+    {
+        irq_status |= INT_STATUS_PWM0_bit;
+        pwm_isr();
+    }
+    if(IntStat & INT_STATUS_PWM1_bit)
+    {
+        irq_status |= INT_STATUS_PWM1_bit;
+        pwm_isr();
+    }
+#endif
+
+#if(USB_DRIVER)
+    if(IntStat & INT_STATUS_USB_bit)
+    {
+    	irq_status |= INT_STATUS_USB_bit;
+    	USB_InterruptHandler();
+    }
+#endif
+
+	intc_status_clear(irq_status);
+    
 }
 
 void intc_fiq(void)
 {
     UINT32 fiq_status;
-
-    fiq_status = sddev_control(ICU_DEV_NAME, CMD_GET_INTR_STATUS, 0);
+    // fiq_status = sddev_control(ICU_DEV_NAME, CMD_GET_INTR_STATUS, 0);
+    fiq_status =  REG_READ(REG_ICU_INT_FLAG);
     //fiq_status = fiq_status & 0xFFFF0000;
 	if(0 == fiq_status & 0x8001)
 	{
@@ -253,17 +335,17 @@ void intc_fiq(void)
 	}
 
 	// fiq_status &= 0x8001;
-    sddev_control(ICU_DEV_NAME, CMD_CLR_INTR_STATUS, &fiq_status);
-
-    intc_hdl_entry(fiq_status);
+    // sddev_control(ICU_DEV_NAME, CMD_CLR_INTR_STATUS, &fiq_status);
+    UINT32  reg;
+    reg = REG_READ(REG_ICU_INT_FLAG);
+    reg |= fiq_status; ///write 1 to clear interrupt status
+    REG_WRITE(REG_ICU_INT_FLAG, reg);
+    if(fiq_status & BIT(22))  //BIT
+	{
+		rwip_func.rwip_isr();
+	}
+    //printf("%s\n", __func__);
 }
-
-#if CFG_SUPPORT_ALIOS
-void deafult_swi(void)
-{
-    while(1);
-}
-#endif
 
 void intc_init(void)
 {
@@ -282,6 +364,9 @@ void intc_init(void)
     addSYS_Reg0x10 = 0; // int enable 0:disable 1::enable
     addSYS_Reg0x11 = 0; // priority; 0: irq  1:fiq
 
+    setf_SYS_Reg0x11_int_rwble_pri; // 1:fiq
+    setf_SYS_Reg0x11_int_rwdm_pri; // 1:fiq
+    setf_SYS_Reg0x11_int_rwbt_pri; // 1:fiq
     return;
 }
 

@@ -903,9 +903,9 @@ static u8_t disconnected_cb(const struct bt_gatt_attr *attr, void *user_data)
 	ccc = attr->user_data;
 
 	/* If already disabled skip */
-	if (!ccc->value) {
-		return BT_GATT_ITER_CONTINUE;
-	}
+	// if (!ccc->value) {
+	// 	return BT_GATT_ITER_CONTINUE;
+	// }
 
 	for (i = 0; i < ccc->cfg_len; i++) {
 		/* Ignore configurations with disabled value */

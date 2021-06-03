@@ -204,7 +204,7 @@ uint32_t icu_get_reset_reason(void)
     uint32_t reg0x0_val, reg0x3_val;
 
     reg0x0_val = get_PMU_Reg0x0_reset_reason;
-    reg0x3_val = addPMU_Reg0x3 & 0xffff;
+    reg0x3_val = addPMU_Reg0x2 & 0xffff;
 
     printf("%s reg0x0_val %x reg0x3_val %x \r\n", __func__, reg0x0_val, reg0x3_val);
 
@@ -231,8 +231,8 @@ uint32_t icu_get_reset_reason(void)
 void icu_set_reset_reason(uint32_t reson_data)
 {
     setf_PMU_Reg0x1_wdt_reset_ctrl;
-    addPMU_Reg0x3 = reson_data;
-    // printf("%s, set reset reason=%x\r\n", __func__, addPMU_Reg0x3);   
+    addPMU_Reg0x2 = reson_data;
+    // printf("%s, set reset reason=%x\r\n", __func__, addPMU_Reg0x2);   
 }
 
 uint8_t core_peri_clk_freq_set(uint8_t core_clk, uint8_t peri_clk)

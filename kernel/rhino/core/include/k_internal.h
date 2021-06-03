@@ -141,6 +141,7 @@ void tick_task_start(void);
 void tick_list_rm(ktask_t *task);
 void tick_list_insert(ktask_t *task, tick_t time);
 void tick_list_update(tick_i_t ticks);
+void tick_count_update(tick_i_t ticks);
 
 uint8_t mutex_pri_limit(ktask_t *tcb, uint8_t pri);
 void    mutex_task_pri_reset(ktask_t *tcb);

@@ -353,6 +353,7 @@ struct rwip_func_tag
 	void (*rwip_set_bd_address)(struct bd_addr *bd_addr);
     uint8_t (*rwip_sleep)(int32_t * dur, int32_t max_slots);
     uint16_t (*rwip_sleep_flag)(void);
+    rwip_time_t (*rwip_time_get)(void);
 };
 extern const struct rwip_func_tag rwip_func;
 
@@ -636,7 +637,7 @@ void rwip_wakeup_end(void);
 void rwip_timer_10ms_handler(void);
 void rwip_crypt_isr_handler(void);
 void rwip_sw_int_handler(void);
-int32_t rwip_slot_2_lpcycles(int32_t hs_cnt);
+__ATTR_ARM int32_t rwip_slot_2_lpcycles(int32_t hs_cnt);
 
 void rwip_set_bd_address(struct bd_addr *bd_addr);
 

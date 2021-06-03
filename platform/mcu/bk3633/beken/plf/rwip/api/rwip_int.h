@@ -95,6 +95,8 @@ extern struct rwip_env_tag rwip_env;
  */
 void rwip_driver_init(bool reset);
 
+void rwip_set_hs_target_time(uint32_t target);
+
 
 ///@} ROOT
 

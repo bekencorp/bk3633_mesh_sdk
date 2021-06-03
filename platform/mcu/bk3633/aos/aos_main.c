@@ -16,7 +16,7 @@
 
 #define AOS_START_STACK 300
 
-static ktask_t *aos_app_task_obj;
+static ktask_t aos_app_task_obj;
 
 extern void board_init(void);
 
@@ -51,11 +51,11 @@ static void sys_init(void)
 
 #endif
 
-    krhino_task_del(krhino_cur_task_get());
-    aos_free(aos_app_task_obj);
+    // krhino_task_del(krhino_cur_task_get());
+    // aos_free(aos_app_task_obj);
 }
 
-//static cpu_stack_t aos_app_stack[AOS_START_STACK];
+static cpu_stack_t aos_app_stack[AOS_START_STACK];
 
 void sys_start(void)
 {
@@ -69,13 +69,13 @@ void sys_start(void)
     fclk_init(FCLK_PWM_ID, RHINO_CONFIG_TICKS_PER_SECOND);
     hal_flash_secure_sector(FLASH_PROTECT_SEC_120);
 
-    printf("start sys_init \r\n\r\n");
-    aos_app_task_obj = aos_zalloc(sizeof(ktask_t));
-    krhino_task_dyn_create(aos_app_task_obj, "aos-app", 0, AOS_DEFAULT_APP_PRI, 0, 
-                           AOS_START_STACK, sys_init, 1);
-    //krhino_task_create(&aos_app_task_obj, "aos-app", NULL, AOS_DEFAULT_APP_PRI, 0,
-    //                   aos_app_stack, sizeof(aos_app_stack) / sizeof(cpu_stack_t),
-    //                   (task_entry_t)sys_init, 1);
+    // printf("start sys_init \r\n\r\n");
+    // aos_app_task_obj = aos_zalloc(sizeof(ktask_t));
+    // krhino_task_dyn_create(aos_app_task_obj, "aos-app", 0, AOS_DEFAULT_APP_PRI, 0,
+    //                        AOS_START_STACK, sys_init, 1);
+    krhino_task_create(&aos_app_task_obj, "aos-app", NULL, AOS_DEFAULT_APP_PRI, 0,
+                       aos_app_stack, sizeof(aos_app_stack) / sizeof(cpu_stack_t),
+                       (task_entry_t)sys_init, 1);
 
     aos_start();
 }

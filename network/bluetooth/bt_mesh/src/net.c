@@ -1333,7 +1333,7 @@ int bt_mesh_net_decode(struct net_buf_simple *data, enum bt_mesh_net_if net_if,
     }
 
     if (net_if != BT_MESH_NET_IF_LOCAL && bt_mesh_elem_find(rx->ctx.addr)) {
-        BT_ERR("Dropping locally originated packet");
+        BT_DBG("Dropping locally originated packet");
         return -EBADMSG;
     }
 

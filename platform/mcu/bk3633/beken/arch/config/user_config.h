@@ -29,7 +29,7 @@
 //DRIVER CONFIG
 #define UART0_DRIVER				1
 #define UART2_DRIVER				1
-#define GPIO_DRIVER					0
+#define GPIO_DRIVER					1
 #define AUDIO_DRIVER			    1
 #define RTC_DRIVER					0
 #define ADC_DRIVER					0

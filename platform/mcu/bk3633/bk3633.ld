@@ -14,12 +14,12 @@ OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")
 OUTPUT_ARCH(arm)
 ENTRY(_vector_start);
 /* PARTITION_APP_CPU_ADDR */
-_vector_start = 0x16A60;
+_vector_start = 0x15A60;
 
 SECTIONS
 {
 /* vectors go to vectors region */
-	.vectors 0x16A60 : /*Do not change the section order, for image*/
+	.vectors 0x15A60 : /*Do not change the section order, for image*/
 	{
       KEEP(*(sys.vectors))
       KEEP(*(sys.handlers))
@@ -111,11 +111,11 @@ SECTIONS
    Typically you set this to be top of your RAM. Note: code never checks, if stack
    grows into heap area!
 */
-	PROVIDE(_stack_unused      = 0x0040FFFC - 0x3F0 - 0x7F0 - 0x7F0 - 0x10); /* 0x10*/
-	PROVIDE(_stack_irq         = 0x0040FFFC - 0x3F0 - 0x7F0 - 0x7F0); /* 0xFF0*/
-	PROVIDE(_stack_fiq         = 0x0040FFFC - 0x3F0 - 0x7F0); /* 0x7F0*/
-	PROVIDE(_stack_svc         = 0x0040FFFC - 0x3F0); /* 0x3F0*/
-	PROVIDE(_stack_sys         = 0x0040FFFC - 0x3F0); /* 0x3F0*/
+	PROVIDE(_stack_unused      = 0x0040FFFC - 0x5F0 - 0x7F0 - 0x7F0 - 0x10); /* 0x10*/
+	PROVIDE(_stack_irq         = 0x0040FFFC - 0x5F0 - 0x7F0 - 0x7F0); /* 0xFF0*/
+	PROVIDE(_stack_fiq         = 0x0040FFFC - 0x5F0 - 0x7F0); /* 0x7F0*/
+	PROVIDE(_stack_svc         = 0x0040FFFC - 0x5F0); /* 0x3F0*/
+	PROVIDE(_stack_sys         = 0x0040FFFC - 0x5F0); /* 0x3F0*/
 
     /*PROVIDE(_stack_unused      = 0x0040FFFC - 0x9F0 - 0x9F0 - 0x9F0 - 0x9F0 - 0x10);*/ /* 0x10*/
 	/*PROVIDE(_stack_irq         = 0x0040FFFC - 0x9F0 - 0x9F0 - 0x9F0 - 0x9F0);*/ /* 0xFF0*/

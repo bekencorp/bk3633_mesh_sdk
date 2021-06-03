@@ -37,15 +37,10 @@
 #include "smp.h"
 #include "att_internal.h"
 
+#ifndef CONFIG_BT_MESH_REDUCE_RAM
 NET_BUF_POOL_DEFINE(acl_tx_pool, CONFIG_BT_L2CAP_TX_BUF_COUNT,
                     BT_L2CAP_BUF_SIZE(CONFIG_BT_L2CAP_TX_MTU),
                     BT_BUF_USER_DATA_MIN, NULL);
-
-#ifdef CONFIG_BLE_LINK_PARAMETERS
-#define  SUP_TO_LIMIT         (400)//limit LSP_TO to 4s
-#define  CONN_SUP_TIMEOUT     (400)//*10, link superversion timeout
-#define  CONN_INTERVAL_MIN    (24)//*1.25 ms,30ms, min connection inverval
-#define  CONN_INTERVAL_MAX    (40)//*1.25 ms,50ms, max connection inverval
 #endif
 
 #ifdef CONFIG_BLE_LINK_PARAMETERS
@@ -62,7 +57,17 @@ NET_BUF_POOL_DEFINE(acl_tx_pool, CONFIG_BT_L2CAP_TX_BUF_COUNT,
 #define  CONN_INTERVAL_MAX    (40)//*1.25 ms,50ms, max connection inverval
 #endif
 
+#ifdef CONFIG_BLE_LINK_PARAMETERS
+#define  SUP_TO_LIMIT         (400)//limit LSP_TO to 4s
+#define  CONN_SUP_TIMEOUT     (400)//*10, link superversion timeout
+#define  CONN_INTERVAL_MIN    (24)//*1.25 ms,30ms, min connection inverval
+#define  CONN_INTERVAL_MAX    (40)//*1.25 ms,50ms, max connection inverval
+#endif
+
+#ifndef CONFIG_BT_MESH_REDUCE_RAM
 extern struct net_buf_pool acl_tx_pool;
+#endif
+
 static struct k_sem pkt_count_sem;
 
 /* How long until we cancel HCI_LE_Create_Connection */
@@ -1345,12 +1350,16 @@ int bt_conn_le_conn_update(struct bt_conn *conn, const struct bt_le_conn_param *
 struct net_buf *bt_conn_create_pdu(struct net_buf_pool *pool, size_t reserve)
 {
     struct net_buf *buf = NULL;
-
+#ifdef CONFIG_BT_MESH_REDUCE_RAM
+    buf = net_buf_alloc(sizeof(struct net_buf) + ROUND_UP(BT_L2CAP_BUF_SIZE(CONFIG_BT_L2CAP_TX_MTU), sizeof(int)) + ROUND_UP(BT_BUF_USER_DATA_MIN, 4),
+                        BT_L2CAP_BUF_SIZE(CONFIG_BT_L2CAP_TX_MTU));
+#else
     if (!pool) {
         pool = &acl_tx_pool;
     }
 
     buf = net_buf_alloc(pool, K_FOREVER);
+#endif
     if (buf) {
         reserve += sizeof(struct bt_hci_acl_hdr) + CONFIG_BT_HCI_RESERVE;
         net_buf_reserve(buf, reserve);
@@ -1462,9 +1471,9 @@ struct bt_conn *bt_conn_lookup_id(u8_t id)
 int bt_conn_init(void)
 {
     int err, i;
-
+#ifndef CONFIG_BT_MESH_REDUCE_RAM
     k_lifo_init(&acl_tx_pool.free);
-
+#endif
     for (i = 0; i < ARRAY_SIZE(conn_tx); i++) {
         sys_slist_prepend(&free_tx, &conn_tx[i].node);
     }
