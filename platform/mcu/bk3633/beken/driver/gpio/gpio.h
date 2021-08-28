@@ -53,7 +53,7 @@
 
 #define setf_GPIO_2nd_Fun_Ena(p)            ((*(volatile unsigned long *)p) |= (1<<GPIO_2FUN_EN))
 
- typedef enum
+typedef enum
 {
     INPUT,
     OUTPUT,

@@ -110,6 +110,8 @@ static genie_flash_info_t g_info_system;
 static genie_flash_info_t g_info_userdata;
 static genie_flash_info_t g_info_recycle;
 
+static kmutex_t genie_flash_mutex;
+
 #define CHECK_RET(ret) { if(ret != 0) BT_ERR("error ret(%d)", ret); }
 #if(BT_DBG_ENABLED == 1)
 #define RETURN_WHEN_ERR(result, err_code) { if(result != 0) { BT_ERR("%s[%d] error ret(%d)", __func__, __LINE__, result); return err_code; } }
@@ -349,6 +351,7 @@ E_GENIE_FLASH_ERRCODE genie_flash_init(void)
         return GENIE_FLASH_SUCCESS;
     }
 
+    krhino_mutex_create(&genie_flash_mutex, "genie_flash_mutex");
     flash_already_inited = 1;
 
 #ifdef PROJECT_SECRET_KEY
@@ -461,8 +464,11 @@ static E_GENIE_FLASH_ERRCODE _genie_flash_search(genie_flash_cell_t *p_cell)
 static E_GENIE_FLASH_ERRCODE _genie_flash_read(genie_flash_cell_t *p_cell, uint8_t *p_buff, uint16_t size)
 {
     E_GENIE_FLASH_ERRCODE ret = GENIE_FLASH_SUCCESS;
-
+    krhino_mutex_lock(&genie_flash_mutex, -1);
     ret = _genie_flash_search(p_cell);
+    if (ret) {
+        krhino_mutex_unlock(&genie_flash_mutex);
+    }
     RETURN_WHEN_ERR(ret, ret);
 
     if(p_cell->header.length < size || size == 0) {
@@ -473,12 +479,17 @@ static E_GENIE_FLASH_ERRCODE _genie_flash_read(genie_flash_cell_t *p_cell, uint8
     p_cell->offset += sizeof(flash_header_t);
 
     ret = hal_flash_read(p_cell->pno, &p_cell->offset, p_buff, size);
+    if (ret) {
+        krhino_mutex_unlock(&genie_flash_mutex);
+    }
     RETURN_WHEN_ERR(ret, GENIE_FLASH_READ_FAIL);
 
     if(_genie_get_crc(p_buff, size) == p_cell->header.crc) {
+        krhino_mutex_unlock(&genie_flash_mutex);
         return GENIE_FLASH_SUCCESS;
     } else {
         BT_ERR("check crc fail(%x)", p_cell->header.crc);
+        krhino_mutex_unlock(&genie_flash_mutex);
         return GENIE_FLASH_CHECK_CRC_FAIL;
     }
 }
@@ -528,10 +539,10 @@ static E_GENIE_FLASH_ERRCODE _genie_flash_copy(genie_flash_cell_t *p_src, genie_
         new_data_head.length = buf_size;
         new_data_head.crc = _genie_get_crc(p_buff, buf_size);
 
-        ret = hal_flash_write(p_dst->pno, &p_dst->offset, &new_data_head, sizeof(flash_header_t));
+        ret = hal_flash_write(p_dst->pno, &p_dst->offset, &new_data_head, sizeof(flash_header_t), true);
         RETURN_WHEN_ERR(ret, GENIE_FLASH_WRITE_FAIL);
 
-        ret = hal_flash_write(p_dst->pno, &p_dst->offset, p_buff, buf_size);
+        ret = hal_flash_write(p_dst->pno, &p_dst->offset, p_buff, buf_size, true);
         RETURN_WHEN_ERR(ret, GENIE_FLASH_WRITE_FAIL);
         p_dst->offset += new_data_head.align;
     }
@@ -547,7 +558,7 @@ static E_GENIE_FLASH_ERRCODE _genie_flash_copy(genie_flash_cell_t *p_src, genie_
 
             /* step 2.1 write header */
             BT_DBG("2.1 src(0x%04X) dst(0x%04X)", p_src->offset, p_dst->offset);
-            ret = hal_flash_write(p_dst->pno, &p_dst->offset, &p_src->header, sizeof(flash_header_t));
+            ret = hal_flash_write(p_dst->pno, &p_dst->offset, &p_src->header, sizeof(flash_header_t), true);
             RETURN_WHEN_ERR(ret, GENIE_FLASH_WRITE_FAIL);
 
             /* step 2.2 read data */
@@ -562,7 +573,7 @@ static E_GENIE_FLASH_ERRCODE _genie_flash_copy(genie_flash_cell_t *p_src, genie_
 
             /* step 2.3 write data */
             BT_DBG("2.3 write data(0x%08X) dst(0x%04X)", p_data, p_dst->offset);
-            ret = hal_flash_write(p_dst->pno, &p_dst->offset, p_data, p_src->header.length);
+            ret = hal_flash_write(p_dst->pno, &p_dst->offset, p_data, p_src->header.length, true);
             k_free(p_data);
             RETURN_WHEN_ERR(ret, GENIE_FLASH_WRITE_FAIL);
 
@@ -581,7 +592,7 @@ static E_GENIE_FLASH_ERRCODE _genie_flash_copy(genie_flash_cell_t *p_src, genie_
         RETURN_WHEN_ERR(ret, GENIE_FLASH_READ_FAIL);
 
         part_offset = 0;
-        ret = hal_flash_write(p_dst->pno, &part_offset, &part_flag, sizeof(part_flag));
+        ret = hal_flash_write(p_dst->pno, &part_offset, &part_flag, sizeof(part_flag), true);
         RETURN_WHEN_ERR(ret, GENIE_FLASH_WRITE_FAIL);
     }
 
@@ -589,7 +600,7 @@ static E_GENIE_FLASH_ERRCODE _genie_flash_copy(genie_flash_cell_t *p_src, genie_
         /* Here, means data recovery finished , so erase recycle flag only */
         part_offset = 0;
         part_flag = GENIE_FLASH_FLAG_INITED_BASE;
-        ret = hal_flash_write(p_src->pno, &part_offset, &part_flag, sizeof(part_flag));
+        ret = hal_flash_write(p_src->pno, &part_offset, &part_flag, sizeof(part_flag), true);
         RETURN_WHEN_ERR(ret, GENIE_FLASH_WRITE_FAIL);
     }
     return GENIE_FLASH_SUCCESS;
@@ -619,7 +630,7 @@ static E_GENIE_FLASH_ERRCODE _genie_flash_delete_flag(hal_partition_t pno, uint3
     uint8_t flag = GENIE_FLASH_FLAG_INVALID;
 
     BT_DBG("pno(%d) offset(0x%04X)", pno, *p_offset);
-    ret = hal_flash_write(pno, p_offset, &flag, sizeof(flag));
+    ret = hal_flash_write(pno, p_offset, &flag, sizeof(flag), true);
     RETURN_WHEN_ERR(ret, GENIE_FLASH_WRITE_FAIL);
     return GENIE_FLASH_SUCCESS;
 }
@@ -629,20 +640,27 @@ static E_GENIE_FLASH_ERRCODE _genie_flash_delete(genie_flash_cell_t *p_cell)
     E_GENIE_FLASH_ERRCODE ret = GENIE_FLASH_SUCCESS;
     uint32_t flag_offset;
 
+    krhino_mutex_lock(&genie_flash_mutex, -1);
     ret = _genie_flash_search(p_cell);
+    if (ret) {
+        krhino_mutex_unlock(&genie_flash_mutex);
+    }
     RETURN_WHEN_ERR(ret, ret);
 
     flag_offset = (uint32_t)&p_cell->header.flag - (uint32_t)&p_cell->header + p_cell->offset;
     if(flag_offset < p_cell->end) {
+        krhino_mutex_unlock(&genie_flash_mutex);
         return _genie_flash_delete_flag(p_cell->pno, &flag_offset);
     } else {
         BT_ERR("flag_offset error");
+        krhino_mutex_unlock(&genie_flash_mutex);
         return GENIE_FLASH_DELETE_FAIL;
     }
 }
 
 static E_GENIE_FLASH_ERRCODE _genie_flash_write(genie_flash_cell_t *p_cell, uint8_t *p_buff, uint16_t size)
 {
+    krhino_mutex_lock(&genie_flash_mutex, -1);
     E_GENIE_FLASH_ERRCODE ret = GENIE_FLASH_SUCCESS;
     uint8_t align_count = 0;
     genie_flash_info_t *p_info;
@@ -654,11 +672,13 @@ static E_GENIE_FLASH_ERRCODE _genie_flash_write(genie_flash_cell_t *p_cell, uint
 
     if(size == 0) {
         BT_ERR("size is zero!!!");
+        krhino_mutex_unlock(&genie_flash_mutex);
         return GENIE_FLASH_WRITE_FAIL;
     }
 
     if(p_buff == NULL) {
         BT_ERR("p_buff is null!!!");
+        krhino_mutex_unlock(&genie_flash_mutex);
         return GENIE_FLASH_DATA_INVALID;
     }
 
@@ -674,12 +694,14 @@ static E_GENIE_FLASH_ERRCODE _genie_flash_write(genie_flash_cell_t *p_cell, uint
             break;
         default:
             BT_ERR("pno error!!!");
+            krhino_mutex_unlock(&genie_flash_mutex);
             return GENIE_FLASH_WRITE_FAIL;
     }
 
     /* check size */
     if(p_info->remain < size + sizeof(flash_header_t)) {
         BT_ERR("no space");
+        krhino_mutex_unlock(&genie_flash_mutex);
         return GENIE_FLASH_WRITE_FAIL;
     }
 
@@ -687,8 +709,8 @@ static E_GENIE_FLASH_ERRCODE _genie_flash_write(genie_flash_cell_t *p_cell, uint
     if(p_info->free_offset + size + sizeof(flash_header_t) > end) {
         memcpy(&recycle, p_cell, sizeof(genie_flash_cell_t));
         ret = _genie_flash_recycle(&recycle, p_buff, size);
-        RETURN_WHEN_ERR(ret, ret);
         _genie_flash_check_remain();
+        krhino_mutex_unlock(&genie_flash_mutex);
         return GENIE_FLASH_SUCCESS;
     }
 
@@ -712,17 +734,26 @@ static E_GENIE_FLASH_ERRCODE _genie_flash_write(genie_flash_cell_t *p_cell, uint
     p_cell->header.crc = _genie_get_crc(p_buff, size);
 
     BT_DBG("step1.1 write header offset(0x%04X)", p_cell->offset);
-    ret = hal_flash_write(p_cell->pno, &p_cell->offset, &p_cell->header, sizeof(flash_header_t));
+    ret = hal_flash_write(p_cell->pno, &p_cell->offset, &p_cell->header, sizeof(flash_header_t), true);
+    if (ret) {
+        krhino_mutex_unlock(&genie_flash_mutex);
+    }
     RETURN_WHEN_ERR(ret, GENIE_FLASH_WRITE_FAIL);
 
     BT_DBG("step1.2 write data offset(0x%04X)", p_cell->offset);
-    ret = hal_flash_write(p_cell->pno, &p_cell->offset, p_buff, size);
+    ret = hal_flash_write(p_cell->pno, &p_cell->offset, p_buff, size, true);
+    if (ret) {
+        krhino_mutex_unlock(&genie_flash_mutex);
+    }
     RETURN_WHEN_ERR(ret, GENIE_FLASH_WRITE_FAIL);
 
     //step 2 update new flag
     p_cell->header.flag = GENIE_FLASH_FLAG_ACTIVE;
     BT_DBG("step2 update flag offset(0x%04X)", new_flag_offset);
-    ret = hal_flash_write(p_cell->pno, &new_flag_offset, &p_cell->header.flag, 1);
+    ret = hal_flash_write(p_cell->pno, &new_flag_offset, &p_cell->header.flag, 1, true);
+    if (ret) {
+        krhino_mutex_unlock(&genie_flash_mutex);
+    }
     RETURN_WHEN_ERR(ret, GENIE_FLASH_WRITE_FAIL);
 
     /* update remain & free*/
@@ -733,10 +764,14 @@ static E_GENIE_FLASH_ERRCODE _genie_flash_write(genie_flash_cell_t *p_cell, uint
     if(old_flag_offset != 0xFFFFFFFF) {
         BT_DBG("old offset(0x%04X)", old_flag_offset);
         ret = _genie_flash_delete_flag(p_cell->pno, &old_flag_offset);
+        if (ret) {
+            krhino_mutex_unlock(&genie_flash_mutex);
+        }
         RETURN_WHEN_ERR(ret, GENIE_FLASH_WRITE_FAIL);
         p_info->remain += old_size;
     }
 
+    krhino_mutex_unlock(&genie_flash_mutex);
     return GENIE_FLASH_SUCCESS;
 }
 
@@ -779,7 +814,7 @@ static E_GENIE_FLASH_ERRCODE genie_flash_init_partition(hal_partition_t in_parti
     ret = hal_flash_erase(in_partition, 0, part_size);
     RETURN_WHEN_ERR(ret, GENIE_FLASH_EARSE_FAIL);
 
-    ret = hal_flash_write(in_partition, &offset, &flash_flag, sizeof(flash_flag));
+    ret = hal_flash_write(in_partition, &offset, &flash_flag, sizeof(flash_flag), true);
     RETURN_WHEN_ERR(ret, GENIE_FLASH_WRITE_FAIL);
 
     return GENIE_FLASH_SUCCESS;
@@ -944,14 +979,14 @@ static E_GENIE_FLASH_ERRCODE _genie_flash_copy_seq(genie_flash_cell_t *p_src, ge
     /* Set writing flag to avoid powerdowm case */
     flag_offset = GENIE_FLASH_SIZE_INITED_FLAG;
     data = (seq & 0x00FFFFFF) | (GENIE_FLASH_FLAG_ACTIVE << 24);
-    ret = hal_flash_write(p_dst->pno, &flag_offset, &data, sizeof(uint32_t));
+    ret = hal_flash_write(p_dst->pno, &flag_offset, &data, sizeof(uint32_t), true);
     RETURN_WHEN_ERR(ret, GENIE_FLASH_WRITE_FAIL);
 
     /* write partition flags to recycle to avoid powerdown unexpected */
     if (p_dst->pno == GENIE_FLASH_PARTITION_RECYCLE) {
         part_flag = GENIE_FLASH_FLAG_INITED_SEQ;
         part_offset = 0;
-        ret = hal_flash_write(p_dst->pno, &part_offset, &part_flag, sizeof(part_flag));
+        ret = hal_flash_write(p_dst->pno, &part_offset, &part_flag, sizeof(part_flag), true);
         RETURN_WHEN_ERR(ret, GENIE_FLASH_WRITE_FAIL);
     }
 
@@ -959,7 +994,7 @@ static E_GENIE_FLASH_ERRCODE _genie_flash_copy_seq(genie_flash_cell_t *p_src, ge
         /* Here, means data recovery finished , so erase recycle flag only */
         part_offset = 0;
         part_flag = GENIE_FLASH_FLAG_INITED_BASE;
-        ret = hal_flash_write(p_src->pno, &part_offset, &part_flag, sizeof(part_flag));
+        ret = hal_flash_write(p_src->pno, &part_offset, &part_flag, sizeof(part_flag), true);
         RETURN_WHEN_ERR(ret, GENIE_FLASH_WRITE_FAIL);
     }
     return GENIE_FLASH_SUCCESS;
@@ -1027,7 +1062,7 @@ E_GENIE_FLASH_ERRCODE genie_flash_write_seq(uint32_t *p_seq)
 
     /* Set writing flag to avoid powerdowm case */
     data = (data & 0x00FFFFFF) | (GENIE_FLASH_FLAG_ACTIVE << 24);
-    ret = hal_flash_write(GENIE_FLASH_PARTITION_SEQ, &seq_write, &data, sizeof(uint32_t));
+    ret = hal_flash_write(GENIE_FLASH_PARTITION_SEQ, &seq_write, &data, sizeof(uint32_t), true);
     if(ret == GENIE_FLASH_SUCCESS) {
         g_flash_seq_ctl.read_offset = g_flash_seq_ctl.write_offset;
         g_flash_seq_ctl.write_offset = seq_write;
@@ -1123,7 +1158,7 @@ static E_GENIE_FLASH_ERRCODE _genie_flash_write_seqbase(uint32_t base)
 
     genie_flash_delete_seq();
 
-    ret = hal_flash_write(GENIE_FLASH_PARTITION_SEQ, &offset, &base, sizeof(base));
+    ret = hal_flash_write(GENIE_FLASH_PARTITION_SEQ, &offset, &base, sizeof(base), true);
     RETURN_WHEN_ERR(ret, GENIE_FLASH_WRITE_FAIL);
 
     return GENIE_FLASH_SUCCESS;
@@ -1145,6 +1180,7 @@ static E_GENIE_FLASH_ERRCODE _genie_flash_write_seqcount(uint16_t count)
 
     BT_DBG("offset(0x%04X) byte(0x%02X)", offset, write_byte);
 
+    hal_flash_secure_sector(FLASH_PROTECT_SEC_120);
     //TODO
     //clear all bytes before offset
     while(start < offset) {
@@ -1153,12 +1189,12 @@ static E_GENIE_FLASH_ERRCODE _genie_flash_write_seqcount(uint16_t count)
         if(zero != 0) {
             zero = 0;
             start--;
-            ret = hal_flash_write(GENIE_FLASH_PARTITION_SEQ, &start, &zero, sizeof(zero));
+            ret = hal_flash_write(GENIE_FLASH_PARTITION_SEQ, &start, &zero, sizeof(zero), false);
             RETURN_WHEN_ERR(ret, GENIE_FLASH_WRITE_FAIL);
         }
     }
 
-    ret = hal_flash_write(GENIE_FLASH_PARTITION_SEQ, &offset, &write_byte, sizeof(write_byte));
+    ret = hal_flash_write(GENIE_FLASH_PARTITION_SEQ, &offset, &write_byte, sizeof(write_byte), true);
     RETURN_WHEN_ERR(ret, GENIE_FLASH_WRITE_FAIL);
     return GENIE_FLASH_SUCCESS;
 }

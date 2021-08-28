@@ -519,6 +519,9 @@ inline rwip_time_t rwip_time_get(void)
     return res;
 }
 
+
+
+
 #if (BLE_EMB_PRESENT || BT_EMB_PRESENT)
 #if (BT_EMB_PRESENT)
 void rwip_time_set(uint32_t clock)
@@ -528,6 +531,19 @@ void rwip_time_set(uint32_t clock)
 }
 #endif // (BT_EMB_PRESENT)
 #endif // (BLE_EMB_PRESENT || BT_EMB_PRESENT)
+
+volatile  uint8_t g_dut_flg = 0;
+void rwip_set_dut_mode(uint8_t flg)
+{
+	g_dut_flg = flg;
+}
+
+uint8_t  rwip_get_dut_mode(void)
+{
+	return g_dut_flg;
+}
+
+
 
 void rwip_driver_init(bool reset)
 {

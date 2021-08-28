@@ -436,7 +436,7 @@ static int h4_open(void)
 
     h4_discard(&h4_dev, 32);
 
-    k_thread_create(&h4_rx_thread, rx_thread_stack, sizeof(rx_thread_stack), rx_thread,
+    k_thread_create(&h4_rx_thread, "BLE rx thread", rx_thread_stack, sizeof(rx_thread_stack), rx_thread,
                    NULL, NULL, NULL, 46, 0, K_NO_WAIT);
 
     k_fifo_init(&tx.fifo);

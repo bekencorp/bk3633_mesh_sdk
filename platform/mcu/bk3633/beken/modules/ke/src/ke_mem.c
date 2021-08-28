@@ -244,6 +244,10 @@ bool ke_check_malloc(uint32_t size, uint8_t type)
 void *ke_malloc(uint32_t size, uint8_t type)
 {
     void *alloc_buf = rom_env.malloc(sizeof(struct mblock_used) + size);
+    if (!alloc_buf) {
+        rom_env.os_print("%s, ke malloc fail.\n", __func__);
+        while(1);
+    }
     ((struct mblock_used *)alloc_buf)->corrupt_check = KE_ALLOCATED_PATTERN;
     alloc_buf = ((struct mblock_used *)alloc_buf) + 1;
 	return alloc_buf;

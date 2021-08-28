@@ -3,7 +3,7 @@
  *
  * @file hal_timer.h
  *
- * @brief Flash driver interface
+ * @brief timer function user interface
  *
  * Copyright (C) Beken Leonardo 2021
  *

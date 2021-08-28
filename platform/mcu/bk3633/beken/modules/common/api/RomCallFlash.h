@@ -19,7 +19,6 @@
 struct rom_env_tag
 {
 	//void (*rwip_reset)(void);
-
 	void (*rwip_prevent_sleep_set)(uint16_t prv_slp_bit);
 	void (*rwip_prevent_sleep_clear)(uint16_t prv_slp_bit);
 	uint32_t (*rwip_sleep_lpcycles_2_us)(uint32_t lpcycles);
@@ -49,7 +48,6 @@ struct rom_env_tag
 	kstat_t (*krhino_sem_give)(ksem_t *sem);
 #endif
 };
- 
 
 void rom_env_init(struct rom_env_tag *api);
 

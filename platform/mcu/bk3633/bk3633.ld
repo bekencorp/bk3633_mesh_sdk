@@ -64,9 +64,23 @@ SECTIONS
 
 	_data_flash_end = .;
 
+	. = ALIGN(0x8);
+    _begin_APP_RAM = .;
+    .APP_RAM : AT ( _begin_APP_RAM )
+	{
+		*(.APP_CODE)
+	} >ram_code_sec
+
+    _end_APP_RAM =.;
+
+
+    _code_flash_begin = LOADADDR(.APP_RAM);
+    _code_ram_begin = ADDR(.APP_RAM);
+    _code_ram_end = .;
+
 /* globals.for example: int ram_data[3]={4,5,6}; */		/* VMA in RAM, but keep LMA in flash */
 	. = ALIGN(0x8);
-	_begin_data = .;
+	_begin_data = _begin_APP_RAM + 0x200;
 	.data : AT ( _begin_data )
 	{
 		*(.data .data.*)
@@ -111,9 +125,9 @@ SECTIONS
    Typically you set this to be top of your RAM. Note: code never checks, if stack
    grows into heap area!
 */
-	PROVIDE(_stack_unused      = 0x0040FFFC - 0x5F0 - 0x7F0 - 0x7F0 - 0x10); /* 0x10*/
-	PROVIDE(_stack_irq         = 0x0040FFFC - 0x5F0 - 0x7F0 - 0x7F0); /* 0xFF0*/
-	PROVIDE(_stack_fiq         = 0x0040FFFC - 0x5F0 - 0x7F0); /* 0x7F0*/
+	PROVIDE(_stack_unused      = 0x0040FFFC - 0x5F0 - 0x8F0 - 0x8F0 - 0x10); /* 0x10*/
+	PROVIDE(_stack_irq         = 0x0040FFFC - 0x5F0 - 0x8F0 - 0x8F0); /* 0xFF0*/
+	PROVIDE(_stack_fiq         = 0x0040FFFC - 0x5F0 - 0x8F0); /* 0x7F0*/
 	PROVIDE(_stack_svc         = 0x0040FFFC - 0x5F0); /* 0x3F0*/
 	PROVIDE(_stack_sys         = 0x0040FFFC - 0x5F0); /* 0x3F0*/
 

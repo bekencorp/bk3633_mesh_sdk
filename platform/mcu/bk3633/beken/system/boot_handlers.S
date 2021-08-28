@@ -29,8 +29,8 @@
 /* ========================================================================
  *                                Macros
  * ======================================================================== */
-#define _FIQ_STACK_SIZE_ 	              0x7F0
-#define _IRQ_STACK_SIZE_ 	              0x7F0
+#define _FIQ_STACK_SIZE_ 	              0x8F0
+#define _IRQ_STACK_SIZE_ 	              0x8F0
 #define _SVC_STACK_SIZE_ 	              0x5F0
 #define _SYS_STACK_SIZE_ 	              0x5F0
 #define _UNUSED_STACK_SIZE_ 	          0x010
@@ -168,6 +168,8 @@ boot_reset:
     //Stay in Supervisor Mode
     //copy data from binary to ram
     BL _sysboot_copy_data_to_ram
+
+    BL _sysboot_copy_data_to_ram_code
     
     ///*Init the BSS section*/
     BL _sysboot_zi_init
@@ -202,7 +204,19 @@ _sysboot_copy_data_to_ram:
     STRLO   R4, [R1], #4
     BLO     4b
     BX LR
-        
+
+/*FUNCTION:     _sysboot_copy_data_to_ram_code*/
+/*DESCRIPTION:  copy*/
+_sysboot_copy_data_to_ram_code:
+    LDR     R0, =_code_flash_begin
+    LDR     R1, =_code_ram_begin
+    LDR     R2, =_code_ram_end
+6: CMP R1, R2
+    LDRLO   R4, [R0], #4
+    STRLO   R4, [R1], #4
+    BLO     6b
+    BX LR
+
 /*FUNCTION:     _sysboot_zi_init*/
 /*DESCRIPTION:  Initialise Zero-Init Data Segment*/
 _sysboot_zi_init:

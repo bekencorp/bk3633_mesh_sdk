@@ -40,7 +40,8 @@ GLOBAL_DEFINES += CONFIG_BT_MESH_RELAY
 GLOBAL_DEFINES += CONFIG_BT_MESH_ALI_TMALL_GENIE
 #GLOBAL_DEFINES += CONFIG_BT_MESH_TELINK
 #GLOBAL_DEFINES += CONFIG_BT_MESH_JINGXUN
-GLOBAL_DEFINES += CONFIG_BT_MESH_CUSTOM_ADV
+#GLOBAL_DEFINES += CONFIG_BT_MESH_CUSTOM_ADV
+#GLOBAL_DEFINES += CONFIG_BT_MESH_REDUCE_RAM
 
 # Mesh foundation model select
 GLOBAL_DEFINES += CONFIG_BT_MESH_CFG_SRV
@@ -83,17 +84,28 @@ beken_ota = 1
 #GLOBAL_DEFINES += CONFIG_BT_MESH_DEBUG_EVENT
 #GLOBAL_DEFINES += CONFIG_BT_MESH_DEBUG_OTA
 
-#uart_test_cmd = 1
+uart_test_cmd = 1
+#dut_test_cmd = 1
+#dut_test_com = 2
 button = 1
 hw_timer = 1
 spi_driver = 0
 
 ifeq ($(uart_test_cmd),1)
 GLOBAL_DEFINES += CONFIG_UART_TEST_CMD
-$(NAME)_SOURCES += 	uart_test_cmd.c
+#$(NAME)_SOURCES += 	uart_test_cmd.c
 endif
 
 ifeq ($(dut_test_cmd),1)
 GLOBAL_DEFINES += CONFIG_DUT_TEST_CMD
 $(NAME)_SOURCES += 	dut_test.c
+
+ifeq ($(dut_test_com), 1)
+GLOBAL_DEFINES += CONFIG_DUT_TEST_COM1
+endif
+
+ifeq ($(dut_test_com), 2)
+GLOBAL_DEFINES += CONFIG_DUT_TEST_COM2
+endif
+
 endif

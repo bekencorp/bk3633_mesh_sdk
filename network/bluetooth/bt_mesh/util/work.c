@@ -38,7 +38,7 @@ static void work_queue_thread(void *p1, void *p2, void *p3)
 int k_work_q_start(void)
 {
     k_fifo_init(&g_work_queue_main.fifo);
-    return k_thread_create(&work_q_thread, work_q_stack,
+    return k_thread_create(&work_q_thread, "work_q_thread", work_q_stack,
                            K_THREAD_STACK_SIZEOF(work_q_stack),
                            work_queue_thread, NULL, NULL, NULL, CONFIG_BT_WORK_QUEUE_PRIO, 0, K_NO_WAIT);
 }

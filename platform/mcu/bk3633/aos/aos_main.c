@@ -59,7 +59,7 @@ static cpu_stack_t aos_app_stack[AOS_START_STACK];
 
 void sys_start(void)
 {
-    //printf("%s \r\n\r\n", __func__);
+    printf("%s, reset reason 0x%x\r\n", __func__, icu_get_reset_reason());
     aos_init();
     //printf("aos init ok \r\n\r\n");
 
@@ -67,7 +67,7 @@ void sys_start(void)
     printf("soc_driver init ok \r\n\r\n");
 
     fclk_init(FCLK_PWM_ID, RHINO_CONFIG_TICKS_PER_SECOND);
-    hal_flash_secure_sector(FLASH_PROTECT_SEC_120);
+    hal_flash_secure_sector(FLASH_PROTECT_ALL);
 
     // printf("start sys_init \r\n\r\n");
     // aos_app_task_obj = aos_zalloc(sizeof(ktask_t));

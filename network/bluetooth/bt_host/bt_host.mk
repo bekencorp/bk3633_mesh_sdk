@@ -31,6 +31,7 @@ endif
 bt_host_tinycrypt ?= 1
 ifeq ($(bt_host_tinycrypt),1)
 GLOBAL_DEFINES += CONFIG_BT_TINYCRYPT_ECC
+#GLOBAL_DEFINES += CONFIG_BT_USE_DEBUG_KEYS
 $(NAME)_SOURCES += host/crypto.c \
                    host/hci_ecc.c
 endif

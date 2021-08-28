@@ -147,7 +147,10 @@
 #endif // (BLE_EMB_PRESENT || BT_EMB_PRESENT)
 
 __attribute__((section("STACK_FUNC")))
-const struct rwip_func_tag rwip_func = {rwip_isr, rwip_init, rwip_schedule, rwip_set_bd_address, rwip_sleep, rwip_sleep_flag, rwip_time_get};
+const struct rwip_func_tag rwip_func = {rwip_isr, rwip_init, rwip_schedule, \
+                                        rwip_set_bd_address, rwip_sleep,    \ 
+										rwip_sleep_flag, rwip_time_get, rwip_set_dut_mode, \
+										rwip_get_dut_mode};
 
 #if (DISPLAY_SUPPORT)
 ///Table of HW image names for display

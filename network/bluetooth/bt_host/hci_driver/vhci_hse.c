@@ -62,7 +62,7 @@ static int vhci_open(void)
 
     krhino_event_create(&hse_kevent, "hse", HSE_KEVENT_FLAGS);
 
-    k_thread_create(&vhci_hc_thread, /*"hc",*/ hc_thread_stack, sizeof(hc_thread_stack), hc_thread,
+    k_thread_create(&vhci_hc_thread, "hc thread", /*"hc",*/ hc_thread_stack, sizeof(hc_thread_stack), hc_thread,
                     NULL, NULL, NULL, 1/*prio*/, 0, K_NO_WAIT);
 
     k_fifo_init(&tx.fifo);

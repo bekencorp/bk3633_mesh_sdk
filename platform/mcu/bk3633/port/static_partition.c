@@ -99,7 +99,7 @@ int static_partition_write(static_section_t in_section, void *in_buf, uint32_t w
     hal_flash_erase(HAL_PARTITION_STATIC_PARA, 0, partition_info->partition_length);
 
     partition_start = 0;
-    ret = hal_flash_write(HAL_PARTITION_STATIC_PARA, &partition_start, temp_data, partition_info->partition_length);
+    ret = hal_flash_write(HAL_PARTITION_STATIC_PARA, &partition_start, temp_data, partition_info->partition_length, true);
 
 exit:
     aos_free(temp_data);
@@ -126,13 +126,15 @@ int static_partition_write_addr_head(static_section_t in_section)
 
     if(ret)
     {
+        printf("%s, L %d\n", __func__, __LINE__);
         return -1;
     }
 
-    ret = hal_flash_write(HAL_PARTITION_STATIC_PARA, &offset, &(verify.hearder_code), sizeof(verify.hearder_code));
+    ret = hal_flash_write(HAL_PARTITION_STATIC_PARA, &offset, &(verify.hearder_code), sizeof(verify.hearder_code), true);
 
     if(ret)
     {
+        printf("%s, L %d\n", __func__, __LINE__);
         return -1;
     }
 

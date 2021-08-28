@@ -554,7 +554,7 @@ void bt_mesh_adv_init(void)
 #ifndef CONFIG_BT_MESH_REDUCE_RAM
     k_lifo_init(&adv_buf_pool.free);
 #endif
-    k_thread_create(&adv_thread_data, adv_thread_stack,
+    k_thread_create(&adv_thread_data, "Mesh adv thread", adv_thread_stack,
                     K_THREAD_STACK_SIZEOF(adv_thread_stack), adv_thread,
                     NULL, NULL, NULL, CONFIG_BT_MESH_ADV_PRIO, 0, K_NO_WAIT);
 }

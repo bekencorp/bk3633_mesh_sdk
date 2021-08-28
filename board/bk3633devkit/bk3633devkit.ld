@@ -13,7 +13,7 @@
  * |(heap limit)|
  *
  * |- - - - - - |
- * stack bottom    256k
+ * stack bottom    64k
  * +------------+  
  *
  * +------------+  0x0000000
@@ -22,7 +22,7 @@
  * |------------+
  * |text        |  
  * |data        |
- * |            |  1024k
+ * |            |  512k
  * +------------+
  */
 
@@ -31,5 +31,6 @@
 MEMORY
 {
 	flash  (rx) : ORIGIN = 0x00000000, LENGTH = 512k
+	ram_code_sec (rwx): ORIGIN = 0x003f1000, LENGTH = 0x1000
 	ram   (rwx): ORIGIN = 0x00401800, LENGTH = 64*1024 - 6 * 1024
 }

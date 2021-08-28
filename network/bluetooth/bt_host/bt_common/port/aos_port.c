@@ -130,14 +130,14 @@ u32_t k_uptime_get_32()
 }
 
 //typedef void (*task_entry_t)(void *args);	// will redefine
-int k_thread_create(struct k_thread *new_thread, k_thread_stack_t *stack,
+int k_thread_create(struct k_thread *new_thread, const name_t *name, k_thread_stack_t *stack,
                     size_t stack_size, k_thread_entry_t entry, void *p1,
                     void *p2, void *p3, int prio, u32_t options, s32_t delay)
 {
     if (!stack) { // Use dynamic stack if no static one provided
         int ret;
 
-        ret = aos_task_new_ext(&(new_thread->task), "ble", (task_entry_t)entry, p1,
+        ret = aos_task_new_ext(&(new_thread->task), name, (task_entry_t)entry, p1,
                                stack_size, prio);
         if (ret) {
             SYS_LOG_ERR("create ble task fail\n");
@@ -156,7 +156,7 @@ int k_thread_create(struct k_thread *new_thread, k_thread_stack_t *stack,
         new_thread->task.hdl = (void *)task_obj;
 
         stack_size = stack_size / sizeof(cpu_stack_t);
-        return krhino_task_create(task_obj, "ble", p1, prio, 0,
+        return krhino_task_create(task_obj, name, p1, prio, 0,
                                   (cpu_stack_t *)stack,
                                   stack_size ,
                                   (task_entry_t)entry,

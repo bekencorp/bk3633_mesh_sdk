@@ -6,7 +6,7 @@
 #define K_DFTDBG_CONFIG_H
 
 #ifndef RHINO_CONFIG_BACKTRACE
-#define RHINO_CONFIG_BACKTRACE 0
+#define RHINO_CONFIG_BACKTRACE 1
 #endif
 
 /* If AliOS task over the Exception/Fatal Error */

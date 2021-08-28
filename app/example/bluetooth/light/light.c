@@ -593,7 +593,9 @@ int application_start(int argc, char **argv)
 {
     /* genie initilize */
     genie_init();
-
+#if CONFIG_UART_TEST_CMD
+    uart_test_init();
+#endif
     led_startup();
 
     common_module_init();

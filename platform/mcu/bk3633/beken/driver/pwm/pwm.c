@@ -3,7 +3,7 @@
 *
 * @file pwm.c
 *
-* @brief icu initialization and specific functions
+* @brief pwm driver
 *
 * Copyright (C) Beken Leonardo 2021
 *

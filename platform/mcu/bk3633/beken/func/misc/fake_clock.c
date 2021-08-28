@@ -110,8 +110,8 @@ void fclk_init(UINT8 pwm_id, UINT16 ticks_per_sec)
     pwm_drv_desc.duty_cycle = pwm_drv_desc.end_value/2;
     second_countdown = fclk_second;
 
-    os_printf("PWM%d OS, clock:%dKMz, %d ticks/s\r\n",
-               pwm_id, fclk_second/10000, ticks_per_sec);
+    // os_printf("PWM%d OS, clock:%dKMz, %d ticks/s\r\n",
+    //            pwm_id, fclk_second/10000, ticks_per_sec);
 
     sddev_control(PWM_DEV_NAME, CMD_PWM_INIT_PARAM, &pwm_drv_desc);
 }

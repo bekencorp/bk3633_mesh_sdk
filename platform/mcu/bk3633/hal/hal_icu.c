@@ -30,3 +30,15 @@ MCU_SLEEP_MODE get_sys_sleep_mode(void)
     sddev_control(ICU_DEV_NAME, CMD_GET_SLEEP_MODE, &sleep_mode);
     return sleep_mode;
 }
+
+void sys_module_power_set(icu_clk_pwr_dev module, uint8_t onoff)
+{
+    if(onoff)
+    {
+        sddev_control(ICU_DEV_NAME, CMD_CLK_PWR_UP, (void *)&module);
+    }
+    else
+    {
+        sddev_control(ICU_DEV_NAME, CMD_CLK_PWR_DOWN, (void *)&module);
+    }
+}

@@ -3,7 +3,7 @@
 *
 * @file pwm.h
 *
-* @brief icu initialization and specific functions
+* @brief pub definations
 *
 * Copyright (C) Beken Leonardo 2021
 *

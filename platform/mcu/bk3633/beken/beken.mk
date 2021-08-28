@@ -38,6 +38,7 @@ $(NAME)_INCLUDES += driver/pwm
 $(NAME)_INCLUDES += driver/common
 $(NAME)_INCLUDES += driver/rf
 $(NAME)_INCLUDES += driver/wdt
+$(NAME)_INCLUDES += driver/aon_wdt
 $(NAME)_INCLUDES += driver/dma
 $(NAME)_INCLUDES += driver/reg
 $(NAME)_INCLUDES += driver/aon_rtc
@@ -79,6 +80,7 @@ $(NAME)_SOURCES  += driver/flash/flash.c
 $(NAME)_SOURCES  += driver/gpio/gpio.c
 $(NAME)_SOURCES  += driver/uart/uart.c
 $(NAME)_SOURCES  += driver/wdt/wdt.c
+$(NAME)_SOURCES  += driver/aon_wdt/aon_wdt.c
 $(NAME)_SOURCES  += driver/pwm/pwm.c
 
 ifeq ($(hw_timer),1)

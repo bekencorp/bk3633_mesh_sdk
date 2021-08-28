@@ -294,7 +294,7 @@ typedef void (*k_thread_entry_t)(void *p1, void *p2, void *p3);
  *
  * @return 0 success.
  */
-int k_thread_create(struct k_thread *new_thread, k_thread_stack_t *stack,
+int k_thread_create(struct k_thread *new_thread, const name_t *name, k_thread_stack_t *stack,
                     size_t stack_size, k_thread_entry_t entry, void *p1,
                     void *p2, void *p3, int prio, u32_t options, s32_t delay);
 

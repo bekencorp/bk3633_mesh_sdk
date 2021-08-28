@@ -236,6 +236,8 @@ typedef int(*uECC_RNG_Function)(uint8_t *dest, unsigned int size);
  */
 void uECC_set_rng(uECC_RNG_Function rng_function);
 
+void uECC_set_sleep_flag(uint8_t flag);
+
 /*
  * @brief provides current uECC_RNG_Function.
  * @return Returns the function that will be used to generate random bytes.

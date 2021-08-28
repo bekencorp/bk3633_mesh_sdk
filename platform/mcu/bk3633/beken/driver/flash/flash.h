@@ -25,6 +25,8 @@
 #define REG_FLASH_SR_DATA_CRC_CNT       (&addFLASH_Reg0x5)
 #define REG_FLASH_CONF                  (&addFLASH_Reg0x7)
 
+#define REG_FLASH_DATA_WRITE_MEM(val)   set_FLASH_Reg0x9_mem_data(val)
+
 #define BIT_ADDRESS_SW                  posFLASH_Reg0x0_addr_sw_reg
 #define SET_ADDRESS_SW                  bitFLASH_Reg0x0_addr_sw_reg
 
@@ -158,6 +160,10 @@ UINT32 flash_get_id(void);
  ****************************************************************************************
  */
 UINT32 flash_write(char *user_buf, UINT32 count, UINT32 address);
+
+UINT32 flash_write_normal(char *user_buf, UINT32 count, UINT32 address);
+
+void flash_erase(UINT32 cmd, UINT32 address);
 
 /**
  ****************************************************************************************

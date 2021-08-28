@@ -8,3 +8,5 @@
 
 void bt_hci_ecc_init(void);
 int bt_hci_ecc_send(struct net_buf *buf);
+u8_t *bt_ecc_private_key_get(void);
+void bt_ecc_private_key_set(u8_t *pri_key);

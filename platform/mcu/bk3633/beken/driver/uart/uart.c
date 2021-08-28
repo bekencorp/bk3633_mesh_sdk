@@ -869,7 +869,10 @@ void uart2_init(void)
     intr_status = REG_READ(REG_UART2_INTR_STATUS);
     REG_WRITE(REG_UART2_INTR_STATUS, intr_status);
 
-    //intc_enable(IRQ_UART2);
+    intc_enable(IRQ_UART2);
+
+
+	// printf("%s %d \r\n", __func__, __LINE__);
 }
 
 void uart2_exit(void)
@@ -910,9 +913,9 @@ UINT32 uart2_write(char *user_buf, UINT32 count, UINT32 op_flag)
 UINT32 uart2_ctrl(UINT32 cmd, void *parm)
 {
     UINT32 ret;
-	
+
     peri_busy_count_add();
-        
+
     ret = DRIV_SUCCESS;
     switch(cmd)
     {

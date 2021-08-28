@@ -32,7 +32,7 @@ static void _gen_onoff_prepear_buf(struct bt_mesh_model *p_model, struct net_buf
     } else {
         net_buf_simple_add_u8(p_msg, p_state->onoff[T_CUR]);
 #ifdef CONFIG_MESH_MODEL_TRANS
-        if(remain_byte){
+        if(remain_byte) {
             net_buf_simple_add_u8(p_msg, p_state->onoff[T_TAR]);
             net_buf_simple_add_u8(p_msg, remain_byte);
         }
@@ -44,7 +44,7 @@ static void _gen_onoff_status(struct bt_mesh_model *p_model,
                           struct bt_mesh_msg_ctx *p_ctx, bool is_ack)
 {
     struct net_buf_simple *p_msg = NET_BUF_SIMPLE(2 + 3 + 4);
-    
+
     BT_DBG("addr(0x%04x)", p_model->elem->addr);
 
     _gen_onoff_prepear_buf(p_model, p_msg, is_ack);

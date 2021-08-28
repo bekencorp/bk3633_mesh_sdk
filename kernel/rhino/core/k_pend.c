@@ -36,6 +36,7 @@ void pend_task_wakeup(ktask_t *task)
             task->task_state = K_SUSPENDED;
             break;
         default:
+            krhino_backtrace_now();
             k_err_proc(RHINO_SYS_FATAL_ERR);
             break;
     }

@@ -1,3 +1,17 @@
+/**
+****************************************************************************************
+*
+* @file pwm.c
+*
+* @brief pwm user interfaces
+*
+* Copyright (C) Beken Leonardo 2021
+*
+* $Rev: $
+*
+****************************************************************************************
+*/
+
 #include "hal/soc/soc.h"
 #include "rtos_pub.h"
 #include "drv_model_pub.h"

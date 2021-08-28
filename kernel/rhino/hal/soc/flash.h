@@ -85,11 +85,12 @@ int32_t hal_flash_erase(hal_partition_t in_partition, uint32_t off_set, uint32_t
  *                             update this start address.
  * @param[in]  inBuffer        point to the data buffer that will be written to flash
  * @param[in]  inBufferLength  The length of the buffer
+ * @param[in]  FlashSecureSector  The flash secure sector.
  *
  * @return  0 : On success, EIO : If an error occurred with any step
  */
 int32_t hal_flash_write(hal_partition_t in_partition, uint32_t *off_set,
-                        const void *in_buf, uint32_t in_buf_len);
+                        const void *in_buf, uint32_t in_buf_len, BOOL flash_secure_sector);
 
 /**
  * Write data to an area on a flash logical partition with erase first

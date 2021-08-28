@@ -64,6 +64,13 @@ static uECC_RNG_Function g_rng_function = &default_CSPRNG;
 static uECC_RNG_Function g_rng_function = 0;
 #endif
 
+static uint8_t ECC_keep_sleep_flag = 1;
+
+void uECC_set_sleep_flag(uint8_t flag)
+{
+	ECC_keep_sleep_flag = flag;
+}
+
 void uECC_set_rng(uECC_RNG_Function rng_function)
 {
 	g_rng_function = rng_function;
@@ -745,7 +752,9 @@ void EccPoint_mult(uECC_word_t * result, const uECC_word_t * point,
 	XYcZ_initial_double(Rx[1], Ry[1], Rx[0], Ry[0], initial_Z, curve);
 
 	for (i = num_bits - 2; i > 0; --i) {
-		k_sleep(1);
+		if (ECC_keep_sleep_flag) {
+		    k_sleep(1);
+		}
 		nb = !uECC_vli_testBit(scalar, i);
 		XYcZ_addC(Rx[1 - nb], Ry[1 - nb], Rx[nb], Ry[nb], curve);
 		XYcZ_add(Rx[nb], Ry[nb], Rx[1 - nb], Ry[1 - nb], curve);

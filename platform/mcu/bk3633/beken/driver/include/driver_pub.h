@@ -3,7 +3,7 @@
 *
 * @file driver_pub.h
 *
-* @brief icu initialization and specific functions
+* @brief driver public definations
 *
 * Copyright (C) Beken Leonardo 2021
 *
@@ -26,6 +26,7 @@
 #define I2S_CMD_MAGIC                (0xe280000)
 #define TIMER_CMD_MAGIC              (0xe290000)
 #define WDT_CMD_MAGIC                (0xe330000)
+#define AON_WDT_CMD_MAGIC            (0xe340000)
 
 #define DRIVER_ENABLE                   1
 #define DRIVER_DISABLE                  0

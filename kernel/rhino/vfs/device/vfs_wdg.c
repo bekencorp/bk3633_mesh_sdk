@@ -90,7 +90,8 @@ int vfs_wdg_ioctl(file_t *fp, int cmd, unsigned long arg)
 
     switch(cmd) {
         case IOCTL_WDG_RELOAD:
-            hal_wdg_reload(wdg_dev);
+            //hal_wdg_reload(wdg_dev);
+            hal_aon_wdt_feed();
             ret = VFS_SUCCESS;
             break;
         default:

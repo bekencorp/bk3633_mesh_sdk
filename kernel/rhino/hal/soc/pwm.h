@@ -1,6 +1,16 @@
-/*
- * Copyright (C) 2015-2017 Alibaba Group Holding Limited
- */
+/**
+****************************************************************************************
+*
+* @file pwm.h
+*
+* @brief pwm user definations
+*
+* Copyright (C) Beken Leonardo 2021
+*
+* $Rev: $
+*
+****************************************************************************************
+*/
 
 #ifndef HAL_PWM_H
 #define HAL_PWM_H

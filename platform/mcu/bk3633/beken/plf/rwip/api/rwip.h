@@ -354,6 +354,8 @@ struct rwip_func_tag
     uint8_t (*rwip_sleep)(int32_t * dur, int32_t max_slots);
     uint16_t (*rwip_sleep_flag)(void);
     rwip_time_t (*rwip_time_get)(void);
+	void (*rwip_set_dut_mode)(uint8_t flg);
+	uint8_t (*rwip_get_dut_mode)(void);
 };
 extern const struct rwip_func_tag rwip_func;
 
@@ -582,6 +584,12 @@ void rwip_sw_int_req(void);
  */
 uint8_t rwip_sleep(int32_t * dur, int32_t max_slots);
 uint16_t rwip_sleep_flag(void);
+
+
+void rwip_set_dut_mode(uint8_t flg);
+uint8_t rwip_get_dut_mode(void);
+
+
 #if (BLE_EMB_PRESENT || BT_EMB_PRESENT)
 
 /**

@@ -42,6 +42,14 @@ int bt_pub_key_gen(struct bt_pub_key_cb *cb);
  */
 const u8_t *bt_pub_key_get(void);
 
+/*  @brief Set the current Public Key.
+ *
+ *  Set the current ECC Public Key.
+ *
+ *  @return void
+ */
+void bt_pub_key_set(const u8_t *pkey);
+
 /*  @typedef bt_dh_key_cb_t
  *  @brief Callback type for DH Key calculation.
  *

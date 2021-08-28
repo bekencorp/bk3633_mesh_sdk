@@ -421,7 +421,7 @@ static void rf_force_agc_enable(bool en)
 
 //======================================
 extern volatile uint32_t XVR_ANALOG_REG_BAK[32];
-
+#define LDO_MODE 0
 void  xvr_reg_initial(void)
 {
     addXVR_Reg0x0 = 0xC4B0323F  ;XVR_ANALOG_REG_BAK[0] = 0xC4B0323F;
@@ -432,7 +432,7 @@ void  xvr_reg_initial(void)
     addXVR_Reg0x5 = 0x4620501F  ;XVR_ANALOG_REG_BAK[5] = 0x4620501F; //0x4620501F 03.31 // 0x4420501F 04.01
     addXVR_Reg0x6 = 0x8097CE20  ;XVR_ANALOG_REG_BAK[6] = 0x8097CE20;
     addXVR_Reg0x7 = 0xAA023DC0  ;XVR_ANALOG_REG_BAK[7] = 0xAA023DC0;
-    addXVR_Reg0x8 = 0x0FB0C02F  ;XVR_ANALOG_REG_BAK[8] = 0x0FB0C02F;//8B0C02F
+    addXVR_Reg0x8 = 0x0DB0C02F  ;XVR_ANALOG_REG_BAK[8] =  0x0DB0C02F;//8B0C02F
     addXVR_Reg0x9 = 0x7093220C  ;XVR_ANALOG_REG_BAK[9] = 0x7093220C;
     addXVR_Reg0xa = 0x9C27585B  ;XVR_ANALOG_REG_BAK[0xa] = 0x9C27585B;
     addXVR_Reg0xb = 0x0FD93F23  ;XVR_ANALOG_REG_BAK[0xb] = 0x0FD93F23;
@@ -475,7 +475,7 @@ void  xvr_reg_initial(void)
     addXVR_Reg0x38 = 0X00000000;// REG_38
     addXVR_Reg0x39 = 0X00000000;// REG_39
     addXVR_Reg0x3a = 0x00128000;// REG_3A
-    addXVR_Reg0x3b = 0x36341248;//0x36341048;// REG_3B 0x22341048
+    addXVR_Reg0x3b = 0x36341048;//0x36341248 // REG_3B 0x22341048
     addXVR_Reg0x3c = 0x01FF1c80;// REG_3C
     addXVR_Reg0x3d = 0x00000000;// REG_3D
     addXVR_Reg0x3e = 0X0000D940;// REG_3E
@@ -507,12 +507,19 @@ void  xvr_reg_initial(void)
 	
 #if 1   
   //  addXVR_Reg0x6 = 0x85a7cc00;XVR_ANALOG_REG_BAK[0x6] = 0x85a7cc00;
-    
+#if LDO_MODE
+    addXVR_Reg0x6 = 0x8097CE20  ;XVR_ANALOG_REG_BAK[6] = 0x8097CE20;
+#else
     addXVR_Reg0x6 = 0x80b7ce20;XVR_ANALOG_REG_BAK[0x6] = 0x80b7ce20;
+#endif
    
     addXVR_Reg0x7 = 0xAA023FC0;XVR_ANALOG_REG_BAK[0x7] = 0xAA023FC0;
   //  
+#if LDO_MODE
+    addXVR_Reg0xa = 0x9C03785B;XVR_ANALOG_REG_BAK[0xa] = 0x9C03785B;
+#else
     addXVR_Reg0xa = 0x9C03785f;XVR_ANALOG_REG_BAK[0xa] = 0x9C03785f;
+#endif
    //
     addXVR_Reg0x1c = 0x919CDDC5;XVR_ANALOG_REG_BAK[0x1c] = 0x919CDDC5;
 #endif
@@ -543,7 +550,7 @@ void rf_init(struct rwip_rf_api *api)
 		api->reset = rf_reset;
 
     #if defined(CFG_BLE)
-			api->force_agc_enable = rf_force_agc_enable;
+		api->force_agc_enable = rf_force_agc_enable;
     #endif //CFG_BLE
 
 		api->rssi_convert = rf_rssi_convert;
@@ -570,6 +577,11 @@ void rf_init(struct rwip_rf_api *api)
       //  xvr_reg_init();		//// ????
 
         xvr_reg_initial();
+
+#if(LDO_MODE)
+        addPMU_Reg0x11 |= (1<<12);
+        addPMU_Reg0x13 |= (1<<12);
+#endif
         //UART_PRINTF("xvr_reg_init ok\r\n");
         
 //		ip_radiocntl0_pack(/*uint16_t spiptr*/	 (EM_RF_SW_SPI_OFFSET >> 2),
@@ -594,7 +606,16 @@ void rf_init(struct rwip_rf_api *api)
         
         ip_radiocntl1_set(0x00000020);
         //UART_PRINTF("ip RADIOCNTL1 addr:0x%08x,val:0x%08x\r\n",ip_RADIOCNTL1_ADDR,ip_radiocntl1_get());
-        ip_timgencntl_set(0x01df0120);		////Beken,
+#if (CONFIG_DUT_TEST_CMD)
+		if(get_dut_flag())
+		{
+        	ip_timgencntl_set(0x01df00f0);		////Beken,
+        }
+		else
+#endif //CONFIG_DUT_TEST_CMD
+		{
+			ip_timgencntl_set(0x01df0120);		////Beken,
+		}
         //UART_PRINTF("ip_TIMGENCNTL addr:0x%08x,val:0x%08x\r\n",ip_TIMGENCNTL_ADDR,ip_timgencntl_get());
 	#endif
 
@@ -777,8 +798,24 @@ void rf_init(struct rwip_rf_api *api)
     #endif //CFG_BLE
     
 
-//    void  rf_debug_gpio_init(uint8_t GPIO_C_D);
-//    rf_debug_gpio_init(1);
+    void  rf_debug_gpio_init(uint8_t GPIO_C_D);
+    rf_debug_gpio_init(1);
+}
+
+void rf_set_bulk_mode(void)
+{
+    XVR_ANALOG_REG_BAK[0x6] |= (1 << 21);
+    addXVR_Reg0x6 = XVR_ANALOG_REG_BAK[0x6];
+    XVR_ANALOG_REG_BAK[0xa] |= (1 << 2);
+    addXVR_Reg0xa = XVR_ANALOG_REG_BAK[0xa];
+}
+
+void rf_set_ldo_mode(void)
+{
+    XVR_ANALOG_REG_BAK[0x6] &= ~(1 << 21);
+    addXVR_Reg0x6 = XVR_ANALOG_REG_BAK[0x6];
+    XVR_ANALOG_REG_BAK[0xa] &= ~(1 << 2);
+    addXVR_Reg0xa = XVR_ANALOG_REG_BAK[0xa];
 }
 
 void Delay_us(int num)
@@ -901,16 +938,6 @@ void  rf_debug_gpio_init(uint8_t GPIO_C_D)
 
 void kmod_calibration(void) 
 {
-
-	
-	/* 1���ڳ�ʼ��0X26�� [16:28] = 0x1084 
-			2����0X30��BT ���ó� BT = 1ȥУ׼
-	
-		3��У׼��ɺ���0X30��BT ���ó� BT = 0.5
-	
-	
-	*/
-	
     uint32_t value;
     uint32_t value_kcal_result;
     uint32_t value_addXVR_Reg0x24;

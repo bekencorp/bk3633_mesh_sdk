@@ -89,7 +89,7 @@ __INLINE void WFI(void)
 #pragma arm   
     __asm                                                
     {                                    
-        MOV __l_rd, 0;               
+        MOV __l_rd, 0;
         MCR p15, 0, __l_rd, c7, c0, 4;
     } 
 }

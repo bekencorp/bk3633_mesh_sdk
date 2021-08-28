@@ -3,7 +3,7 @@
 *
 * @file driver.c
 *
-* @brief icu initialization and specific functions
+* @brief driver modules initialization
 *
 * Copyright (C) Beken Leonardo 2021
 *

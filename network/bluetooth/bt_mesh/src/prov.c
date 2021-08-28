@@ -37,11 +37,12 @@
 #include "foundation.h"
 #include "proxy.h"
 #include "prov.h"
+#include "genie_flash.h"
 
 //#include "bt_mesh_custom_log.h"
 
 /* 4 transmissions, 20ms interval */
-#define PROV_XMIT_COUNT        6    //old state: 0
+#define PROV_XMIT_COUNT        10    //old state: 0
 #define PROV_XMIT_INT          20
 
 #define AUTH_METHOD_NO_OOB     0x00
@@ -119,6 +120,7 @@ enum {
     WAIT_STRING,           /* Waiting for string input from user */
 
     NUM_FLAGS,
+    GET_KEY_FROM_FLASH,
 };
 
 struct prov_link {
@@ -188,7 +190,7 @@ struct prov_rx {
 #define PROV_BUF_HEADROOM 5
 #else
 #define PROV_BUF_HEADROOM 0
-static struct net_buf_simple *rx_buf = NET_BUF_SIMPLE(65);
+static struct net_buf_simple *rx_buf = NET_BUF_SIMPLE(80);
 #endif
 
 #define PROV_BUF(len) NET_BUF_SIMPLE(PROV_BUF_HEADROOM + len)
@@ -913,7 +915,7 @@ static void send_pub_key(void)
     net_buf_simple_init(buf, 0);
     sys_memcpy_swap(buf->data, &link.conf_inputs[17], 32);
     sys_memcpy_swap(&buf->data[32], &link.conf_inputs[49], 32);
-
+    uECC_set_sleep_flag(0);
     //if (bt_dh_key_gen(buf->data, prov_dh_key_cb)) {
     if (bt_mesh_dh_key_gen(buf->data, prov_dh_key_cb)) {
         BT_ERR("Failed to generate DHKey");
@@ -951,8 +953,14 @@ static void pub_key_ready(const u8_t *pkey)
         return;
     }
 
-    BT_DBG("Local public key ready");
+    BT_DBG("Local public key ready\n");
 
+    if (!atomic_test_and_clear_bit(link.flags, GET_KEY_FROM_FLASH)) {
+        genie_flash_write_userdata(GFI_MESH_PUB_KEY, pkey, 64);
+        genie_flash_write_userdata(GFI_MESH_PRIVATE_KEY, bt_ecc_private_key_get(), 32); 
+    }
+
+    BT_DBG("%s, pkey: %s\n", __func__, bt_hex(pkey, 64));
     atomic_set_bit(link.flags, LOCAL_PUB_KEY);
 
     if (atomic_test_and_clear_bit(link.flags, REMOTE_PUB_KEY)) {
@@ -1593,10 +1601,23 @@ int bt_mesh_prov_init(const struct bt_mesh_prov *prov_info)
         return -EINVAL;
     }
 
-    err = bt_mesh_pub_key_gen(&pub_key_cb);
-    if (err) {
-        BT_ERR("Failed to generate public key (%d)", err);
-        return err;
+    u8_t pub_key[64];
+    u8_t private_key[32];
+    if ((genie_flash_read_userdata(GFI_MESH_PUB_KEY, pub_key, sizeof(pub_key)) == GENIE_FLASH_SUCCESS) &&
+        genie_flash_read_userdata(GFI_MESH_PRIVATE_KEY, private_key, sizeof(private_key)) == GENIE_FLASH_SUCCESS) {
+        BT_DBG("Get Publish key from flash. pub (0x %s) \n", bt_hex(pub_key, sizeof(pub_key)));
+        BT_DBG("Get Private key from flash. private (0x %s) \n", bt_hex(private_key, sizeof(private_key)));
+        atomic_set_bit(link.flags, GET_KEY_FROM_FLASH);
+        bt_pub_key_set(pub_key);
+        bt_ecc_private_key_set(private_key);
+        pub_key_cb.func(pub_key);
+    } else {
+        BT_DBG("%s, Start gen pub key.\n", __func__);
+        err = bt_mesh_pub_key_gen(&pub_key_cb);
+        if (err) {
+            BT_ERR("Failed to generate public key (%d)\n", err);
+            return err;
+        }
     }
 
     prov = prov_info;

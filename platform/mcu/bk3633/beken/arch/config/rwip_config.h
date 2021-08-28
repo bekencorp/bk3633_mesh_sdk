@@ -172,7 +172,7 @@
 #define CFG_BLE_EXT_SCAN     0
 
 #define BLE_MESH_FULL_SCAN   1
-
+#define LLD_TEST_RX_SOTF     1
 //   <e> CFG_HW_AUDIO
 //   	<i> enable HW_AUDIO
 //   </e>
@@ -423,8 +423,8 @@
 	#define BLE_ADV_REPORTS_MAX             (1)
 
 	#if (BLE_EMB_PRESENT)
-		/// Maximum number of ADV reports in the HCI queue to Host
-		#define BLE_MAX_NB_ADV_REP_FRAG       (4 * HCI_TL_SUPPORT)
+    /// Maximum number of ADV reports in the HCI queue to Host
+	  #define BLE_MAX_NB_ADV_REP_FRAG       (4 * HCI_TL_SUPPORT)
 		/// Maximum number of IQ reports in the HCI queue to Host
 		#define BLE_MAX_NB_IQ_REP             (4 * HCI_TL_SUPPORT)
 	#endif // (BLE_EMB_PRESENT)
@@ -1017,7 +1017,7 @@ enum KE_MEM_HEAP
 #define RWIP_HEAP_NON_RET_SIZE    ( ECC_HEAP_NON_RET_SIZE_ )
 
 /// Minimum sleep time to enter in deep sleep (in half slot).
-#define RWIP_MINIMUM_SLEEP_TIME                (6)
+#define RWIP_MINIMUM_SLEEP_TIME                (10)
 
 /******************************************************************************************/
 /* -------------------------     CONFIGURABLE PARAMETERS     -----------------------------*/

@@ -83,6 +83,7 @@ $(NAME)_SOURCES  +=  aos/trace_impl.c
 
 $(NAME)_SOURCES  +=  hal/hci_driver.c
 $(NAME)_SOURCES	 +=  hal/hal_icu.c
+$(NAME)_SOURCES	 +=  hal/hal_aon_wdt.c
 $(NAME)_SOURCES	 +=  hal/gpio.c
 $(NAME)_SOURCES  +=  hal/wdg.c
 $(NAME)_SOURCES  +=  hal/hw.c

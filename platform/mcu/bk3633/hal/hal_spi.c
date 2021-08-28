@@ -1,3 +1,17 @@
+/**
+****************************************************************************************
+*
+* @file hal_spi.c
+*
+* @brief spi initialization and specific functions
+*
+* Copyright (C) Beken Leonardo 2021
+*
+* $Rev: $
+*
+****************************************************************************************
+*/
+
 #include "spi_pub.h"
 #include "icu_pub.h"
 #include "spi.h"

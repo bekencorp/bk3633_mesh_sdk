@@ -3,7 +3,7 @@
 *
 * @file hal_timer.c
 *
-* @brief icu initialization and specific functions
+* @brief timer function user interface
 *
 * Copyright (C) Beken Leonardo 2021
 *

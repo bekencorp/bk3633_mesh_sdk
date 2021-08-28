@@ -527,7 +527,7 @@ static int bk3633_ota_deinit(void *something)
 static int bk3633_ota_push_buf(uint8_t* p_buf, uint32_t* offset, uint32_t p_size)
 {
 	//LOG("OTA write flash offset 0x%x, size %d\n", *offset, p_size);
-    int ret = hal_flash_write(PLATFORM_OTA_PARTATION, offset, p_buf, p_size);
+    int ret = hal_flash_write(PLATFORM_OTA_PARTATION, offset, p_buf, p_size, true);
 
 	CRC32_Update( &contex, p_buf, p_size);
 

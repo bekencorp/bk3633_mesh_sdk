@@ -10,17 +10,151 @@
 #include "uart_pub.h"
 
 #if (CONFIG_UART_TEST_CMD)
-
-static cpu_stack_t uart_test_task[UART_TEST_TASK_STACK/sizeof(cpu_stack_t)];
+#define UART_TIME_OUT 200
+static cpu_stack_t *uart_test_task;//[UART_TEST_TASK_STACK/sizeof(cpu_stack_t)];
 static ktask_t uart_test_task_obj;
 static struct uart_test_st *uart_tp     = NULL;
 
 static int volatile uart_test_enable   = 1;
 
-static const struct uart_command uart_test_cmds[] = {
-    {UART_CMD_ERASE_REBOOT,               erase_reboot_uart_cmd_handler},
 
+static const struct uart_command uart_test_cmds[] = {
+    {"rease_reboot",				erase_reboot_uart_cmd_handler},
+    {"reboot",						reboot_uart_cmd_handler},
+    {"mesh_lpn_set",					lpn_set_uart_cmd_handler},
+
+    {"xtal_cal_set",				set_xtal_cal_cmd_handler},
+    {"xtal_cal_save",              save_xtal_cal_cmd_handler},
+    {"power_set",  				set_rf_power_cmd_handler},
+    {"power_save",              	save_rf_power_cmd_handler},
+#ifdef CONFIG_DUT_TEST_CMD
+	{"fcc_tx",                		rf_fcc_tx_test_cmd_handler},
+	{"fcc_stop_tx", 		   		rf_fcc_test_stop_cmd_handler},
+#endif
+    {"mesh_app_key_add",            mesh_appkey_add_cmd_handler},
+	{"mesh_netkey_add",             mesh_netkey_cmd_handler},
+	{"mesh_devkey_add",             mesh_devkey_cmd_handler},
+    {"mesh_netkey_idx_add",         mesh_netkey_idx_cmd_handler},
+    {"mesh_appkey_idx_add",         mesh_appkey_idx_cmd_handler},
+    {"mesh_seq_add",                mesh_seq_add_cmd_handler},
+    {"mesh_prim_addr_add",          mesh_prim_addr_add_cmd_handler},
+    {"mesh_prov_done",              mesh_prov_done_cmd_handler},
+	{"mesh_appkey_del",             NULL},
+	{"mesh_netkey_del",             NULL},
+	{"mesh_devkey_del",             NULL},
 };
+
+uint8_t ch_str_2_u8(char *p_input_char, uint8_t *p_outup_num)
+{
+	uint8_t i;
+
+	*p_outup_num = 0;
+
+	for(i = 0; i < 2; i++)
+	{
+		if(p_input_char[i] >= '0' && p_input_char[i] <= '9')
+		{
+			*p_outup_num = ((*p_outup_num)* 0x10) + (p_input_char[i] - '0');
+		}
+		else if(p_input_char[i] >= 'A' && p_input_char[i] <= 'F')
+		{
+			*p_outup_num = ((*p_outup_num) * 0x10) + (p_input_char[i] - 'A' + 10);
+		}
+		else if(p_input_char[i] >= 'a' && p_input_char[i] <= 'f')
+		{
+			*p_outup_num = ((*p_outup_num)* 0x10) + (p_input_char[i] - 'a' + 10);
+		}
+		else 
+		{
+			break;
+		}		
+	}
+
+	//param input error
+	if(p_input_char[i] != '\0' && p_input_char[i] != ' ')
+	{
+		printf("[%s] input param error!\n", __func__);
+		*p_outup_num = 0;
+		return 0xFF;
+	}
+	
+	return (i + 1);
+}
+
+uint8_t ch_str_2_u16(char *p_input_char, uint16_t *p_outup_num)
+{
+	uint8_t i;
+
+	*p_outup_num = 0;
+
+	for(i = 0; i < 4; i++)
+	{
+		if(p_input_char[i] >= '0' && p_input_char[i] <= '9')
+		{
+			*p_outup_num = ((*p_outup_num)* 0x10) + (p_input_char[i] - '0');
+		}
+		else if(p_input_char[i] >= 'A' && p_input_char[i] <= 'F')
+		{
+			*p_outup_num = ((*p_outup_num) * 0x10) + (p_input_char[i] - 'A' + 10);
+		}
+		else if(p_input_char[i] >= 'a' && p_input_char[i] <= 'f')
+		{
+			*p_outup_num = ((*p_outup_num)* 0x10) + (p_input_char[i] - 'a' + 10);
+		}
+		else 
+		{
+			break;
+		}		
+	}
+
+	//param input error
+	if(p_input_char[i] != '\0' && p_input_char[i] != ' ')
+	{
+		*p_outup_num = 0;
+		printf("[%s] input param error!\n", __func__);
+		return 0xFF;
+	}
+	
+	return (i + 1);
+}
+
+uint8_t ch_str_2_u32(char *p_input_char, uint32_t *p_outup_num)
+{
+	uint8_t i;
+
+	*p_outup_num = 0;
+
+	for(i = 0; i < 8; i++)
+	{
+		if(p_input_char[i] >= '0' && p_input_char[i] <= '9')
+		{
+			*p_outup_num = ((*p_outup_num)* 0x10) + (p_input_char[i] - '0');
+		}
+		else if(p_input_char[i] >= 'A' && p_input_char[i] <= 'F')
+		{
+			*p_outup_num = ((*p_outup_num) * 0x10) + (p_input_char[i] - 'A' + 10);
+		}
+		else if(p_input_char[i] >= 'a' && p_input_char[i] <= 'f')
+		{
+			*p_outup_num = ((*p_outup_num)* 0x10) + (p_input_char[i] - 'a' + 10);
+		}
+		else 
+		{
+			break;
+		}		
+	}
+
+	//param input error
+	if(p_input_char[i] != '\0' && p_input_char[i] != ' ')
+	{
+		*p_outup_num = 0;
+		printf("[%s] input param error!\n", __func__);
+		return 0xFF;
+	}
+	
+	return (i + 1);
+}
+
 
 static int uart_get_input(char *inbuf, unsigned int *bp)
 {
@@ -31,72 +165,144 @@ static int uart_get_input(char *inbuf, unsigned int *bp)
         return 0;
     }
 
-    while (uart_test_getchar(&c) == 1 && (*bp) < UART_TEST_INBUF_SIZE - 1) {
-        if (inbuf[(*bp) - 1] == UART_END_CHAR && c == UART_RET_CHAR)
-        {
-            inbuf[*bp - 1] = '\0';
-            *bp        = 0;
-            return 1;
-        }
+    while(uart_test_getchar(&c) == 1 && (*bp) < UART_TEST_INBUF_SIZE)
+	{
 
         inbuf[*bp] = c;
         (*bp)++;
     }
 
-    return 0;
+    return (*bp);
 }
 
-static int handle_uart_cmd(char *inbuf)
+//
+static void filt_uart1_data(char *inbuf, uint8_t *p_len)
+{
+
+	if(*p_len == 0)
+	{
+		return;
+	}
+
+	for(uint8_t i = 0; i  < *p_len - 1; i++)
+	{
+		//recive more than 1 msg 
+		if((inbuf[i] == '\r') && (inbuf[i + 1] == '\n'))
+		{
+			inbuf[i] = '\0';
+			*p_len = i + 1;
+			return; 
+		}
+	}
+
+
+	//the last data is not "\r\n"
+	if(inbuf[*p_len - 1] != '\0')
+	{	
+		uart_tp->inbuf[*p_len - 1] = '\0';
+		*p_len = *p_len + 1;
+	}
+	
+}
+
+static int handle_uart_cmd(char *inbuf, uint8_t  *p_len)
 {
     int i = 0;
-    char *index = inbuf;
-    char *para = NULL;
-    uint16_t opcode = ((uint16_t)(*index++)<<8) | (*index++);
 
-    if((*index) != '\0')
-    {
-        para = index;
-    }
+	uint8_t cmd_name_len;
+	
+	uint8_t inbuf_len = strlen(inbuf);
 
+	if(inbuf == NULL || p_len == NULL || *p_len == 0)
+	{
+		return;
+	}
+	
     for (i = 0; i < sizeof(uart_test_cmds)/sizeof(uart_test_cmds[0]); i++) 
     {
-        if(opcode == uart_test_cmds[i].op)
-        {
-            uart_test_cmds[i].func(para);
-            return 0;
-        }
+
+		cmd_name_len = strlen(uart_test_cmds[i].cmd_name);
+
+		if(inbuf_len < cmd_name_len)
+		{
+			continue;
+		}
+		
+		//has param input, and has matched
+		if((memcmp(uart_test_cmds[i].cmd_name, inbuf, cmd_name_len) == 0)
+		   && (inbuf[cmd_name_len] == ' ' || inbuf[cmd_name_len] == '\0'))
+		{
+			//no param
+			if(inbuf[cmd_name_len] == '\0')
+			{
+				uart_test_cmds[i].func(NULL);
+			}
+			else
+			{
+				uart_test_cmds[i].func(&inbuf[cmd_name_len + 1]);
+			}
+			return 0;
+		}
     }
 
-    return opcode;
+	printf("%s: can not fine cmd (%s) \r\n", __func__, inbuf);
+    return 1;
 }
 
 
 static void print_not_support_cmd(int op_ret)
 {
-    UART_PRINTF("command '0x%x' not found\r\n", op_ret);
+    bk_printf("command '0x%x' not found\r\n", op_ret);
 }
 
 static void uart_test_main(void)
 {
-    while (uart_test_enable) {
+
+    while (uart_test_enable) 
+	{
         int   op_ret;
         char *msg = NULL;
+		unsigned int i = 0;
 
-        if (uart_get_input(uart_tp->inbuf, &uart_tp->bp)) {
-            msg = uart_tp->inbuf;
+        if (uart_get_input(uart_tp->inbuf, &uart_tp->bp)) 
+		{
 
-            UART_PRINTF("~~~~income command \r\n");
+			/*
+			for(i = 0;  i < uart_tp->bp; i++)
+			{
+				printf("%02X ", uart_tp->inbuf[i]);
+			}
+			*/
+#if (CONFIG_DUT_TEST_CMD)
+			if (get_dut_flag() && (uart_rx_dut_cmd(uart_tp->inbuf, uart_tp->bp) == 0))
+			{
+				;
+			}
+			else
+#endif //CONFIG_DUT_TEST_CMD
+			{
+				filt_uart1_data(uart_tp->inbuf, &uart_tp->bp);
 
-            op_ret = handle_uart_cmd(msg);
-            if (op_ret) {
-                print_not_support_cmd(op_ret);
-            }
-
-            UART_PRINTF("\r\n");
+				if( uart_tp->inbuf[0] == 'A' && uart_tp->inbuf[1] == 'T' && uart_tp->bp > 2) //jinxun AT cmd
+				{
+					printf("AT cmd : \r\n");
+					for(int i = 0; i <  uart_tp->bp;  i++)
+					{
+						printf("%c", uart_tp->inbuf[i]);
+					}
+					printf("\r\n");
+					
+				}
+				else
+				{
+					handle_uart_cmd(uart_tp->inbuf, &(uart_tp->bp));
+				}
+			}
+	        uart_tp->bp = 0;
         }
     }
 
-    UART_PRINTF("UART CMD exited\r\n");
+    bk_printf("UART CMD exited\r\n");
     aos_free(uart_tp);
     uart_tp = NULL;
 
@@ -108,12 +314,12 @@ static void exit_uart_test_cmd(char *buf, int len, int argc, char **argv)
     uart_test_enable = 0;
     return;
 }
-
 int uart_test_task_create(void)
 {
+   uart_test_task = (uint32_t *)aos_malloc((UART_TEST_TASK_STACK));
    return krhino_task_create(&uart_test_task_obj, "uart_test_cmd", NULL,
     		                 UART_TEST_TASK_PRIO, 0, uart_test_task,
-    		                 sizeof(uart_test_task) / sizeof(cpu_stack_t),
+    		                 UART_TEST_TASK_STACK / sizeof(cpu_stack_t),
                              (task_entry_t)uart_test_main, 1);
 }
 
@@ -125,12 +331,15 @@ int uart_test_getchar(char *inbuf)
 
     memset(&uart_stdio, 0, sizeof(uart_stdio));
     uart_stdio.port = UART1_PORT;
+	
+    ret = hal_uart_recv_II(&uart_stdio, inbuf, 1, &recv_size, UART_TIME_OUT);
 
-    ret = hal_uart_recv_II(&uart_stdio, inbuf, 1, &recv_size, HAL_WAIT_FOREVER);
-
-    if ((ret == 0) && (recv_size == 1)) {
-        return 1;
-    } else {
+    if ((ret == 0) && (recv_size == 1)) 
+	{
+		return 1;
+    } 
+	else 
+	{
         return 0;
     }
 }
@@ -139,11 +348,9 @@ int uart_test_init(void)
 {
     int ret;
 
-    UART_PRINTF("%s, %d\r\n", __func__, __LINE__);
-
+    printf("%s, %d\r\n", __func__, __LINE__);
 
     uart_tp = (struct uart_test_st *)aos_malloc(sizeof(struct uart_test_st));
-    memset(uart_tp, 0, sizeof(struct uart_test_st));
 
     if (uart_tp == NULL) {
         return ENOMEM;

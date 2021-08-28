@@ -82,7 +82,7 @@ static volatile uint8_t reduce_voltage_set=0;
 
 static void Delay_us(int num)
 {
-    int x, y;
+    volatile int x, y;
     for(y = 0; y < num; y ++ )
     {
         for(x = 0; x < 10; x++);
@@ -109,44 +109,89 @@ void cpu_reduce_voltage_sleep()
 {
     uint32_t tmp_reg;
     uint32_t calc_num = 0;
+    
   //  uart_printf("sleep\r\n");
     /**  set flash & cpu core use xtal***/
     set_flash_clk_xtal16M();
+    //addPMU_Reg0x2 = 0x11;
+    asm volatile ("nop"::);
+    asm volatile ("nop"::);
     set_SYS_Reg0x2_core_sel(0x01);
+    //addPMU_Reg0x2 = 0x12;
+    asm volatile ("nop"::);
+    asm volatile ("nop"::);
     set_SYS_Reg0x2_core_div(0x0);
-    
+    //addPMU_Reg0x2 = 0x13;
+    asm volatile ("nop"::);
+    asm volatile ("nop"::);
     setf_SYS_Reg0x17_enb_busrt_sel;
+    //addPMU_Reg0x2 = 0x14;
+    asm volatile ("nop"::);
+    asm volatile ("nop"::);
     setf_SYS_Reg0x17_CLK96M_PWD;
+    //addPMU_Reg0x2 = 0x15;
+    asm volatile ("nop"::);
+    asm volatile ("nop"::);
     setf_SYS_Reg0x17_HP_LDO_PWD;
+    //addPMU_Reg0x2 = 0x16;
+    asm volatile ("nop"::);
+    asm volatile ("nop"::);
     setf_SYS_Reg0x17_cb_bias_pwd;
-
-
+    //addPMU_Reg0x2 = 0x17;
+    asm volatile ("nop"::);
+    asm volatile ("nop"::);
     tmp_reg = addSYS_Reg0x17 | 0x08;
+    //addPMU_Reg0x2 = 0x18;
+    asm volatile ("nop"::);
+    asm volatile ("nop"::);
     system_sleep_status = 1;
-    set_PMU_Reg0x14_voltage_ctrl_work_aon(0x06);
-    set_PMU_Reg0x14_voltage_ctrl_work_core(0x06);
-
+    //addPMU_Reg0x2 = 0x19;
+    asm volatile ("nop"::);
+    asm volatile ("nop"::);
+    set_PMU_Reg0x14_voltage_ctrl_work_aon(0x07);
+    //addPMU_Reg0x2 = 0x20;
+    asm volatile ("nop"::);
+    asm volatile ("nop"::);
+    set_PMU_Reg0x14_voltage_ctrl_work_core(0x07);
+    //addPMU_Reg0x2 = 0x21;
+    asm volatile ("nop"::);
+    asm volatile ("nop"::);
     /**  set cpu core use 32k***/
     set_SYS_Reg0x2_core_sel(0x00);
-    
+    //addPMU_Reg0x2 = 0x22;
+    asm volatile ("nop"::);
+    asm volatile ("nop"::);
     addSYS_Reg0x17 = tmp_reg;
-    
+    //addPMU_Reg0x2 = 0x23;
+    asm volatile ("nop"::);
+    asm volatile ("nop"::);
     setf_SYS_Reg0x1_CPU_PWD;  
-    
+    //addPMU_Reg0x2 = 0x24;
+    asm volatile ("nop"::);
+    asm volatile ("nop"::);
     addSYS_Reg0x17 = 0x80; // open 96M
    //delay 30us        
-    Delay_us(30);
+    //Delay_us(30);
+    asm volatile ("nop"::);
+    asm volatile ("nop"::);
+    asm volatile ("nop"::);
+    asm volatile ("nop"::);
+    //addPMU_Reg0x2 = 0x25;
    // uart_printf("cpuwake\r\n");
     /**  set cpu core use xtal***/
     set_SYS_Reg0x2_core_sel(0x01);
-
-    addPMU_Reg0x14=0x6666; // config work & sleep cpu voltage
-
+    //addPMU_Reg0x2 = 0x26;
+    asm volatile ("nop"::);
+    asm volatile ("nop"::);
+    addPMU_Reg0x14=0x7777; // config work & sleep cpu voltage
+    //addPMU_Reg0x2 = 0x27;
+    asm volatile ("nop"::);
+    asm volatile ("nop"::);
 }
 
 void cpu_wakeup(void)
-{   
-   //  
+{  
+   //
     if(system_sleep_status == 1)
     {
               
@@ -190,8 +235,12 @@ void icu_init(void)
 //    set_PMU_Reg0x14_voltage_ctrl_sleep_aon(0x04);
   //  set_PMU_Reg0x14_voltage_ctrl_sleep_core(0x04);
 
+    setf_PMU_Reg0x1_wdt_reset_ctrl;     //set wdt_reset_ctrl to use always_on field.
+    setf_PMU_Reg0x1_wdt_reset_ctrl1;    //set wdt_reset_ctrl1 to use always_on field.
+
     icu_set_sleep_mode(MCU_REDUCE_VO_SLEEP);
     icu_clk_sel = ICU_MCU_CLK_SEL_16M;
+    set_PMU_Reg0x1_boot_rom_en(0);
 }
 
 void icu_exit(void)
@@ -201,38 +250,20 @@ void icu_exit(void)
 
 uint32_t icu_get_reset_reason(void)
 {
-    uint32_t reg0x0_val, reg0x3_val;
+    uint32_t reg0x2_val;
 
-    reg0x0_val = get_PMU_Reg0x0_reset_reason;
-    reg0x3_val = addPMU_Reg0x2 & 0xffff;
+    reg0x2_val = addPMU_Reg0x2 & 0xffffffff;
+    // printf("%s reg0x2_val %x \r\n", __func__, reg0x2_val);
 
-    printf("%s reg0x0_val %x reg0x3_val %x \r\n", __func__, reg0x0_val, reg0x3_val);
-
-    switch (reg0x0_val)
-    {
-    case 0x01:
-        switch(reg0x3_val)
-        {
-
-        }
-        return 0;
-
-    case 0x03:
-        // switch(reg0x3_val)
-        // {
-        //     case C_SOFTWARE_RESET:
-        //         return C_SOFTWARE_RESET;         
-        // }
-        return reg0x3_val;
-    }
-    return 0;
+    return reg0x2_val;
 }
 
 void icu_set_reset_reason(uint32_t reson_data)
 {
-    setf_PMU_Reg0x1_wdt_reset_ctrl;
+    GLOBAL_INT_DISABLE();
     addPMU_Reg0x2 = reson_data;
-    // printf("%s, set reset reason=%x\r\n", __func__, addPMU_Reg0x2);   
+    GLOBAL_INT_RESTORE();
+    ///printf("%s, set reset reason=%x\r\n", __func__, addPMU_Reg0x2);   
 }
 
 uint8_t core_peri_clk_freq_set(uint8_t core_clk, uint8_t peri_clk)
@@ -264,7 +295,7 @@ void core_peri_clk_div_get(uint8_t *core_div, uint8_t *peri_div)
 }
 
 static uint8_t clk_freq_check2src_set(void)
-{   
+{
     uint32_t cpu_clk_src_choose = 0;
     uint32_t perip_clk_src_choose = 0;
     uint32_t src_choose_tmp = 0;
@@ -343,9 +374,9 @@ static uint8_t clk_freq_check2src_set(void)
     
     }
     
-    printf("perip_clk_src_choose = 0x%08x\r\n",perip_clk_src_choose);
+    // printf("perip_clk_src_choose = 0x%08x\r\n",perip_clk_src_choose);
     src_choose_tmp = (perip_clk_src_choose & cpu_clk_src_choose) & 0x1E;
-    printf("src_choose_tmp = 0x%08x\r\n",src_choose_tmp);
+    // printf("src_choose_tmp = 0x%08x\r\n",src_choose_tmp);
 
     if(src_choose_tmp)
     {
@@ -415,8 +446,6 @@ static uint8_t clk_freq_check2src_set(void)
             cpu_clk_freq_default = MCU_CLK_16M;
             stu = 1;
         }
-        
-        
     }
     
     //printf("core_clk_src_default = 0x%08x\r\n", core_clk_src_default);
@@ -483,7 +512,7 @@ static void clk_src_div_clac(void)
                 }else if(cpu_clk_freq_default == MCU_CLK_64M)
                 {
                     core_clk_div = 1;
-                } 
+                }
                 core_clk_src_sel = 0x03;                
             }else
             {
@@ -497,9 +526,8 @@ static void clk_src_div_clac(void)
                 }else if(cpu_clk_freq_default == PERI_CLK_64M)
                 {
                     peri_clk_div = 1;
-                }              
+                }
             }
-        
         }break;
         
         case CLK_SRC_DPLL_80M:
@@ -526,7 +554,7 @@ static void clk_src_div_clac(void)
                 }else if(cpu_clk_freq_default == PERI_CLK_80M)
                 {
                     peri_clk_div = 1;
-                }               
+                }
             }
         
         }break;

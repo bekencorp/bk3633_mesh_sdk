@@ -1770,14 +1770,29 @@ static void hci_cmd_complete(struct net_buf *buf)
 #ifdef CONFIG_DUT_TEST_CMD
 	if(get_dut_flag())
 	{
-		bk_send_byte(UART2_PORT, 0x04);
-	    bk_send_byte(UART2_PORT, 0x0E);
-		bk_send_byte(UART2_PORT, buf->len);
+		uint8_t dut_test_com;
+		
+#ifdef	CONFIG_DUT_TEST_COM1
+		dut_test_com = UART1_PORT;
+#endif
+
+#ifdef   CONFIG_DUT_TEST_COM2
+		dut_test_com = UART2_PORT;
+#endif
+
+		bk_send_byte(dut_test_com, 0x04);
+	    bk_send_byte(dut_test_com, 0x0E);
+		bk_send_byte(dut_test_com, buf->len);
+
+		printf("hci complet: 04 0E %02X", buf->len);
 
 		for(int i = 0; i < buf->len; i++)
 		{
-		   bk_send_byte(UART2_PORT, buf->data[i]);
+			printf(" %02X", buf->data[i]);
+			bk_send_byte(dut_test_com, buf->data[i]);
 		}
+		printf("\r\n");
+		
 	}
 #endif
     net_buf_pull(buf, sizeof(*evt));
@@ -3118,7 +3133,7 @@ int bt_enable(bt_ready_cb_t cb)
 
 #if defined(CONFIG_BT_HOST_RX_THREAD)
     /* RX thread */
-    k_thread_create(&rx_thread_data, rx_thread_stack,
+    k_thread_create(&rx_thread_data, "ble rx_thread", rx_thread_stack,
                     K_THREAD_STACK_SIZEOF(rx_thread_stack),
                     (k_thread_entry_t)hci_rx_thread, NULL, NULL, NULL,
                     CONFIG_BT_RX_PRIO, 0, K_NO_WAIT);
@@ -3142,7 +3157,7 @@ int bt_enable(bt_ready_cb_t cb)
     k_work_submit(&bt_dev.init);
 
     /* TX thread */
-    k_thread_create(&tx_thread_data, tx_thread_stack,
+    k_thread_create(&tx_thread_data, "ble tx_thread", tx_thread_stack,
                     K_THREAD_STACK_SIZEOF(tx_thread_stack), hci_tx_thread, NULL,
                     NULL, NULL, CONFIG_BT_HCI_TX_PRIO, 0, K_NO_WAIT);
 
@@ -3788,6 +3803,16 @@ const u8_t *bt_pub_key_get(void)
     
     return NULL;
 #endif
+}
+
+void bt_pub_key_set(const u8_t *pkey)
+{
+    if (pkey) {
+        memcpy(pub_key, pkey, 64);
+        atomic_set_bit(bt_dev.flags, BT_DEV_HAS_PUB_KEY);
+    }
+
+    return;
 }
 
 int bt_dh_key_gen(const u8_t remote_pk[64], bt_dh_key_cb_t cb)

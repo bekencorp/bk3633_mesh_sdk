@@ -55,6 +55,8 @@ void CLK32K_AutoCali_init(void);
 void Delay(int num);
 void Delay_us(int num);
 void Delay_ms(int num);
+void rf_set_bulk_mode(void);
+void rf_set_ldo_mode(void);
 /// @} RF
 
 #endif // RF_H_

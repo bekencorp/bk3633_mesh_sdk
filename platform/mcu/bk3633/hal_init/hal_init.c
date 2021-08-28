@@ -11,8 +11,7 @@ uart_dev_t uart_0;
 
 void hal_init(void)
 {
-
-    uart_0.port 			   = STDIO_UART_PORT;
+    uart_0.port                = STDIO_UART_PORT;
     uart_0.config.baud_rate    = STDIO_UART_BUADRATE;
     uart_0.config.data_width   = DATA_WIDTH_8BIT;
     uart_0.config.parity	   = NO_PARITY;
@@ -22,10 +21,19 @@ void hal_init(void)
 
     hal_uart_init(&uart_0);
     hal_flash_init();
-    
-    wdg_dev_t  wdg;
-    wdg.config.timeout = 0xffff;
-    hal_wdg_init(&wdg);
+
+    // wdg_dev_t  wdg;
+    // wdg.config.timeout = 0xffff;
+    //hal_wdg_init(&wdg);
+#ifdef CONFIG_DUT_TEST_CMD
+	check_and_set_dut_flag();
+	if(!get_dut_flag())
+#endif
+	{
+    	hal_aon_wdt_start(0x4ffff);
+    	hal_aon_wdt_idle_sleep();
+	}
+
 }
 
 void hal_boot(hal_partition_t partition)
@@ -43,7 +51,7 @@ void hal_reboot(void)
     wdg_dev_t  wdg;
 
     wdg.config.timeout = 1;
-
+    set_PMU_Reg0x1_boot_rom_en(1);
     hal_wdg_init(&wdg);
     while(1);
 }

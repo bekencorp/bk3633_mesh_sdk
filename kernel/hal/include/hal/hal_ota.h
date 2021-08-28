@@ -85,6 +85,21 @@ hal_stat_t hal_ota_init(void *something);
  */
 hal_stat_t hal_ota_deinit(void *something);
 
+
+
+
+/**
+ * trigger checksum action push the temp buf to flash.
+ *
+ * @param  something  extra info for ota deinit
+ *
+ * @return  0 : On success,  1 : error occurred with any step
+ */
+
+hal_stat_t hal_ota_app_checksum(hal_ota_module_t *m, uint32_t app_checksum);
+
+
+
 /**
  * Save data to an area on ota partition
  *

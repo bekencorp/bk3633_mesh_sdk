@@ -66,6 +66,38 @@ static void hal_flash_unlock()
     }
 }
 
+static PROTECT_TYPE secure_sector_switch(uint32_t addr)
+{
+    if(addr <= 0x3FFFF)
+    {
+        return FLASH_PROTECT_NONE;
+    }
+    else if(addr <= 0x5FFFF)
+    {
+        return FLASH_PROTECT_SEC_64;
+    }
+    else if(addr <= 0x6FFFF)
+    {
+        return FLASH_PROTECT_SEC_96;
+    }
+    else if(addr <= 0x77FFF)
+    {
+        return FLASH_PROTECT_SEC_112;
+    }
+    else if(addr <= 0x7BFFF)
+    {
+        return FLASH_PROTECT_SEC_120;
+    }
+    else if(addr <= 0x7DFFF)
+    {
+        return FLASH_PROTECT_SEC_124;
+    }
+    else
+    {
+        return FLASH_PROTECT_SEC_126;
+    }
+}
+
 hal_logic_partition_t *hal_flash_get_info(hal_partition_t in_partition)
 {
     hal_logic_partition_t *logic_partition;
@@ -83,7 +115,7 @@ int32_t hal_flash_erase(hal_partition_t in_partition, uint32_t off_set, uint32_t
     uint32_t addr;
     uint32_t start_addr, end_addr;
     hal_logic_partition_t *partition_info;
-	uint32_t status;
+    uint32_t status;
     DD_HANDLE flash_hdl;
 
 #ifdef CONFIG_AOS_KV_MULTIPTN_MODE
@@ -97,8 +129,9 @@ int32_t hal_flash_erase(hal_partition_t in_partition, uint32_t off_set, uint32_t
 
     partition_info = hal_flash_get_info( in_partition );
 
-    if(size + off_set > partition_info->partition_length)
+    if(size + off_set > partition_info->partition_length) {
         return -1;
+    }
 
     start_addr = (partition_info->partition_start_addr + off_set) & (~0xFFF);
     end_addr = ((partition_info->partition_start_addr + off_set + size  - 1) & (~0xFFF)) + 0x1000;
@@ -109,18 +142,23 @@ int32_t hal_flash_erase(hal_partition_t in_partition, uint32_t off_set, uint32_t
         return -1;
     }
 
+    PROTECT_TYPE sec = secure_sector_switch(start_addr);
+    hal_flash_secure_sector(sec);
+
 	flash_hdl = ddev_open(FLASH_DEV_NAME, &status, 0);
 
     addr = start_addr;
     uint32_t erase_size, cmd;
     while(addr < end_addr)
     {
+        // keep sleep each erash procudure, 
+        // k_sleep(50);
         if(addr%BLOCK1_SIZE || end_addr - addr < BLOCK1_SIZE)
         {
             cmd = CMD_FLASH_ERASE_SECTOR;
             erase_size = SECTOR_SIZE;
         }
-        else if(end_addr - addr >= BLOCK2_SIZE && !addr%BLOCK2_SIZE)
+        else if(end_addr - addr >= BLOCK2_SIZE && !addr % BLOCK2_SIZE)
         {
             cmd = CMD_FLASH_ERASE_BLOCK2;
             erase_size = BLOCK2_SIZE;
@@ -131,7 +169,8 @@ int32_t hal_flash_erase(hal_partition_t in_partition, uint32_t off_set, uint32_t
             erase_size = BLOCK1_SIZE;
         }
 
-        hal_wdg_reload(&wdg);
+        //hal_wdg_reload(&wdg);
+        hal_aon_wdt_feed();
         hal_flash_lock();
         ddev_control(flash_hdl, cmd, (void *)&addr);
         hal_flash_unlock();
@@ -140,13 +179,15 @@ int32_t hal_flash_erase(hal_partition_t in_partition, uint32_t off_set, uint32_t
     }
 
 
-    hal_wdg_reload(&wdg);
+    //hal_wdg_reload(&wdg);
+    hal_aon_wdt_feed();
 	ddev_close(flash_hdl);
-    
+
+    hal_flash_secure_sector(FLASH_PROTECT_ALL);
     return 0;
 }
                         
-int32_t hal_flash_write(hal_partition_t in_partition, uint32_t *off_set, const void *in_buf , uint32_t in_buf_len)
+int32_t hal_flash_write(hal_partition_t in_partition, uint32_t *off_set, const void *in_buf , uint32_t in_buf_len, BOOL flash_secure_sector)
 {
     uint32_t start_addr;
     hal_logic_partition_t *partition_info;
@@ -164,8 +205,9 @@ int32_t hal_flash_write(hal_partition_t in_partition, uint32_t *off_set, const v
 
     partition_info = hal_flash_get_info( in_partition );
 
-    if(off_set == NULL || in_buf == NULL || *off_set + in_buf_len > partition_info->partition_length)
+    if(off_set == NULL || in_buf == NULL || *off_set + in_buf_len > partition_info->partition_length) {
         return -1;
+    }
 
     start_addr = partition_info->partition_start_addr + *off_set;
 
@@ -175,15 +217,28 @@ int32_t hal_flash_write(hal_partition_t in_partition, uint32_t *off_set, const v
         return -1;
     }
 
+    if(flash_secure_sector == true)
+    {
+        PROTECT_TYPE sec = secure_sector_switch(start_addr);
+        hal_flash_secure_sector(sec);
+    }
+
 	flash_hdl = ddev_open(FLASH_DEV_NAME, &status, 0);
-    hal_wdg_reload(&wdg);
+    //hal_wdg_reload(&wdg);
+    hal_aon_wdt_feed();
     hal_flash_lock();
     ddev_write(flash_hdl, in_buf, in_buf_len, start_addr);
     hal_flash_unlock();
-    hal_wdg_reload(&wdg);
+    //hal_wdg_reload(&wdg);
+    hal_aon_wdt_feed();
 	ddev_close(flash_hdl);
 
     *off_set += in_buf_len;
+
+    if(flash_secure_sector == true)
+    {
+        hal_flash_secure_sector(FLASH_PROTECT_ALL);
+    }
 
     return 0;
 }
@@ -197,7 +252,7 @@ int32_t hal_flash_read(hal_partition_t in_partition, int32_t *off_set, void *out
 
 #ifdef CONFIG_AOS_KV_MULTIPTN_MODE
     if (in_partition == CONFIG_AOS_KV_PTN) {
-        if ((*off_set) >=  CONFIG_AOS_KV_PTN_SIZE) {
+        if ((*off_set) >= CONFIG_AOS_KV_PTN_SIZE) {
             in_partition = CONFIG_AOS_KV_SECOND_PTN;
             *off_set = (*off_set) - CONFIG_AOS_KV_PTN_SIZE;
         }
@@ -206,23 +261,25 @@ int32_t hal_flash_read(hal_partition_t in_partition, int32_t *off_set, void *out
 
     partition_info = hal_flash_get_info( in_partition );
 
-    if(off_set == NULL || out_buf == NULL || *off_set + out_buf_len > partition_info->partition_length)
+    if(off_set == NULL || out_buf == NULL || *off_set + out_buf_len > partition_info->partition_length) {
         return -1;
+    }
 
     start_addr = partition_info->partition_start_addr + *off_set;
 
 	flash_hdl = ddev_open(FLASH_DEV_NAME, &status, 0);
-    hal_wdg_reload(&wdg);
+    //hal_wdg_reload(&wdg);
+    hal_aon_wdt_feed();
     hal_flash_lock();
     if (ddev_read(flash_hdl, out_buf, out_buf_len, start_addr) != 0) {
         return -1;
     }
     hal_flash_unlock();
-    hal_wdg_reload(&wdg);
+    //hal_wdg_reload(&wdg);
+    hal_aon_wdt_feed();
 	ddev_close(flash_hdl);
 
     *off_set += out_buf_len;
-
     return 0;
 }
 
@@ -236,7 +293,6 @@ int32_t hal_flash_secure_sector(PROTECT_TYPE sector_type)
     ASSERT(DD_HANDLE_UNVALID != flash_hdl);
     ddev_control(flash_hdl, CMD_FLASH_SET_PROTECT, (void *)&param);
     ddev_close(flash_hdl);
-
     return 0;
 }
 

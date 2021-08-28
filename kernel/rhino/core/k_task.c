@@ -66,7 +66,7 @@ static kstat_t task_create(ktask_t *task, const name_t *name, void *arg,
     /* init all the stack element to 0 */
     task->task_stack_base = stack_buf;
     tmp = stack_buf;
-
+    printf("stack: %s %x %x\n", name, task->task_stack_base, stack_buf+stack_size);
     memset(tmp, 0, stack_size * sizeof(cpu_stack_t));
 
     task->task_name     = name;

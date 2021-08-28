@@ -113,10 +113,11 @@ static void ke_task_saved_update(ke_task_id_t const ke_task_id)
     {
         // if the state has changed look in the Save queue if a message
         // need to be handled
+        GLOBAL_INT_DISABLE();
         msg = (struct ke_msg*) ke_queue_extract(&ke_env.queue_saved,
                                                 &cmp_dest_id,
                                                 (uint32_t) ke_task_id);
-
+        GLOBAL_INT_RESTORE();
         if (msg == NULL) break;
 
         // Insert it back in the sent queue
@@ -271,7 +272,9 @@ static void ke_task_schedule(void)
         case KE_MSG_SAVED:
             // The message has been saved
             // Insert it at the end of the save queue
-            ke_queue_push(&ke_env.queue_saved, (struct co_list_hdr*) msg);
+            GLOBAL_INT_DISABLE();
+            ke_queue_push(&ke_env.queue_saved, (struct co_list_hdr *) msg);
+            GLOBAL_INT_RESTORE();
             break;
 
         default:

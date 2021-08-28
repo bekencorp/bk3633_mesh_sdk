@@ -13,7 +13,7 @@ int kv_os_partition_read(uint32_t offset, void *buf, size_t nbytes)
 
 int kv_os_partition_write(uint32_t offset, void *buf, size_t nbytes)
 {
-    return hal_flash_write((hal_partition_t)KV_PTN, &offset, buf, nbytes);
+    return hal_flash_write((hal_partition_t)KV_PTN, &offset, buf, nbytes, true);
 }
 
 int kv_os_partition_erase(uint32_t offset, uint32_t size)

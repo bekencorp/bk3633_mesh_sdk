@@ -75,6 +75,18 @@ static struct {
     };
 } ecc;
 
+u8_t *bt_ecc_private_key_get(void)
+{
+    return ecc.private_key;
+}
+
+void bt_ecc_private_key_set(u8_t *pri_key)
+{
+    if (pri_key) {
+        memcpy(ecc.private_key, pri_key, sizeof(ecc.private_key));
+    }
+}
+
 static void send_cmd_status(u16_t opcode, u8_t status)
 {
     struct bt_hci_evt_cmd_status *evt;
@@ -320,7 +332,7 @@ int default_CSPRNG(u8_t *dst, unsigned int len)
 void bt_hci_ecc_init(void)
 {
     k_sem_init(&cmd_sem, 0, 1);
-    k_thread_create(&ecc_thread_data, ecc_thread_stack,
+    k_thread_create(&ecc_thread_data, "ble ecc_thread", ecc_thread_stack,
                     K_THREAD_STACK_SIZEOF(ecc_thread_stack), ecc_thread,
                     NULL, NULL, NULL, 41, 0, K_NO_WAIT);
 }
