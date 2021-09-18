@@ -423,8 +423,8 @@
 	#define BLE_ADV_REPORTS_MAX             (1)
 
 	#if (BLE_EMB_PRESENT)
-    /// Maximum number of ADV reports in the HCI queue to Host
-	  #define BLE_MAX_NB_ADV_REP_FRAG       (4 * HCI_TL_SUPPORT)
+		/// Maximum number of ADV reports in the HCI queue to Host
+		#define BLE_MAX_NB_ADV_REP_FRAG       (4 * HCI_TL_SUPPORT)
 		/// Maximum number of IQ reports in the HCI queue to Host
 		#define BLE_MAX_NB_IQ_REP             (4 * HCI_TL_SUPPORT)
 	#endif // (BLE_EMB_PRESENT)

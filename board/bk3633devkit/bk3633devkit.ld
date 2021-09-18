@@ -32,5 +32,5 @@ MEMORY
 {
 	flash  (rx) : ORIGIN = 0x00000000, LENGTH = 512k
 	ram_code_sec (rwx): ORIGIN = 0x003f1000, LENGTH = 0x1000
-	ram   (rwx): ORIGIN = 0x00401800, LENGTH = 64*1024 - 6 * 1024
+	ram   (rwx): ORIGIN = 0x00400C00, LENGTH = 64*1024 - 3 * 1024
 }

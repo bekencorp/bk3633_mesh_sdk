@@ -81,6 +81,7 @@ typedef enum
     RHINO_WORKQUEUE_WORK_RUNNING,
 
     RHINO_TASK_STACK_OVF = 1200u,
+    RHINO_LIST_BROKEN    = 1300u,
     RHINO_INTRPT_STACK_OVF
 } kstat_t;
 

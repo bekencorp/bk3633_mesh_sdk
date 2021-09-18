@@ -202,12 +202,6 @@ void idle_mode(void)
         krhino_task_yield();
     }
 
-   
-    //os_printf("curr_sleep_hs %d\n", curr_sleep_hs);
-    //os_printf("sleep %d, slot_h %d\n", sleep, slot_h);
-    // os_printf("tick %d, slot_to_tick %d, diff %d\n", fclk_get_tick(),
-    //             ((wakeup_hs * RHINO_CONFIG_TICKS_PER_SECOND * 5) >> 4) / 1000,
-    //             (((wakeup_hs * RHINO_CONFIG_TICKS_PER_SECOND * 5) >> 4) / 1000) - fclk_get_tick());
 #endif
 }
 #else

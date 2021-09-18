@@ -251,7 +251,7 @@ static uint8_t hci_driver_recv(app_hci_buf_t *recv_buf)
 
 		///make receive buffer information
 		app_recv_buf_info_t *buf = krhino_mm_alloc(sizeof(app_recv_buf_info_t)+recv_buf->buf_len);
-        memset(buf, 0, sizeof(sizeof(app_recv_buf_info_t)+recv_buf->buf_len));
+        memset(buf, 0, sizeof(app_recv_buf_info_t)+recv_buf->buf_len);
 		buf->nbuf    = NULL;
 		buf->type    = recv_buf->type;
 		buf->buf_len = recv_buf->buf_len;

@@ -4,14 +4,7 @@ $(NAME)_MBINS_TYPE := kernel
 $(NAME)_VERSION := 1.0.0
 $(NAME)_SUMMARY := Common utilities used in BLE components.
 
-$(NAME)_SOURCES := ./atomic_c.c \
-                     ./buf.c \
-                     ./log.c \
-                     ./poll.c \
-                     ./event_scheduler.c \
-                     ./work.c \
-                     ./queue.c \
-                     ./tinycrypt/source/cmac_mode.c \
+$(NAME)_SOURCES :=   ./tinycrypt/source/cmac_mode.c \
                      ./tinycrypt/source/aes_encrypt.c \
                      ./tinycrypt/source/aes_decrypt.c \
                      ./tinycrypt/source/utils.c \

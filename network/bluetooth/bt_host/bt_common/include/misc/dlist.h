@@ -514,7 +514,7 @@ static inline sys_dnode_t *sys_dlist_get(sys_dlist_t *list)
 	}
 
 	node = list->head;
-	sys_dlist_remove(node);
+	//sys_dlist_remove(node, list, __func__);
 	return node;
 }
 

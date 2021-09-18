@@ -77,7 +77,7 @@ void ke_msg_send(void const *param_ptr)
     ke_queue_push(&ke_env.queue_sent, (struct co_list_hdr*)msg);
     GLOBAL_INT_RESTORE();
 
-    //Trace sent kernel message
+    // Trace sent kernel message
     TRC_REQ_KE_MSG_SEND(msg);
 
     // trigger the event

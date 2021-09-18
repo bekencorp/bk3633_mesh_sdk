@@ -87,7 +87,7 @@ enum
 struct k_sem
 {
     _sem_t      sem;
-    sys_dlist_t poll_events;
+    // sys_dlist_t poll_events;
 };
 
 /**
@@ -170,7 +170,7 @@ unsigned int k_sem_count_get(struct k_sem *sem);
 struct k_mutex
 {
     _mutex_t    mutex;
-    sys_dlist_t poll_events;
+    // sys_dlist_t poll_events;
 };
 
 /* init lock*/

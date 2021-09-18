@@ -163,6 +163,13 @@ void krhino_mm_free(void *ptr);
  */
 void *krhino_mm_realloc(void *oldmem, size_t newsize);
 
+/**
+ * This function is wrapper of mm get free size
+ * @return  The heap free size.
+ * address
+ */
+size_t krhino_mm_max_free_size_get(void);
+
 #endif /* RHINO_CONFIG_MM_TLF > 0 */
 
 #endif /* K_MM_H */

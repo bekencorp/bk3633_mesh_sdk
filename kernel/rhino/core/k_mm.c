@@ -198,7 +198,7 @@ kstat_t krhino_init_mm_head(k_mm_head **ppmmhead, void *addr, size_t len )
     pmmhead->maxused_size = pmmhead->used_size;
 #endif
     /* default no fixblk */
-    pmmhead->fix_pool = NULL;
+    //pmmhead->fix_pool = NULL;
 
 #if (RHINO_CONFIG_MM_BLK > 0)
     /* note: stats_addsize inside */
@@ -781,6 +781,7 @@ void *krhino_mm_alloc(size_t size)
 #if (RHINO_CONFIG_MM_DEBUG > 0)
         static int32_t dumped;
         printf("WARNING, malloc failed!!!! %d\r\n", size);
+        krhino_backtrace_now();
         if (dumped) {
             return tmp;
         }

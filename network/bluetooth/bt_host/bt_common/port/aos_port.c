@@ -30,7 +30,7 @@ int k_sem_init(struct k_sem *sem, unsigned int initial_count,
     }
 
     ret = krhino_sem_create(&sem->sem, "ble", initial_count);
-    sys_dlist_init(&sem->poll_events);
+    //sys_dlist_init(&sem->poll_events, "sem->poll_events");
     return ret;
 }
 
@@ -92,7 +92,7 @@ void k_mutex_init(struct k_mutex *mutex)
     if(stat){
         BT_ERR("mutex buffer over\n");
     }
-    sys_dlist_init(&mutex->poll_events);
+    //sys_dlist_init(&mutex->poll_events, "mutex->poll_events");
     return;
 }
 
@@ -181,7 +181,7 @@ unsigned int irq_lock(void)
 {
     CPSR_ALLOC();
     RHINO_CPU_INTRPT_DISABLE();
-    k_mutex_lock(&g_mutex, K_FOREVER);
+    //k_mutex_lock(&g_mutex, K_FOREVER);
     return cpsr;
 }
 
@@ -190,7 +190,7 @@ void irq_unlock(unsigned int key)
     CPSR_ALLOC();
     cpsr = key;
     RHINO_CPU_INTRPT_ENABLE();
-    k_mutex_unlock(&g_mutex);
+    //k_mutex_unlock(&g_mutex);
 }
 
 void _SysFatalErrorHandler(unsigned int reason, const void *pEsf){};

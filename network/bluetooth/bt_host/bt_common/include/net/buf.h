@@ -693,17 +693,17 @@ static inline void net_buf_destroy(struct net_buf *buf)
 #ifndef CONFIG_BT_MESH_REDUCE_RAM
 	struct net_buf_pool *pool = net_buf_pool_get(buf->pool_id);
 #endif
-	unsigned int key;
+	//unsigned int key;
 
 	/* adv_buf_pool may be accessed from multiple threads, so let's
            add inter-thread protection here for adv_buf. */
-	key = irq_lock();
+	//key = irq_lock();
 #ifdef CONFIG_BT_MESH_REDUCE_RAM
     krhino_mm_free(buf);
 #else
 	k_lifo_put(&pool->free, buf);
 #endif
-	irq_unlock(key);
+	//irq_unlock(key);
 }
 
 /**

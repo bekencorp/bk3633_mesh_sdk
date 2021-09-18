@@ -175,8 +175,6 @@ static inline void clear_event_registrations(struct k_poll_event *events,
 {
     for (; last_registered >= 0; last_registered--) {
         clear_event_registration(&events[last_registered]);
-        irq_unlock(key);
-        key = irq_lock();
     }
 }
 

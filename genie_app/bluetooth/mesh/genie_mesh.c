@@ -708,15 +708,19 @@ u16_t genie_indicate_hw_reset_event (void)
     return 0;
 }
 
+ 
 u16_t genie_vnd_msg_handle(vnd_model_msg *p_msg){
     uint8_t *p_data = NULL;
     BT_DBG("vendor model message received");
+
     if (!p_msg || !p_msg->data)
         return -1;
     p_data = p_msg->data;
     BT_DBG("opcode:0x%x, tid:%d, len:%d", p_msg->opid, p_msg->tid, p_msg->len);
     if (p_data && p_msg->len)
         BT_DBG("payload: %s", bt_hex(p_data, p_msg->len));
+
+	printf("[%s, %d] opid: 0x%02X, tid: 0x%02X, len: 0x%02X \r\n", __func__, __LINE__, p_msg->opid, p_msg->tid, p_msg->len);
 
     switch (p_msg->opid) {
         case VENDOR_OP_ATTR_INDICATE:
@@ -733,67 +737,20 @@ u16_t genie_vnd_msg_handle(vnd_model_msg *p_msg){
                         break;
                 }
             }
-
             break;
         }
         case VENDOR_OP_ATTR_GET_STATUS: {
-#ifdef MESH_MODEL_VENDOR_TIMER
-            u16_t attr_type = *p_data++;
-            attr_type += (*p_data++ << 8);
-            if (attr_type == UNIX_TIME_T ||
-                attr_type == TIMEZONE_SETTING_T ||
-                attr_type == TIMING_SYNC_T) {
-                _vendor_timer_operate_status(p_msg->tid, attr_type);
-            } else if (attr_type == TIMING_SETTING_T) {
-                _vendor_timer_timing_settting_event(VENDOR_OP_ATTR_GET_STATUS, p_msg->data, p_msg->len, p_msg->tid);
-            } else if (attr_type == TIMING_PERIODIC_SETTING_T) {
-                _vendor_timer_priordic_timing_settting_event(VENDOR_OP_ATTR_GET_STATUS, p_msg->data, p_msg->len, p_msg->tid);
-            }
-#endif
+
+			
+
             break;
         }
 
         case VENDOR_OP_ATTR_SET_ACK: {
-#ifdef MESH_MODEL_VENDOR_TIMER
-            u16_t attr_type = *p_data++;
-            attr_type += (*p_data++ << 8);
-            if (attr_type == UNIX_TIME_T) {
-                uint32_t unix_time = (p_data[0]) | (p_data[1] << 8) | (p_data[2] << 16) | (p_data[3] << 24);
-                p_data += 4;
-                vendor_timer_local_time_update(unix_time);
-                _vendor_timer_operate_status(p_msg->tid, attr_type);
-            } else if (attr_type == TIMEZONE_SETTING_T) {
-                int8_t timezone = *p_data++;
-                vendor_timer_timezone_update(timezone);
-                _vendor_timer_operate_status(p_msg->tid, attr_type);
-            } else if (attr_type == TIMING_SYNC_T) {
-                u16_t period_time = (p_data[0]) | (p_data[1] << 8);
-                p_data += 2;
-                u8_t  retry_delay = *p_data++;
-                u8_t  retry_times = *p_data++;
-                vendor_timer_time_sync_set(period_time, retry_delay, retry_times);
-                _vendor_timer_operate_status(p_msg->tid, attr_type);
-            } else if (attr_type == TIMING_SETTING_T) {
-                _vendor_timer_timing_settting_event(VENDOR_OP_ATTR_SET_ACK, p_msg->data, p_msg->len, p_msg->tid);
-            } else if (attr_type == TIMING_PERIODIC_SETTING_T) {
-                _vendor_timer_priordic_timing_settting_event(VENDOR_OP_ATTR_SET_ACK, p_msg->data, p_msg->len, p_msg->tid);
-            } else if (attr_type == TIMING_DELETE_T) {
-                _vendor_timer_timing_remove_event(VENDOR_OP_ATTR_SET_ACK, p_msg->data, p_msg->len, p_msg->tid);
-            }
-#endif
             break;
         }
 
         case VENDOR_OP_ATTR_CONFIME_TG: {
-#ifdef MESH_MODEL_VENDOR_TIMER
-            u16_t attr_type = *p_data++;
-            attr_type += (*p_data++ << 8);
-            if (attr_type == UNIX_TIME_T) {
-                uint32_t unix_time = (p_data[0]) | (p_data[1] << 8) | (p_data[2] << 16) | (p_data[3] << 24);
-                p_data += 4;
-                vendor_timer_local_time_update(unix_time);
-            }
-#endif
             break;
         }
 
@@ -1315,7 +1272,7 @@ void genie_mesh_init(void)
     prov.complete = _prov_complete;
     prov.reset = _prov_reset;
 
-    comp.cid = CONFIG_CID_TUYA;
+    comp.cid = CONFIG_MESH_VENDOR_COMPANY_ID;
     comp.pid = 0;
     comp.vid = 1; // firmware version fir ota
     comp.elem = elements;

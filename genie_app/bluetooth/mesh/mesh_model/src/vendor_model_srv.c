@@ -344,39 +344,84 @@ s16_t vendor_model_msg_send(vnd_model_msg *p_model_msg)
 static s16_t _vendor_model_analyze(struct bt_mesh_model *p_model,
                            struct bt_mesh_msg_ctx *p_ctx,
                            struct net_buf_simple *p_buf,
-                           u8_t opid)
+                           u8_t opid,
+                           vnd_model_msg *p_msg)
 {
-    vnd_model_msg msg;
+
     if (!p_model || !p_buf)
         return MESH_ANALYZE_ARGS_ERROR;
 
-    if(p_buf->len < 3) {
+    if(p_buf->len < 1) {
 //        BT_ERR("invalid buf len(%d)", p_buf->len);
+
         return MESH_ANALYZE_SIZE_ERROR;
     }
 
-    memset(&msg, 0, sizeof(vnd_model_msg));
+    memset(p_msg, 0, sizeof(vnd_model_msg));
 
-    msg.opid = opid;
-    msg.tid = net_buf_simple_pull_u8(p_buf);
+    p_msg->opid = opid;
+    p_msg->tid = net_buf_simple_pull_u8(p_buf);
 
-    if(mesh_check_tid(p_ctx->addr, msg.tid) != MESH_SUCCESS) {
-        BT_ERR("MESH_TID_REPEAT src_addr(0x%04x) tid(0x%02x)", p_ctx->addr, msg.tid);
+    if(mesh_check_tid(p_ctx->addr, p_msg->tid) != MESH_SUCCESS) {
+        BT_ERR("MESH_TID_REPEAT src_addr(0x%04x) tid(0x%02x)", p_ctx->addr, p_msg->tid);
         return MESH_TID_REPEAT;
     }
 
-    msg.len = p_buf->len;
-    BT_INFO("opcode:0x%x, tid:%d, len:%d", msg.opid, msg.tid, msg.len);
-    if (msg.len) {
-        msg.data = (u8_t *)p_buf->data;
-        net_buf_simple_pull(p_buf, msg.len);
-        BT_DBG("payload:%s", bt_hex(msg.data, msg.len));
-    } else
-        msg.data = NULL;
+    p_msg->len = p_buf->len;
+    BT_INFO("opcode:0x%x, tid:%d, len:%d", p_msg->opid, p_msg->tid, p_msg->len);
 
-    genie_event(GENIE_EVT_SDK_VENDOR_MSG, (void *)&msg);
+	
+    printf("[%s, %d] opcode:0x%x, tid:%d, len:%d\r\n", __func__, __LINE__, p_msg->opid, p_msg->tid, p_msg->len);
+	
+    if (p_msg->len) {
+        p_msg->data = (u8_t *)p_buf->data;
+        net_buf_simple_pull(p_buf, p_msg->len);
+        BT_DBG("payload:%s", bt_hex(p_msg->data, p_msg->len));
+
+		printf("[%s] payload: %s\r\n", __func__, bt_hex(p_msg->data, p_msg->len));
+    } 
+	else{
+        p_msg->data = NULL;
+	}
+
+    //genie_event(GENIE_EVT_SDK_VENDOR_MSG, (void *)&msg);
 
     return 0;
+}
+
+
+#define VENDOR_LEN 16
+
+uint8_t g_vendor_len = 0;
+uint8_t g_vendor_buf[VENDOR_LEN] = {0,1,2,3,4,5,6,7,8,9,0,1,2,3,4};
+static void _gen_vendor_prepear_buf(struct bt_mesh_model *p_model, struct net_buf_simple *p_msg, uint8_t tid)
+{   
+   //prepear buff
+   bt_mesh_model_msg_init(p_msg, BT_MESH_MODEL_OP_3(VENDOR_OP_ATTR_CONFIME, CONFIG_MESH_VENDOR_COMPANY_ID));
+
+   net_buf_simple_add_u8(p_msg, tid);
+
+   for(int i = 0; i < g_vendor_len; i++)
+   {
+	   net_buf_simple_add_u8(p_msg, g_vendor_buf[i]);
+   } 
+}
+
+
+static void _gen_vendor_model_data(struct bt_mesh_model *p_model,
+                          struct bt_mesh_msg_ctx *p_ctx, uint8_t tid)
+{
+    struct net_buf_simple *p_msg = NET_BUF_SIMPLE(3 + 17 + 4);
+
+    BT_DBG("addr(0x%04x)", p_model->elem->addr);
+
+    _gen_vendor_prepear_buf(p_model, p_msg, tid);
+
+    if(bt_mesh_model_send(p_model, p_ctx, p_msg, NULL, NULL)) {
+        BT_ERR("Unable to send vendor data");
+    }
+    BT_DBG("Success!!!");
+
 }
 
 /** @def _vendor_model_get
@@ -391,7 +436,14 @@ static void _vendor_model_get(struct bt_mesh_model *model,
                                   struct bt_mesh_msg_ctx *ctx,
                                   struct net_buf_simple *buf)
 {
-    return  _vendor_model_analyze(model, ctx, buf, VENDOR_OP_ATTR_GET_STATUS);
+
+	vnd_model_msg msg;
+
+	if (_vendor_model_analyze(model, ctx, buf, VENDOR_OP_ATTR_GET_STATUS, &msg) == 0)
+	{
+		_gen_vendor_model_data(model, ctx,  msg.tid);
+ 	}
+
 }
 
 /** @def _vendor_model_set_ack
@@ -406,7 +458,13 @@ static void _vendor_model_set_ack(struct bt_mesh_model *model,
                               struct bt_mesh_msg_ctx *ctx,
                               struct net_buf_simple *buf)
 {
-    return  _vendor_model_analyze(model, ctx, buf, VENDOR_OP_ATTR_SET_ACK);
+	vnd_model_msg msg;
+	if (_vendor_model_analyze(model, ctx, buf, VENDOR_OP_ATTR_SET_ACK, &msg) == 0)
+	{
+		g_vendor_len = msg.len;
+		memcpy(g_vendor_buf, msg.data, msg.len);
+		_gen_vendor_model_data(model, ctx,  msg.tid);
+	}
 }
 
 /** @def _vendor_model_set_unack
@@ -421,7 +479,12 @@ static void _vendor_model_set_unack(struct bt_mesh_model *model,
                               struct bt_mesh_msg_ctx *ctx,
                               struct net_buf_simple *buf)
 {
-    return  _vendor_model_analyze(model, ctx, buf, VENDOR_OP_ATTR_SET_UNACK);
+	vnd_model_msg msg;
+	if (_vendor_model_analyze(model, ctx, buf, VENDOR_OP_ATTR_SET_UNACK, &msg) == 0)
+	{
+		g_vendor_len = msg.len;
+		memcpy(g_vendor_buf, msg.data, msg.len);
+	}
 }
 
 /** @def _vendor_model_confirm
@@ -482,7 +545,7 @@ static void _vendor_model_transparent(struct bt_mesh_model *model,
                                      struct bt_mesh_msg_ctx *ctx,
                                      struct net_buf_simple *buf)
 {
-    return  _vendor_model_analyze(model, ctx, buf, VENDOR_OP_ATTR_TRANS_MSG);
+  //  return  _vendor_model_analyze(model, ctx, buf, VENDOR_OP_ATTR_TRANS_MSG);
 }
 
 /** @def _vendor_model_transparent_ack
@@ -514,12 +577,14 @@ static void _vendor_model_transparent_ack(struct bt_mesh_model *model,
  *
  */
 const struct bt_mesh_model_op g_vendor_model_alibaba_op[VENDOR_MODEL_OPC_NUM] = {
-    { BT_MESH_MODEL_OP_3(VENDOR_OP_ATTR_GET_STATUS, CONFIG_MESH_VENDOR_COMPANY_ID), 2, _vendor_model_get },
-    { BT_MESH_MODEL_OP_3(VENDOR_OP_ATTR_SET_ACK, CONFIG_MESH_VENDOR_COMPANY_ID), 2, _vendor_model_set_ack },
-    { BT_MESH_MODEL_OP_3(VENDOR_OP_ATTR_SET_UNACK, CONFIG_MESH_VENDOR_COMPANY_ID), 2, _vendor_model_set_unack },
-    { BT_MESH_MODEL_OP_3(VENDOR_OP_ATTR_CONFIME, CONFIG_MESH_VENDOR_COMPANY_ID), 1, _vendor_model_confirm },
-    { BT_MESH_MODEL_OP_3(VENDOR_OP_ATTR_CONFIME_TG, CONFIG_MESH_VENDOR_COMPANY_ID), 1, _vendor_model_confirm_tg },
-    { BT_MESH_MODEL_OP_3(VENDOR_OP_ATTR_TRANS_MSG, CONFIG_MESH_VENDOR_COMPANY_ID), 1, _vendor_model_transparent },
-    { BT_MESH_MODEL_OP_3(VENDOR_OP_ATTR_TRANS_ACK, CONFIG_MESH_VENDOR_COMPANY_ID), 1, _vendor_model_transparent_ack },
+    { BT_MESH_MODEL_OP_3(VENDOR_OP_ATTR_GET_STATUS, CONFIG_MESH_VENDOR_COMPANY_ID), 1, _vendor_model_get },
+    { BT_MESH_MODEL_OP_3(VENDOR_OP_ATTR_SET_ACK, CONFIG_MESH_VENDOR_COMPANY_ID), 1, _vendor_model_set_ack },
+    { BT_MESH_MODEL_OP_3(VENDOR_OP_ATTR_SET_UNACK, CONFIG_MESH_VENDOR_COMPANY_ID), 1, _vendor_model_set_unack },
+
+	
+   // { BT_MESH_MODEL_OP_3(VENDOR_OP_ATTR_CONFIME, CONFIG_MESH_VENDOR_COMPANY_ID), 1, _vendor_model_confirm },
+    //{ BT_MESH_MODEL_OP_3(VENDOR_OP_ATTR_CONFIME_TG, CONFIG_MESH_VENDOR_COMPANY_ID), 1, _vendor_model_confirm_tg },
+    //{ BT_MESH_MODEL_OP_3(VENDOR_OP_ATTR_TRANS_MSG, CONFIG_MESH_VENDOR_COMPANY_ID), 1, _vendor_model_transparent },
+    //{ BT_MESH_MODEL_OP_3(VENDOR_OP_ATTR_TRANS_ACK, CONFIG_MESH_VENDOR_COMPANY_ID), 1, _vendor_model_transparent_ack },
     BT_MESH_MODEL_OP_END,
 };

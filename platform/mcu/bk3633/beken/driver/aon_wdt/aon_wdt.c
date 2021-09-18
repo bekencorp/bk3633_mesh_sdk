@@ -86,7 +86,7 @@ static void aon_wdt_feed(void)
 
     REG_WRITE(REG_AON_WDT_FEED, value);
     GLOBAL_INT_RESTORE();
-    Delay_us(3);
+    //Delay_us(3);
     GLOBAL_INT_DISABLE();
     value = WDT_FEED_BYTE2;
 

@@ -9,6 +9,7 @@
 #define VENDOR_OP_ATTR_SET_ACK           0xC9
 #define VENDOR_OP_ATTR_SET_UNACK         0xCA
 #define VENDOR_OP_ATTR_STATUS            0xCB
+
 #define VENDOR_OP_ATTR_INDICATE          0xD4
 #define VENDOR_OP_ATTR_CONFIME           0xD5
 #define VENDOR_OP_ATTR_INDICATE_TG       0xDE

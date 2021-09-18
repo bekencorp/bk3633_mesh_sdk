@@ -122,17 +122,17 @@ void ke_event_set(uint8_t event_type)
 {
     ASSERT_INFO((event_type < KE_EVENT_MAX), event_type, 0);
 
-    GLOBAL_INT_DISABLE();
-
     if(event_type < KE_EVENT_MAX)
     {
+        GLOBAL_INT_DISABLE();
         // Set the event in the bit field
         ke_event_env.event_field |= (1 << event_type);
+        GLOBAL_INT_RESTORE();
         if(rom_env.krhino_sem_give)
         	rom_env.krhino_sem_give(&ke_event_sem);
     }
 
-    GLOBAL_INT_RESTORE();
+    
     //Trace the event
     TRC_REQ_KE_EVT_SET(event_type);
 }

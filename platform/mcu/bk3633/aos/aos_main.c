@@ -29,7 +29,7 @@ static kinit_t kinit = {
 static void sys_init(void)
 {
     int i = 0;
-    os_printf("%s \r\n", __func__);
+    // os_printf("%s \r\n", __func__);
 
     soc_system_init();
 
@@ -40,7 +40,7 @@ static void sys_init(void)
     board_init();
 
 #if 1
-	os_printf("The APP code build at %s, %s\r\n\n", __TIME__, __DATE__);
+	// os_printf("The APP code build at %s, %s\r\n\n", __TIME__, __DATE__);
 #endif
 
     aos_mutex_lock_init();    //add mutex lock, add_provisioner_supported.
@@ -50,15 +50,54 @@ static void sys_init(void)
     aos_kernel_init(&kinit);
 
 #endif
-
     // krhino_task_del(krhino_cur_task_get());
     // aos_free(aos_app_task_obj);
 }
 
+struct reset_register
+{
+    uint32_t cpsr;
+    uint32_t r0;
+    uint32_t r1;
+    uint32_t r2;
+    uint32_t r3;
+    uint32_t r4;
+    uint32_t r5;
+    uint32_t r6;
+    uint32_t r7;
+    uint32_t r8;
+    uint32_t r9;
+    uint32_t r10; // sl stack limit
+    uint32_t r11; // fp frame pointer
+    uint32_t r12; // ip Intra-Procedure-call scratch register
+    uint32_t r13; // sp Stack Pointer.
+    uint32_t r14; // lr Link Register.
+};
+
+void reset_register_dump(void)
+{
+    struct reset_register *reg = (struct reset_register *)0x400020;
+    printf("\r\nR0: %x\n", (reg->r0));
+    printf("R1: %x\n", (reg->r1));
+    printf("R2: %x\n", (reg->r2));
+    printf("R3: %x\n", (reg->r3));
+    printf("R4: %x\n", (reg->r4));
+    printf("R5: %x\n", (reg->r5));
+    printf("R6: %x\n", (reg->r6));
+    printf("R7: %x\n", (reg->r7));
+    printf("R8: %x\n", (reg->r8));
+    printf("R9: %x\n", (reg->r9));
+    printf("R10: %x\n", (reg->r10));
+    printf("R11: %x\n", (reg->r11));
+    printf("R12: %x\n", (reg->r12));
+    printf("R13: %x\n", reg->r13);
+    printf("R14(LR): %x\n", (reg->r14));
+}
 static cpu_stack_t aos_app_stack[AOS_START_STACK];
 
 void sys_start(void)
 {
+    reset_register_dump();
     printf("%s, reset reason 0x%x\r\n", __func__, icu_get_reset_reason());
     aos_init();
     //printf("aos init ok \r\n\r\n");

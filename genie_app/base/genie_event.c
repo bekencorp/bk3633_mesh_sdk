@@ -7,6 +7,8 @@
 #include "mesh/cfg_srv.h"
 #include "mesh.h"
 #include "prov.h"
+#include "foundation.h"
+
 
 #define BT_DBG_ENABLED IS_ENABLED(CONFIG_BT_MESH_DEBUG_EVENT)
 #include "common/log.h"
@@ -108,9 +110,6 @@ static E_GENIE_EVENT _genie_event_handle_hw_reset_start(void)
 #endif
     bt_mesh_adv_stop();
     genie_reset_done();
-#ifdef MESH_MODEL_VENDOR_TIMER
-    vendor_timer_finalize();
-#endif
     return GENIE_EVT_HW_RESET_START;
 }
 
@@ -344,7 +343,7 @@ static E_GENIE_EVENT _genie_event_handle_appkey_add(uint8_t *p_status)
     if(bt_mesh_is_provisioned()) {
         /* disable prov timer */
         genie_prov_timer_stop();
-        if(*p_status == 0) {
+        if(*p_status == STATUS_SUCCESS) {
             //genie_flash_write_para(&bt_mesh);
             uint8_t devkey[16];
             mesh_netkey_para_t netkey;
@@ -359,7 +358,11 @@ static E_GENIE_EVENT _genie_event_handle_appkey_add(uint8_t *p_status)
             genie_flash_write_netkey(&netkey);
             genie_flash_write_appkey(&appkey);
             return GENIE_EVT_SDK_MESH_PROV_SUCCESS;
-        } else {
+        } 
+		else if (STATUS_INSUFF_RESOURCES == *p_status) {
+			return GENIE_EVT_SDK_MESH_PROV_SUCCESS;
+		}
+		else{
             return GENIE_EVT_SDK_MESH_PROV_FAIL;
         }
     } else {
