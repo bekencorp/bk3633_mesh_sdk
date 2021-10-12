@@ -143,10 +143,98 @@ static const struct cli_command genie_cmds[] = {
 #endif
 };
 
+#ifdef CONFIG_BT_MESH_SHELL
+static void handle_bt_mesh_cmd(char *pwbuf, int blen, int argc, char **argv)
+{
+    struct mesh_shell_cmd *mesh_cmds = NULL, *p;
+    char *cmd_str, no_match = 1;
+
+    if (strcmp(argv[0], "bt-mesh") != 0) {
+        return;
+    }
+
+    if (argc <= 1) {
+        cmd_str = "help";
+    } else {
+        cmd_str = argv[1];
+    }
+
+    mesh_cmds = bt_mesh_get_shell_cmd_list();
+    if (mesh_cmds) {
+        p = mesh_cmds;
+        while (p->cmd_name != NULL) {
+            if (strcmp(p->cmd_name, cmd_str) != 0) {
+                p++;
+                continue;
+            }
+            if (p->cb) {
+                no_match = 0;
+                p->cb(argc - 1, &(argv[1]));
+                return;
+            }
+        }
+        printf("cmd error\n");
+    }
+}
+
+static uint8_t char2u8(char *c)
+{
+    uint8_t ret = 0;
+
+    if (isdigit(*c)) {
+        ret = *c - '0';
+    } else if (*c >= 'A' && *c <= 'F') {
+        ret = *c - 'A' + 10;
+    } else if (*c >= 'a' && *c <= 'f') {
+        ret = *c - 'a' + 10;
+    }
+
+    return ret;
+}
+
+static void handle_set_mac(char *pwbuf, int blen, int argc, char **argv)
+{
+    char *p;
+    uint8_t mac[6] = {0}, i;
+
+    if (argc < 2) {
+        printf("Invalid argument.\r\n");
+        printf("Usage:\n");
+        return;
+    }
+
+    for (p = argv[1], i = 0; *p != '\0'; p += 2, i += 2) {
+        if (!isxdigit(*p) || !isxdigit(*(p+1))) {
+            printf("Invalid format, MAC not set!!!\r\n");
+            return;
+        }
+
+        mac[i / 2] = ((char2u8(p) & 0x0f) << 4) | (char2u8(p+1) & 0x0f);
+    }
+
+    //ais_set_mac(mac);
+}
+
+static struct cli_command ncmd[] = {
+                                    {
+                                        .name     = "set_mac",
+                                        .help     = "set_mac <MAC address in xxxxxxxxxxxx format>",
+                                        .function = handle_set_mac
+                                    },
+                                    {   .name     = "bt-mesh",
+                                        .help     = "bt-mesh [cmd] [options]",
+                                        .function = handle_bt_mesh_cmd 
+                                    },
+                                 }
+
+;
+#endif
+
 void genie_cmds_register(void)
 {
 #ifdef CONFIG_AOS_CLI
     aos_cli_register_commands(&genie_cmds[0], sizeof(genie_cmds) / sizeof(genie_cmds[0]));
+    aos_cli_register_commands(&ncmd[0], sizeof(ncmd) / sizeof(ncmd[0]));
 #endif
 }
 

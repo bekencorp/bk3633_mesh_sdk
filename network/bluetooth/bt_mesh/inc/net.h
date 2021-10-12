@@ -290,6 +290,8 @@ int bt_mesh_net_keys_create(struct bt_mesh_subnet_keys *keys,
 int bt_mesh_net_create(u16_t idx, u8_t flags, const u8_t key[16],
 		       u32_t iv_index);
 
+int bt_mesh_net_key_add(u16_t idx, const u8_t key[16]);
+
 u8_t bt_mesh_net_flags(struct bt_mesh_subnet *sub);
 
 bool bt_mesh_kr_update(struct bt_mesh_subnet *sub, u8_t new_kr, bool new_key);

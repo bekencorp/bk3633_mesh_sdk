@@ -402,7 +402,7 @@ static u8_t app_key_set(u16_t net_idx, u16_t app_idx, const u8_t val[16],
     struct bt_mesh_app_key *key;
     struct bt_mesh_subnet *sub;
 
-    BT_DBG("net_idx 0x%04x app_idx %04x update %u val %s",
+    printf("net_idx 0x%04x app_idx %04x update %u val %s\n",
            net_idx, app_idx, update, bt_hex(val, 16));
 
     sub = bt_mesh_subnet_get(net_idx);
@@ -526,7 +526,7 @@ static void app_key_add(struct bt_mesh_model *model,
 
     key_idx_unpack(buf, &key_net_idx, &key_app_idx);
 
-    BT_DBG("AppIdx 0x%04x NetIdx 0x%04x", key_app_idx, key_net_idx);
+    printf("AppIdx 0x%04x NetIdx 0x%04x\n", key_app_idx, key_net_idx);
 
     bt_mesh_model_msg_init(msg, OP_APP_KEY_STATUS);
 

@@ -207,7 +207,7 @@ static E_GENIE_FLASH_ERRCODE _genie_flash_get_header(genie_flash_cell_t *p_cell)
 
         RETURN_WHEN_ERR(ret, GENIE_FLASH_READ_FAIL);
 #if 0
-        BT_DBG("offset(0x%04X) flag(0x%02X) align(%d) index(0x%04X) length(%d) crc(0x%04X)",
+        printf("offset(0x%04X) flag(0x%02X) align(%d) index(0x%04X) length(%d) crc(0x%04X)\n",
                 p_cell->offset-sizeof(flash_header_t), p_cell->header.flag, p_cell->header.align,
                 p_cell->header.index, p_cell->header.length, p_cell->header.crc);
 #endif
@@ -442,7 +442,7 @@ static E_GENIE_FLASH_ERRCODE _genie_flash_search(genie_flash_cell_t *p_cell)
 {
     E_GENIE_FLASH_ERRCODE ret = GENIE_FLASH_SUCCESS;
 
-    BT_DBG("search index(0x%04X)", p_cell->index);
+    //printf("search index(0x%04X)\n", p_cell->index);
 
     do {
         ret = _genie_flash_get_header(p_cell);
@@ -456,7 +456,7 @@ static E_GENIE_FLASH_ERRCODE _genie_flash_search(genie_flash_cell_t *p_cell)
         }
     } while(ret == GENIE_FLASH_SUCCESS);
 
-    BT_DBG("can not find index(0x%04X), ret(%d)", p_cell->index, ret);
+    //printf("can not find index(0x%04X), ret(%d)\n", p_cell->index, ret);
     return ret;
 }
 #endif
@@ -700,7 +700,7 @@ static E_GENIE_FLASH_ERRCODE _genie_flash_write(genie_flash_cell_t *p_cell, uint
 
     /* check size */
     if(p_info->remain < size + sizeof(flash_header_t)) {
-        BT_ERR("no space");
+        printf("no space\n");
         krhino_mutex_unlock(&genie_flash_mutex);
         return GENIE_FLASH_WRITE_FAIL;
     }
@@ -722,7 +722,7 @@ static E_GENIE_FLASH_ERRCODE _genie_flash_write(genie_flash_cell_t *p_cell, uint
 
     //step 1 write new data
     p_cell->offset = new_flag_offset = p_info->free_offset;
-    BT_DBG("new_flag_offset(0x%04X) cell.offset(0x%04X)", new_flag_offset, p_cell->offset);
+    //printf("new_flag_offset(0x%04X) cell.offset(0x%04X)\n", new_flag_offset, p_cell->offset);
 
     if(ALIGN_ERROR(size)) {
         align_count = 4 - (size & 0x0003);
@@ -733,14 +733,14 @@ static E_GENIE_FLASH_ERRCODE _genie_flash_write(genie_flash_cell_t *p_cell, uint
     p_cell->header.length = size;
     p_cell->header.crc = _genie_get_crc(p_buff, size);
 
-    BT_DBG("step1.1 write header offset(0x%04X)", p_cell->offset);
+    //printf("step1.1 write header offset(0x%04X), length %d\n", p_cell->offset, p_cell->header.length);
     ret = hal_flash_write(p_cell->pno, &p_cell->offset, &p_cell->header, sizeof(flash_header_t), true);
     if (ret) {
         krhino_mutex_unlock(&genie_flash_mutex);
     }
     RETURN_WHEN_ERR(ret, GENIE_FLASH_WRITE_FAIL);
 
-    BT_DBG("step1.2 write data offset(0x%04X)", p_cell->offset);
+    //printf("step1.2 write data offset(0x%04X)\n", p_cell->offset);
     ret = hal_flash_write(p_cell->pno, &p_cell->offset, p_buff, size, true);
     if (ret) {
         krhino_mutex_unlock(&genie_flash_mutex);
@@ -749,7 +749,7 @@ static E_GENIE_FLASH_ERRCODE _genie_flash_write(genie_flash_cell_t *p_cell, uint
 
     //step 2 update new flag
     p_cell->header.flag = GENIE_FLASH_FLAG_ACTIVE;
-    BT_DBG("step2 update flag offset(0x%04X)", new_flag_offset);
+    //printf("step2 update flag offset(0x%04X)\n", new_flag_offset);
     ret = hal_flash_write(p_cell->pno, &new_flag_offset, &p_cell->header.flag, 1, true);
     if (ret) {
         krhino_mutex_unlock(&genie_flash_mutex);
@@ -867,20 +867,20 @@ E_GENIE_FLASH_ERRCODE genie_flash_write_reliable(uint16_t index, uint8_t *p_data
     genie_flash_cell_t cell;
 
     if(p_data == NULL) {
-        BT_ERR("p_data is null!!!");
+        printf("p_data is null!!!\n");
         return GENIE_FLASH_DATA_INVALID;
     }
 
     CELL_PREPEAR_RELIABLE(cell, index);
     p_buff = k_malloc(buff_size);
     if(p_buff == NULL) {
-        BT_ERR("p_buff is null!!!");
+        printf("buff_size %d, p_buff is null!!!\n", buff_size);
         return GENIE_FLASH_DATA_INVALID;
     }
 
     memset(p_buff, 0, buff_size);
     memcpy(p_buff, p_data, data_size);
-    BT_DBG("data:%d buff:%d\n", data_size, buff_size);
+    printf("data_size:%d buff_size:%d\n", data_size, buff_size);
     _genie_flash_encrypt(p_buff, buff_size);
 
     ret = _genie_flash_write(&cell, p_buff, buff_size);

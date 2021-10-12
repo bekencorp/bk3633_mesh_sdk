@@ -97,6 +97,19 @@ static uint16_t mesh_cmd_prim_addr;
 static uint8_t mesh_cmd_devkey[16];
 static uint32_t mesh_cmd_seq;
 
+static struct bt_mesh_subnet cmd_sub[CONFIG_BT_MESH_SUBNET_COUNT] = {
+        [0 ... (CONFIG_BT_MESH_SUBNET_COUNT - 1)] = {
+            .net_idx = BT_MESH_KEY_UNUSED,
+        }
+};
+
+static struct bt_mesh_app_key cmd_app_keys[CONFIG_BT_MESH_APP_KEY_COUNT] = {
+        [0 ... (CONFIG_BT_MESH_APP_KEY_COUNT - 1)] = {
+            .net_idx = BT_MESH_KEY_UNUSED,
+			.app_idx = BT_MESH_KEY_UNUSED,
+        }
+};
+
 void erase_reboot_uart_cmd_handler(char *para)
 {
 	u8 i;
@@ -254,7 +267,9 @@ void mesh_netkey_cmd_handler(char *para)
 		printf("app_key[%d]: 0x%x\n", i, net_key[i]);
 	}
 
-	memcpy(cmd_netkey.key, net_key, sizeof(net_key));
+	//memcpy(mesh_cmd_sub.key, net_key, sizeof(net_key));
+
+	genie_flash_write_netkey(bt_mesh.sub, CONFIG_BT_MESH_SUBNET_COUNT);
 }
 
 void mesh_devkey_cmd_handler(char *para)
@@ -280,6 +295,13 @@ void mesh_netkey_idx_cmd_handler(char *para)
     stringtohex(para, &net_idx, strlen(para) >> 1);
 	printf("%s, param %s, net_idx 0x%x\n", __func__, para, net_idx);
     cmd_netkey.net_index = net_idx;
+	for (int i = 0; i < CONFIG_BT_MESH_SUBNET_COUNT; i++) {
+		if (cmd_sub[i].net_idx != BT_MESH_KEY_UNUSED) {
+			continue;
+		}
+        cmd_sub[i].net_idx = net_idx;
+	}
+
 }
 
 void mesh_appkey_idx_cmd_handler(char *para)
