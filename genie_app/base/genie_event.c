@@ -351,6 +351,7 @@ static E_GENIE_EVENT _genie_event_handle_appkey_add(uint8_t *p_status)
             
             memcpy(devkey, bt_mesh.dev_key, 16);
             memset(&netkey, 0, sizeof(netkey));
+
             memcpy(netkey.key, bt_mesh.sub[0].keys[0].net, 16);
             memset(&appkey, 0, sizeof(appkey));
             memcpy(appkey.key, bt_mesh.app_keys[0].keys[0].val, 16);
@@ -358,11 +359,11 @@ static E_GENIE_EVENT _genie_event_handle_appkey_add(uint8_t *p_status)
             genie_flash_write_netkey(&netkey);
             genie_flash_write_appkey(&appkey);
             return GENIE_EVT_SDK_MESH_PROV_SUCCESS;
-        } 
+        }
 		else if (STATUS_INSUFF_RESOURCES == *p_status) {
 			return GENIE_EVT_SDK_MESH_PROV_SUCCESS;
 		}
-		else{
+		else {
             return GENIE_EVT_SDK_MESH_PROV_FAIL;
         }
     } else {

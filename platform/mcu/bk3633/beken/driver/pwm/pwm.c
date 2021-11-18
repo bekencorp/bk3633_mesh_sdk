@@ -216,7 +216,7 @@ static void init_pwm_param(pwm_param_t *pwm_param, UINT8 enable)
 	{
 		pwm_gpio_configuration(pwm_param->channel, enable);
 	}
-	
+    
     pwm_icu_configuration(pwm_param, enable);
 
     if(enable)
@@ -261,7 +261,7 @@ static void init_pwm_param(pwm_param_t *pwm_param, UINT8 enable)
     else
     {
         p_PWM_Int_Handler[pwm_param->channel] = NULL;
-        intc_disable(intc_group);
+        //intc_disable(intc_group);
     }
 }
 

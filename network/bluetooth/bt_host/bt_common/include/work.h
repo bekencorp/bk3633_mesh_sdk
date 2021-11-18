@@ -22,7 +22,10 @@ struct k_work;
 typedef void (*k_work_handler_t)(struct k_work *work);
 
 struct k_work {
-    sys_snode_t _snode;
+    union {
+        void *_reserved;
+        sys_snode_t _snode;
+    };
     k_work_handler_t handler;
     atomic_t flags[1];
     uint32_t start_ms;
