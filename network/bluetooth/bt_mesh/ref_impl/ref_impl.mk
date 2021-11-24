@@ -5,8 +5,7 @@ $(NAME)_VERSION := 1.0.0
 $(NAME)_SUMMARY := BLE Mesh HAL reference implementation
 
 $(NAME)_SOURCES := ./mesh_hal_ble.c \
-                   ./mesh_hal_sec.c \
-                   ./buf.c     
+                   ./mesh_hal_sec.c
 
 ifeq ($(bt_mesh_standalone_deploy),1)
 $(NAME)_SOURCES += ./mesh_hal_os.c

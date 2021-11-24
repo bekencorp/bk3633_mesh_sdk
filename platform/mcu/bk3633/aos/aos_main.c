@@ -94,6 +94,7 @@ void reset_register_dump(void)
     printf("R14(LR): %x\n", (reg->r14));
 }
 static cpu_stack_t aos_app_stack[AOS_START_STACK];
+extern void JX_gpio_init(void);
 
 void sys_start(void)
 {

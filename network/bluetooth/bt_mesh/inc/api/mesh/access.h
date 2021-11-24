@@ -341,22 +341,6 @@ struct bt_mesh_model_pub {
 		.msg = &bt_mesh_pub_msg_##_name, \
 		.update = _update, \
 	}
-/** Model callback functions. */
-struct bt_mesh_model_cb {
-    /** @brief Model init callback.
-     *
-     *  Called on every model instance during mesh initialization.
-     *
-     *  If any of the model init callbacks return an error, the mesh
-     *  subsystem initialization will be aborted, and the error will
-     *  be returned to the caller of @ref bt_mesh_init.
-     *
-     *  @param model Model to be initialized.
-     *
-     *  @return 0 on success, error otherwise.
-     */
-    int (*const init)(struct bt_mesh_model *model);
-};
 
 /** Abstraction that describes a Mesh Model instance */
 struct bt_mesh_model {
@@ -385,10 +369,7 @@ struct bt_mesh_model {
 	u16_t groups[CONFIG_BT_MESH_MODEL_GROUP_COUNT];
 
 	const struct bt_mesh_model_op * const op;
- 
-	/** Model callback structure. */
-	const struct bt_mesh_model_cb * const cb;
-	
+
 	/* Model-specific user data */
 	void *user_data;
 };
@@ -442,56 +423,5 @@ struct bt_mesh_comp {
 	size_t elem_count;
 	struct bt_mesh_elem *elem;
 };
-
-/** Length of a short Mesh MIC. */
-#define BT_MESH_MIC_SHORT 4
-/** Length of a long Mesh MIC. */
-#define BT_MESH_MIC_LONG 8
-
-/** @def BT_MESH_MODEL_OP_LEN
- *
- *  @brief Helper to determine the length of an opcode.
- *
- *  @param _op Opcode.
- */
-#define BT_MESH_MODEL_OP_LEN(_op) ((_op) <= 0xff ? 1 : (_op) <= 0xffff ? 2 : 3)
-
-/** @def BT_MESH_MODEL_BUF_LEN
- *
- *  @brief Helper for model message buffer length.
- *
- *  Returns the length of a Mesh model message buffer, including the opcode
- *  length and a short MIC.
- *
- *  @param _op          Opcode of the message.
- *  @param _payload_len Length of the model payload.
- */
-#define BT_MESH_MODEL_BUF_LEN(_op, _payload_len)                               \
-	(BT_MESH_MODEL_OP_LEN(_op) + (_payload_len) + BT_MESH_MIC_SHORT)
-
-/** @def BT_MESH_MODEL_BUF_LEN_LONG_MIC
- *
- *  @brief Helper for model message buffer length.
- *
- *  Returns the length of a Mesh model message buffer, including the opcode
- *  length and a long MIC.
- *
- *  @param _op          Opcode of the message.
- *  @param _payload_len Length of the model payload.
- */
-#define BT_MESH_MODEL_BUF_LEN_LONG_MIC(_op, _payload_len)                      \
-	(BT_MESH_MODEL_OP_LEN(_op) + (_payload_len) + BT_MESH_MIC_LONG)
-
-/** @def BT_MESH_MODEL_BUF_DEFINE
- *
- *  @brief Define a Mesh model message buffer using @ref NET_BUF_SIMPLE_DEFINE.
- *
- *  @param _buf         Buffer name.
- *  @param _op          Opcode of the message.
- *  @param _payload_len Length of the model message payload.
- */
-#define BT_MESH_MODEL_BUF_DEFINE(_buf, _op, _payload_len)                      \
-	MESH_NET_BUF_SIMPLE_DEFINE(_buf, BT_MESH_MODEL_BUF_LEN(_op, (_payload_len)))
-
 
 #endif /* __BT_MESH_ACCESS_H */

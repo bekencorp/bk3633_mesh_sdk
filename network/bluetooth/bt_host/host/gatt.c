@@ -2075,7 +2075,7 @@ void bt_gatt_connected(struct bt_conn *conn)
 
 void bt_gatt_disconnected(struct bt_conn *conn)
 {
-	BT_DBG("conn %p", conn);
+	printf("%s, disconn %p ++++\n", __func__, conn);
 	bt_gatt_foreach_attr(0x0001, 0xffff, disconnected_cb, conn);
 
 #if defined(CONFIG_BT_GATT_CLIENT)

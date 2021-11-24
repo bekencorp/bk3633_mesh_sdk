@@ -5,13 +5,15 @@
 #ifndef _VENDOR_MODEL_SRV_H
 #define _VENDOR_MODEL_SRV_H
 
-#define BT_MESH_MODEL_VND_COMPANY_ID CONFIG_MESH_VENDOR_COMPANY_ID
-#define BT_MESH_MODEL_VND_MODEL_SRV 0x0000  //0x0004
+//#define BT_MESH_MODEL_VND_COMPANY_ID 0x07d0	//
+#define BT_MESH_MODEL_VND_COMPANY_ID 0x027D		//
+//#define BT_MESH_MODEL_VND_MODEL_SRV 0x0004
+#define BT_MESH_MODEL_VND_MODEL_SRV 0x0000
 #define BT_MESH_MODEL_VND_MODEL_CLI 0x0001
 
 #define VENDOR_MSG_LIST_MAXSIZE     8
 
-#define VENDOR_MODEL_OPC_NUM 8
+#define VENDOR_MODEL_OPC_NUM		6
 #define MESH_MODEL_VENDOR_SRV(_user_data) BT_MESH_MODEL_VND(BT_MESH_MODEL_VND_COMPANY_ID, BT_MESH_MODEL_VND_MODEL_SRV, \
                                                 g_vendor_model_alibaba_op, &g_vendor_model_alibaba_pub, _user_data)
 

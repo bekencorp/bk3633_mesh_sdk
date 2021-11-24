@@ -24,9 +24,11 @@
 #include "mesh_model/inc/ble_mesh.h"
 
 #define CONFIG_CID_TAOBAO            0x01A8
-#define CONFIG_CID_TUYA              0x07D0
-#define CONFIG_CID_BK                0x05F0
-#define CONFIG_MESH_VENDOR_COMPANY_ID CONFIG_CID_BK
+#define CONFIG_CID_TUYA              0x07d0
+#define CONFIG_CID_JX                0x0211
+#define CONFIG_CID_HILINK            0x027d
+
+#define CONFIG_MESH_VENDOR_COMPANY_ID CONFIG_CID_HILINK
 #define CONFIG_MESH_VENDOR_MODEL_SRV  0x0000
 #define CONFIG_MESH_VENDOR_MODEL_CLI  0x0001
 
@@ -273,6 +275,10 @@ uint8_t genie_elem_state_init(uint8_t state_count, S_ELEM_STATE *p_elem);
 uint8_t genie_restore_user_state(uint8_t state_count,S_ELEM_STATE *p_elem, S_MODEL_POWERUP *p_pup);
 void standart_indication(S_ELEM_STATE *p_elem);
 void genie_sub_list_init(void);
+
+#ifdef CONFIG_BT_MESH_JINGXUN
+void vendor_C7_ack(u8_t tid);
+#endif //CONFIG_BT_MESH_JINGXUN
 
 #ifdef CONFIG_MESH_MODEL_GEN_ONOFF_SRV
 #include "bluetooth/mesh/mesh_model/inc/gen_onoff_srv.h"

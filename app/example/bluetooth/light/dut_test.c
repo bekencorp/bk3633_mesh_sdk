@@ -21,7 +21,7 @@
 #include "uart_test_cmd.h"
 #include "intc_pub.h"
 
-
+#include "JX_app.h"
 
 volatile uint8_t g_dut_flag = 0;
 
@@ -32,6 +32,25 @@ static ktask_t uart_dut_task_obj;
 
 extern volatile DUT_TEST_BUG_T *gp_dut_data;
 
+//void check_and_set_dut_flag(void)
+//{
+//	gpio_dev_t gpio;
+//	uint32_t gpio02_val;
+//	gpio.port =  GPIO_P02;
+//	gpio.config = INPUT_PULL_DOWN;
+//	hal_gpio_init(&gpio);
+//
+//	hal_gpio_input_get(&gpio, &gpio02_val);
+//
+//    if(1 == gpio02_val)
+//    {
+//    	g_dut_flag= 1;
+//    }
+//	else
+//	{
+//		g_dut_flag = 0;
+//	}
+//}
 
 extern u8 ATE_mode;
 uint8_t get_ATE_flag(void)
@@ -41,6 +60,7 @@ uint8_t get_ATE_flag(void)
     	g_dut_flag= 1;
 		ATE_mode =1;
 		icu_set_reset_reason(REG_NONE);
+
 	}
 	else
 	{
@@ -53,7 +73,7 @@ uint8_t get_ATE_flag(void)
 	return g_dut_flag;
 }
 
-uint8_t get_fcc_testing_flg() 
+uint8_t get_fcc_testing_flg()
 {
     return g_fcc_testing;
 }
@@ -62,7 +82,7 @@ uint8_t set_fcc_testing_flg(uint8_t flg)
 {
 	g_fcc_testing = flg;
 }
- 
+
 void dut_init(void)
 {
     int ret;
@@ -108,12 +128,10 @@ static void uart_dut_main(void)
 					}
 					printf("\r\n");
 				}
-
 			}
 			gp_dut_data->dut_len = 0;
 		    memset(gp_dut_data->dut_data, 0, HCI_DATA_LEN);
 		}
-
 	}
 }
 
@@ -137,7 +155,7 @@ int uart_dut_init(void)
     if (gp_dut_data == NULL) {
         return ENOMEM;
     }
-	
+
     memset((struct DUT_TEST_BUG_T *)gp_dut_data, 0, sizeof(DUT_TEST_BUG_T));
 
     UART_PRINTF("%s, %d\r\n", __func__, __LINE__);
@@ -159,6 +177,7 @@ int dut_test_start(int argc, char **argv)
 	uart_dut_init();
 
     uart_test_init();
+
 
 	app_rf_power_init(); //set 0x40
 	app_xtal_cal_init();  // set 0x08 for 7db

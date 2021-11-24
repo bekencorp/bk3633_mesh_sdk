@@ -9,7 +9,7 @@ $(NAME)_INCLUDES    := ../../../../network/bluetooth/bt_host/include \
 					   ../../../../network/bluetooth/bt_mesh/inc     \
 					   ../../../../network/bluetooth/bt_mesh/mesh_model \
 					   ../../../../network/bluetooth/bt_mesh/vendor_model \
-					   ../../../../network/bluetooth/bt_mesh
+					   ../../../../genie_app
 
 ble = 1
 en_bt_smp = 1

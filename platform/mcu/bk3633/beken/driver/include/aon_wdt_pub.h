@@ -51,7 +51,7 @@ __inline static void bk_aon_wdt_mode(Aon_wdt_mode mode)
 {
     DRIVER_CTRL_RES ret;
     UINT32 para = mode;
-    
+
     ret = sddev_control(AON_WDT_DEV_NAME, CMD_AON_WDT_MODE, &para);
     //ASSERT(DRIV_SUCCESS == ret);
 }

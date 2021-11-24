@@ -54,7 +54,6 @@ $(NAME)_INCLUDES += ip/em/api
 $(NAME)_INCLUDES += modules/ke/src
 $(NAME)_INCLUDES += ip/platform/driver/rf
 $(NAME)_INCLUDES += ip/platform/driver/reg
-$(NAME)_INCLUDES += ip/platform/driver/efuse
 
 
 ### source ###
@@ -78,7 +77,6 @@ $(NAME)_SOURCES  += driver/common/drv_model.c
 $(NAME)_SOURCES  += driver/icu/icu.c
 $(NAME)_SOURCES  += driver/intc/intc.c
 $(NAME)_SOURCES  += driver/flash/flash.c
-$(NAME)_SOURCES  += driver/efuse/efuse.c
 $(NAME)_SOURCES  += driver/gpio/gpio.c
 $(NAME)_SOURCES  += driver/uart/uart.c
 $(NAME)_SOURCES  += driver/wdt/wdt.c

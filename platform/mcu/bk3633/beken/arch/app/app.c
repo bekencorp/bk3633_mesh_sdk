@@ -106,6 +106,61 @@ struct app_env_tag  app_env;
 
 static hci_recv_cb_t  hci_event_recv = NULL;
 
+typedef enum {
+    LLC_DISCONNECT_CMD_OPCODE                 = 0x0406,
+	LLC_RD_REM_VER_INFO_CMD_OPCODE            = 0x041D,
+	LLC_FLUSH_CMD_OPCODE                      = 0x0C08,
+	LLC_RD_TX_PWR_LVL_CMD_OPCODE              = 0x0C2D,
+	LLC_RD_RSSI_CMD_OPCODE                    = 0x1405,
+	LLC_RD_AUTH_PAYL_TO_CMD_OPCODE            = 0x0C7B,
+	LLC_WR_AUTH_PAYL_TO_CMD_OPCODE            = 0x0C7C,
+	LLC_LE_CON_UPDATE_CMD_OPCODE              = 0x2013,
+	LLC_LE_RD_CHNL_MAP_CMD_OPCODE             = 0x2015,
+	LLC_LE_RD_REM_USED_FEATS_CMD_OPCODE       = 0x2016,
+	LLC_LE_START_ENC_CMD_OPCODE               = 0x2019,
+	LLC_LE_LTK_REQ_REPLY_CMD_OPCODE           = 0x201A,
+	LLC_LE_LTK_REQ_NEG_REPLY_CMD_OPCODE       = 0x201B,
+	LLC_LE_REM_CON_PARAM_REQ_REPLY_CMD_OPCODE = 0x2020,
+	LLC_LE_REM_CON_PARAM_REQ_NEG_REPLY_CMD_OPCODE       = 0x2021,
+	LLC_LE_SET_DATA_LEN_CMD_OPCODE                      = 0x2022,
+	LLC_LE_RD_PHY_CMD_OPCODE                            = 0x2030,
+	LLC_LE_SET_PHY_CMD_OPCODE                           = 0x2032,
+	LLC_TESTER_SET_LE_PARAMS_CMD_OPCODE         = 0xFC40,
+	LLC_DBG_BLE_TST_LLCP_PT_EN_CMD_OPCODE       = 0xFC42,
+	LLC_DBG_BLE_TST_SEND_LLCP_CMD_OPCODE        = 0xFC43,
+} llc_cmd_opcode_t;
+
+bool hci_check_opcode_is_llc(uint16_t opcode)
+{
+	switch(opcode) {
+		case LLC_DISCONNECT_CMD_OPCODE:
+	    case LLC_RD_REM_VER_INFO_CMD_OPCODE:
+	    case LLC_FLUSH_CMD_OPCODE:
+	    case LLC_RD_TX_PWR_LVL_CMD_OPCODE:
+	    case LLC_RD_RSSI_CMD_OPCODE:
+	    case LLC_RD_AUTH_PAYL_TO_CMD_OPCODE:
+	    case LLC_WR_AUTH_PAYL_TO_CMD_OPCODE:
+	    case LLC_LE_CON_UPDATE_CMD_OPCODE:
+	    case LLC_LE_RD_CHNL_MAP_CMD_OPCODE:
+	    case LLC_LE_RD_REM_USED_FEATS_CMD_OPCODE:
+	    case LLC_LE_START_ENC_CMD_OPCODE:
+	    case LLC_LE_LTK_REQ_REPLY_CMD_OPCODE:
+	    case LLC_LE_LTK_REQ_NEG_REPLY_CMD_OPCODE:
+	    case LLC_LE_REM_CON_PARAM_REQ_REPLY_CMD_OPCODE:
+	    case LLC_LE_REM_CON_PARAM_REQ_NEG_REPLY_CMD_OPCODE:
+	    case LLC_LE_SET_DATA_LEN_CMD_OPCODE:
+	    case LLC_LE_RD_PHY_CMD_OPCODE:
+	    case LLC_LE_SET_PHY_CMD_OPCODE:
+	    case LLC_TESTER_SET_LE_PARAMS_CMD_OPCODE:
+	    case LLC_DBG_BLE_TST_LLCP_PT_EN_CMD_OPCODE:
+	    case LLC_DBG_BLE_TST_SEND_LLCP_CMD_OPCODE:
+		    return true;
+		default:
+		    break;
+	}
+
+	return false;
+}
 
 /*
  * FUNCTION DEFINITIONS
@@ -118,7 +173,7 @@ void appm_init(void)
  
     // Reset the application manager environment
     memset(&app_env, 0, sizeof(app_env));
-    printf("********* %s *********\n", __func__);
+    // printf("********* %s *********\n", __func__);
     // Create APP task
     ke_task_func.ke_task_create(TASK_APP, &TASK_DESC_APP);
 

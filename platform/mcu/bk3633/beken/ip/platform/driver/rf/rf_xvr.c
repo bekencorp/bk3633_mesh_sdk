@@ -606,13 +606,12 @@ void rf_init(struct rwip_rf_api *api)
         
         ip_radiocntl1_set(0x00000020);
         //UART_PRINTF("ip RADIOCNTL1 addr:0x%08x,val:0x%08x\r\n",ip_RADIOCNTL1_ADDR,ip_radiocntl1_get());
-#if (CONFIG_DUT_TEST_CMD)
+
 		if(get_dut_flag())
 		{
         	ip_timgencntl_set(0x01df00f0);		////Beken,
         }
 		else
-#endif //CONFIG_DUT_TEST_CMD
 		{
 			ip_timgencntl_set(0x01df0120);		////Beken,
 		}
@@ -1118,7 +1117,6 @@ void rf_fcc_tx_test(uint8_t k)
 		addXVR_Reg0x24 = val;
 	}
     addXVR_Reg0x25 |= (0x1<<12) |(0x1<<13);
-
 }
 
 void rf_fcc_tx_test_stop(void)

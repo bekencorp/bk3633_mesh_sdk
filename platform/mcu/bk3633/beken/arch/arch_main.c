@@ -42,6 +42,7 @@
 #include "icu.h"
 #include "uart.h"      	// UART initialization
 #include "flash.h"     // Flash initialization
+#include "gpio_pub.h"
 //#include "led.h"       // Led initialization
 #if (BLE_EMB_PRESENT || BT_EMB_PRESENT)
 #include "rf.h"        // RF initialization
@@ -74,7 +75,7 @@
 
 //#include "rf_test.h"
 #include "fake_clock_pub.h"
-#include "em_map.h"
+#include "em_map.h" 
 #include "icu_pub.h"
 
 /**
@@ -292,13 +293,13 @@ void rwip_eif_api_init(void);
 void ble_handler(void *arg)
 {
 	ble_hdr_arg_t *hdr_arg = (ble_hdr_arg_t *)arg;
-	uint32_t      cont_loop_cnt=0;
-	UART_PRINTF("ble_handler start!\r\n");
+	uint32_t      cont_loop_cnt = 0;
+	// UART_PRINTF("ble_handler start!\r\n");
 	/*
      ***************************************************************************
      * Platform initialization
      ***************************************************************************
-     */ 
+     */
 		
 #if SYSTEM_SLEEP	
 	uint8_t sleep_type = 0;
@@ -311,7 +312,7 @@ void ble_handler(void *arg)
       * RW SW stack initialization
       ***************************************************************************
     */
-    UART_PRINTF("Initialize RW SW stack\r\n");
+    // UART_PRINTF("Initialize RW SW stack\r\n");
     // Initialize RW SW stack
     rwip_func.rwip_init(0);
     // Set the CPU default clock to 80M Hz.
@@ -333,29 +334,30 @@ void ble_handler(void *arg)
         // Set the BDADDR
     	rwip_func.rwip_set_bd_address(hdr_arg->public_addr);
     	printf("set ble bd addr: %02X:%02X:%02X:%02X:%02X:%02X\r\n",
-				hdr_arg->public_addr->addr[5],
-				hdr_arg->public_addr->addr[4],
-				hdr_arg->public_addr->addr[3],
-				hdr_arg->public_addr->addr[2],
-				hdr_arg->public_addr->addr[1],
-				hdr_arg->public_addr->addr[0]);
+		 		hdr_arg->public_addr->addr[5],
+		 		hdr_arg->public_addr->addr[4],
+		 		hdr_arg->public_addr->addr[3],
+		 		hdr_arg->public_addr->addr[2],
+		 		hdr_arg->public_addr->addr[1],
+		 		hdr_arg->public_addr->addr[0]);
     }
 
     //intc_service_register(FIQ_BLE, PRI_FIQ_BLE, rwip_func.rwble_isr);
 	intc_service_register(FIQ_BTDM, 20, rwip_func.rwip_isr);
     intc_enable(FIQ_BTDM);
 
-	printf("%s \n", __func__);
+	// printf("%s \n", __func__);
 
     /*
      ***************************************************************************
      * Main loop
      ***************************************************************************
      */
-	UART_PRINTF("ble driver start!\r\n");
+	// UART_PRINTF("ble driver start!\r\n");
     printf("ble driver start, EM_BLE_END 0x%x!\r\n", EM_BLE_END);
-    krhino_add_mm_region(g_kmm_head, 
+    krhino_add_mm_region(g_kmm_head,
                         (void *)(REG_EM_ET_BASE_ADDR + EM_BLE_END + 1), (size_t)(EM_BT_SIZE -  EM_BLE_END - 4));
+    // krhino_add_mm_region(g_kmm_head, (void *)(0x0040FA10), (size_t)(0x5A0));
 
 	if(hdr_arg->ready_sem)	krhino_sem_give(hdr_arg->ready_sem);
 	krhino_sem_give(&ke_event_sem);
@@ -399,7 +401,7 @@ void print_exception_addr(unsigned int pc, unsigned int lr, unsigned int sp)
  */
 void soc_system_init(void)
 {
-	os_printf("%s \r\n", __func__);
+	// os_printf("%s \r\n", __func__);
     func_init();
     hal_init();
 }

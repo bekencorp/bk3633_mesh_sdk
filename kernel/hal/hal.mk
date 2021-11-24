@@ -4,7 +4,10 @@ $(NAME)_TYPE := kernel
 $(NAME)_MBINS_TYPE := kernel
 
 $(NAME)_SOURCES     := wifi.c
+
+ifeq ($(beken_ota),1)
 $(NAME)_SOURCES     += hal_ota.c
+endif
 
 #default gcc
 ifeq ($(COMPILER),)

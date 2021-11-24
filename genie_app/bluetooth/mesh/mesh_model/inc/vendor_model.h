@@ -10,10 +10,11 @@
 #define VENDOR_OP_ATTR_SET_UNACK         0xCA
 #define VENDOR_OP_ATTR_STATUS            0xCB
 
-#define VENDOR_OP_ATTR_INDICATE          0xD4
-#define VENDOR_OP_ATTR_CONFIME           0xD5
+//#define VENDOR_OP_ATTR_INDICATE          0xD4
+//#define VENDOR_OP_ATTR_CONFIME           0xD5
 #define VENDOR_OP_ATTR_INDICATE_TG       0xDE
 #define VENDOR_OP_ATTR_CONFIME_TG        0xDF
+
 #define VENDOR_OP_ATTR_TRANS_MSG         0xCF
 #define VENDOR_OP_ATTR_TRANS_INDICATE    0xCE
 #define VENDOR_OP_ATTR_TRANS_ACK         0xCD
@@ -35,7 +36,11 @@
 
 #define SECOND_ONOFF				0x0124//第二开关属性，用作灵动开关
 #define THIRD_ONOFF					0x0125//第三开关属性，用作背光开关
+#define MEMORY_ONOFF				0xF021//0：关闭断电记忆 1：打开断电记忆,2:保持断电前状态
+
+
 #define DYMIC_SWITCH_ONOFF			SECOND_ONOFF//第二开关属性，用作灵动开关
+#define BACKLIGHT_ONOFF				THIRD_ONOFF//第三开关属性，用作背光开关
 #define BACKLIGHT_ONOFF				THIRD_ONOFF//第三开关属性，用作背光开关
 
 #define DEVICE_EVENT_T				0xF009

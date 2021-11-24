@@ -10,7 +10,8 @@
 #define GENIE_RESET_BY_REPEAT_FLASH_COUNTER		5
 #define GENIE_RESET_BY_REPEAT_FLASH_DURATION    500
 
-#define GENIE_RESET_WAIT_TIMEOUT            (5*1000)
+//#define GENIE_RESET_WAIT_TIMEOUT            (5*LED_FLASH_PERIOD -LED_FLASH_ON_TIME)
+#define GENIE_RESET_WAIT_TIMEOUT            (3500)
 
 uint8_t genie_reset_get_flag(void);
 

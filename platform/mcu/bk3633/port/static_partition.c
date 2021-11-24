@@ -5,11 +5,12 @@
 #include <errno.h>
 #include "common/log.h"
 
-platform_static_partition_s bk3633_static_partition[] = 
+platform_static_partition_s bk3633_static_partition[] =
 {
     {STATIC_SECTION_OTA, 0xFC, 0},
     {STATIC_SECTION_MAC, 0x100, 0xFC},
     {STATIC_SECTION_TRITUPLE, 0x100, 0x1FC},
+	{STATIC_SECTION_CHECKSUM, 0X100, 0X2FC}
 };
 
 static int static_partition_get_section(static_section_t in_section, uint32_t* offset, uint32_t* size)
@@ -39,6 +40,9 @@ int static_partition_read(static_section_t in_section, void *out_buf, uint32_t o
 
     if(ret || out_buf_len > size - sizeof(platform_static_header_s))
     {
+
+		printf("[%s: %d]\r\n", __func__, __LINE__);
+
         LOG("No static part %d, %d\n", in_section, ret);
         return -1;
     }
@@ -49,10 +53,15 @@ int static_partition_read(static_section_t in_section, void *out_buf, uint32_t o
     if(verify.hearder_code == STATIC_PARTITION_HEADER_CODE)
     {
         ret = hal_flash_read( HAL_PARTITION_STATIC_PARA, &offset, out_buf, out_buf_len);
+
+		printf("[%s: %d]\r\n", __func__, __LINE__);
+
         return ret;
     }
     else
     {
+        printf("[%s: %d]\r\n", __func__, __LINE__);
+
         return -1;
     }
 
@@ -126,7 +135,8 @@ int static_partition_write_addr_head(static_section_t in_section)
 
     if(ret)
     {
-        printf("%s, L %d\n", __func__, __LINE__);
+
+		printf("[%s: %d]\r\n", __func__, __LINE__);
         return -1;
     }
 
@@ -134,7 +144,8 @@ int static_partition_write_addr_head(static_section_t in_section)
 
     if(ret)
     {
-        printf("%s, L %d\n", __func__, __LINE__);
+    	printf("[%s: %d]\r\n", __func__, __LINE__);
+
         return -1;
     }
 

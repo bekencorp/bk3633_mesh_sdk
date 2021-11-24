@@ -27,6 +27,8 @@
 #include "foundation.h"
 //#include "bt_mesh_custom_log.h"
 
+#include "JX_app.h"
+
 static const struct bt_mesh_comp *dev_comp;
 static u16_t dev_primary_addr;
 
@@ -288,11 +290,6 @@ static void mod_init(struct bt_mesh_model *mod, struct bt_mesh_elem *elem,
             model_init[i].init(mod, primary);
         }
     }
-
-    if (mod->cb && mod->cb->init) {
-		mod->cb->init(mod);
-	}
-
 }
 
 int bt_mesh_comp_register(const struct bt_mesh_comp *comp)
@@ -512,6 +509,10 @@ bool bt_mesh_model_in_primary(struct bt_mesh_model *mod)
     return (mod->elem_idx == 0);
 }
 
+#ifdef CONFIG_BT_MESH_JINGXUN
+extern struct k_delayed_work app_timer;
+u16 app_dst;
+#endif //CONFIG_BT_MESH_JINGXUN
 void bt_mesh_model_recv(struct bt_mesh_net_rx *rx, struct net_buf_simple *buf)
 {
     struct bt_mesh_model *models, *model;
@@ -521,16 +522,34 @@ void bt_mesh_model_recv(struct bt_mesh_net_rx *rx, struct net_buf_simple *buf)
     int i;
 
     rx->ctx.recv_dst = rx->dst;
-    BT_DBG("app_idx 0x%04x src 0x%04x dst 0x%04x", rx->ctx.app_idx,
-           rx->ctx.addr, rx->dst);
-    BT_DBG("len %u: %s", buf->len, bt_hex(buf->data, buf->len));
+    BT_ERR("%s %d app_idx 0x%04x src 0x%04x dst 0x%04x",
+			__func__, __LINE__, rx->ctx.app_idx, rx->ctx.addr, rx->dst);
+    BT_ERR("\r\n%s %d len %u: %s",
+			__func__, __LINE__, buf->len, bt_hex(buf->data, buf->len));
+    printf("\r\n%s %d app_idx 0x%04x src 0x%04x dst 0x%04x",
+			__func__, __LINE__, rx->ctx.app_idx, rx->ctx.addr, rx->dst);
+    printf("\r\n%s %d len %u: %s",
+			__func__, __LINE__, buf->len, bt_hex(buf->data, buf->len));
+
 
     if (get_opcode(buf, &opcode) < 0) {
         BT_WARN("Unable to decode OpCode");
         return;
     }
 
-    BT_DBG("OpCode 0x%08x", opcode);
+	JX_dst_dev_addr =rx->dst;
+
+    BT_ERR("%s %d dev_addr:0x%04x OpCode 0x%08x",
+    	__func__, __LINE__, bt_mesh_primary_addr(), opcode);
+    printf("\r\n%s %d dev_addr:0x%04x OpCode 0x%08x\r\n",
+    	__func__, __LINE__, bt_mesh_primary_addr(), opcode);
+	if(opcode ==0x00000000)
+	{
+//		app_dst =rx->dst;
+//		k_delayed_work_submit(&app_timer, 4000);
+
+		JX_set_auto_publish(2);
+	}
 
 #ifdef MESH_DEBUG_RX
     MESH_MSG_RX("");
@@ -764,7 +783,10 @@ struct bt_mesh_model *bt_mesh_model_find_vnd(struct bt_mesh_elem *elem,
 {
     u8_t i;
 
+    //BT_ERR("%s,  vnd_model_count %d\n", __func__, elem->vnd_model_count);
     for (i = 0; i < elem->vnd_model_count; i++) {
+        //BT_ERR("elem->vnd_models[%d].vnd.company 0x%x, elem->vnd_models[%d].vnd.id 0x%x, company 0x%x, id 0x%x\n",
+        //       i, elem->vnd_models[i].vnd.company, i, elem->vnd_models[i].vnd.id, company, id);
         if (elem->vnd_models[i].vnd.company == company &&
             elem->vnd_models[i].vnd.id == id) {
             return &elem->vnd_models[i];

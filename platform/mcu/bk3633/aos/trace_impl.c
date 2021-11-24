@@ -225,7 +225,7 @@ void trace_start(void)
 #else
 void trace_start(void)
 {
-    printf("trace should have cli to control!!!\r\n");
+    // printf("trace should have cli to control!!!\r\n");
 }
 #endif /*Cli end*/
 

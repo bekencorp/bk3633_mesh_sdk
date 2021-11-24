@@ -23,41 +23,87 @@
 #define RETURN_WHEN_ERR(result, err_code) { if(result != 0) { BT_ERR("%s[%d] error ret(%d)", __func__, __LINE__, result); return err_code; } }
 
 #define GENIE_SIZE_PID 4
-#define GENIE_SIZE_KEY 16
 #define GENIE_SIZE_MAC 6
-#define GENIE_SIZE_TRI_TRUPLE (GENIE_SIZE_PID+GENIE_SIZE_KEY+GENIE_SIZE_MAC)
+#define GENIE_SIZE_KEY 16
+#define GENIE_SIZE_CID 2
+#define GENIE_SIZE_TRI_TRUPLE (GENIE_SIZE_PID+GENIE_SIZE_MAC+GENIE_SIZE_KEY)
+#define GENIE_SIZE_FOUR_TRUPLE (GENIE_SIZE_PID+GENIE_SIZE_MAC+GENIE_SIZE_KEY+GENIE_SIZE_CID)
+#define GENIE_SIZE_CHECK_SUM 4
+
 
 static uint32_t g_pid;
 uint8_t g_mac[GENIE_SIZE_MAC];
 static uint8_t g_key[GENIE_SIZE_KEY];
+static uint16_t g_cid;
 static uint8_t g_auth[32];
 static uint8_t g_uuid[16];
 static uint8_t g_ble_key[32];
 
-E_GENIE_FLASH_ERRCODE genie_flash_write_trituple(uint32_t *p_pid, uint8_t *p_mac,  uint8_t *p_key)
+//u8 pid_temp[4] ={0x32, 0x42, 0x37, 0x48};
+//u8 mac_temp[6] ={0x88, 0x50, 0xf6, 0x10, 0x3b, 0x4f};
+//u8 key_temp[16] ={0xdb, 0x0b, 0x4f, 0x5d, 0xe0, 0x9c, 0x44, 0x6f, 0xa3, 0xe0,
+//				0xd8, 0x97, 0x87, 0x61, 0x0e, 0x79};
+
+E_GENIE_FLASH_ERRCODE genie_flash_read_checksum(uint32_t *checksum_value)
+{
+    E_GENIE_FLASH_ERRCODE ret;
+    uint8_t data[4];
+
+    BT_DBG("");
+
+    static_partition_write_addr_head(STATIC_SECTION_CHECKSUM);
+    ret = static_partition_read(STATIC_SECTION_CHECKSUM, data, 4);
+    RETURN_WHEN_ERR(ret, ret);
+
+    memcpy(checksum_value, data, 4);
+
+    printf("checksum:%s\n", bt_hex(checksum_value, 4));
+
+    return GENIE_FLASH_SUCCESS;
+}
+
+E_GENIE_FLASH_ERRCODE genie_flash_write_trituple(uint32_t *p_pid, uint8_t *p_mac, uint8_t *p_key)
 {
     //4+6+32
     uint8_t data[GENIE_SIZE_TRI_TRUPLE];
 
     BT_DBG("");
+	printf("%s %d", __func__, __LINE__);
 
     memcpy(data, p_pid, GENIE_SIZE_PID);
-    memcpy(data+GENIE_SIZE_PID, p_key, GENIE_SIZE_KEY);
-    memcpy(data+GENIE_SIZE_PID+GENIE_SIZE_KEY, p_mac, GENIE_SIZE_MAC);
+    memcpy(data+GENIE_SIZE_PID, p_mac, GENIE_SIZE_MAC);
+    memcpy(data+GENIE_SIZE_PID+GENIE_SIZE_MAC, p_key, GENIE_SIZE_KEY);
 
-    return genie_flash_write_reliable(GFI_MESH_TRITUPLE, data, GENIE_SIZE_TRI_TRUPLE);
+    printf("p_pid:%s\n", bt_hex(p_pid, GENIE_SIZE_PID));
+    printf("p_mac:%s\n", bt_hex(p_mac, GENIE_SIZE_MAC));
+    printf("p_key:%s\n", bt_hex(p_key, GENIE_SIZE_KEY));
+
+    printf("data:%s\n", bt_hex(data, GENIE_SIZE_TRI_TRUPLE));
+
+    static_partition_write_addr_head(STATIC_SECTION_TRITUPLE);
+    return static_partition_write(STATIC_SECTION_TRITUPLE, data, GENIE_SIZE_TRI_TRUPLE);
+//    return genie_flash_write_reliable(GFI_MESH_TRITUPLE, data, GENIE_SIZE_TRI_TRUPLE);
 }
 
-E_GENIE_FLASH_ERRCODE genie_flash_read_trituple(uint32_t *p_pid, uint8_t *p_mac,  uint8_t *p_key)
+E_GENIE_FLASH_ERRCODE genie_flash_read_trituple(uint32_t *p_pid, uint8_t *p_mac, uint8_t *p_key)
 {
     E_GENIE_FLASH_ERRCODE ret;
     uint8_t data[GENIE_SIZE_TRI_TRUPLE];
+
+//	u8 pid_temp[4] ={0x32, 0x42, 0x37, 0x48};
+//	u8 mac_temp[6] ={0x88, 0x50, 0xf6, 0x10, 0x3b, 0x4f};
+//	u8 key_temp[16] ={0xdb, 0x0b, 0x4f, 0x5d, 0xe0, 0x9c, 0x44, 0x6f, 0xa3, 0xe0,
+//					0xd8, 0x97, 0x87, 0x61, 0x0e, 0x79};
+//
+//	genie_flash_write_trituple(pid_temp, mac_temp,  key_temp)
 
     BT_DBG("");
 
     static_partition_write_addr_head(STATIC_SECTION_TRITUPLE);
     ret = static_partition_read(STATIC_SECTION_TRITUPLE, data, GENIE_SIZE_TRI_TRUPLE);
     RETURN_WHEN_ERR(ret, ret);
+
+    printf("data:%s\n", bt_hex(data, GENIE_SIZE_TRI_TRUPLE));
 
     memcpy(p_pid, data, GENIE_SIZE_PID);
     //memcpy(p_key, data+GENIE_SIZE_PID, GENIE_SIZE_KEY);
@@ -66,10 +112,72 @@ E_GENIE_FLASH_ERRCODE genie_flash_read_trituple(uint32_t *p_pid, uint8_t *p_mac,
     memcpy(p_key, data + GENIE_SIZE_PID + GENIE_SIZE_MAC, GENIE_SIZE_KEY);
 
     printf("p_pid:%s\n", bt_hex(p_pid, GENIE_SIZE_PID));
-    printf("p_key:%s\n", bt_hex(p_key, GENIE_SIZE_KEY));
     printf("p_mac:%s\n", bt_hex(p_mac, GENIE_SIZE_MAC));
+    printf("p_key:%s\n", bt_hex(p_key, GENIE_SIZE_KEY));
+
     return GENIE_FLASH_SUCCESS;
 }
+
+E_GENIE_FLASH_ERRCODE genie_flash_write_fourtuple(uint32_t *p_pid, uint8_t *p_mac, uint8_t *p_key, uint8_t *p_cid)
+{
+    //4+6+16+2
+    uint8_t data[GENIE_SIZE_FOUR_TRUPLE];
+
+    BT_DBG("");
+	printf("%s %d", __func__, __LINE__);
+
+    memcpy(data, p_pid, GENIE_SIZE_PID);
+    memcpy(data+GENIE_SIZE_PID, p_mac, GENIE_SIZE_MAC);
+    memcpy(data+GENIE_SIZE_PID+GENIE_SIZE_MAC, p_key, GENIE_SIZE_KEY);
+    memcpy(data+GENIE_SIZE_PID+GENIE_SIZE_MAC+GENIE_SIZE_KEY, p_cid, GENIE_SIZE_CID);
+
+    printf("p_pid:%s\n", bt_hex(p_pid, GENIE_SIZE_PID));
+    printf("p_mac:%s\n", bt_hex(p_mac, GENIE_SIZE_MAC));
+    printf("p_key:%s\n", bt_hex(p_key, GENIE_SIZE_KEY));
+    printf("p_cid:%s\n", bt_hex(p_cid, GENIE_SIZE_CID));
+
+    printf("data:%s\n", bt_hex(data, GENIE_SIZE_FOUR_TRUPLE));
+
+    static_partition_write_addr_head(STATIC_SECTION_TRITUPLE);
+    return static_partition_write(STATIC_SECTION_TRITUPLE, data, GENIE_SIZE_FOUR_TRUPLE);
+}
+
+
+E_GENIE_FLASH_ERRCODE genie_flash_read_fourtuple(uint32_t *p_pid, uint8_t *p_mac, uint8_t *p_key, uint8_t *p_cid)
+{
+    E_GENIE_FLASH_ERRCODE ret;
+    uint8_t data[GENIE_SIZE_FOUR_TRUPLE];
+
+//	u8 pid_temp[4] ={0x32, 0x42, 0x37, 0x48};
+//	u8 mac_temp[6] ={0x88, 0x50, 0xf6, 0x10, 0x3b, 0x4f};
+//	u8 key_temp[16] ={0xdb, 0x0b, 0x4f, 0x5d, 0xe0, 0x9c, 0x44, 0x6f, 0xa3, 0xe0,
+//					0xd8, 0x97, 0x87, 0x61, 0x0e, 0x79};
+//
+//	genie_flash_write_trituple(pid_temp, mac_temp,  key_temp)
+
+    BT_DBG("");
+
+    static_partition_write_addr_head(STATIC_SECTION_TRITUPLE);
+    ret = static_partition_read(STATIC_SECTION_TRITUPLE, data, GENIE_SIZE_FOUR_TRUPLE);
+    RETURN_WHEN_ERR(ret, ret);
+
+//    printf("data:%s\n", bt_hex(data, GENIE_SIZE_FOUR_TRUPLE));
+
+    memcpy(p_pid, data, GENIE_SIZE_PID);
+    //memcpy(p_key, data+GENIE_SIZE_PID, GENIE_SIZE_KEY);
+    //memcpy(p_mac, data+GENIE_SIZE_PID+GENIE_SIZE_KEY, GENIE_SIZE_MAC);
+    memcpy(p_mac, data + GENIE_SIZE_PID, GENIE_SIZE_MAC);
+    memcpy(p_key, data + GENIE_SIZE_PID + GENIE_SIZE_MAC, GENIE_SIZE_KEY);
+    memcpy(p_cid, data + GENIE_SIZE_PID + GENIE_SIZE_MAC + GENIE_SIZE_KEY, GENIE_SIZE_CID);
+
+    printf("p_pid:%s\n", bt_hex(p_pid, GENIE_SIZE_PID));
+    printf("p_mac:%s\n", bt_hex(p_mac, GENIE_SIZE_MAC));
+    printf("p_key:%s\n", bt_hex(p_key, GENIE_SIZE_KEY));
+    printf("p_cid:%s\n", bt_hex(p_cid, GENIE_SIZE_CID));
+
+    return GENIE_FLASH_SUCCESS;
+}
+
 
 void genie_tri_tuple_set_silent_adv(void)
 {
@@ -79,10 +187,44 @@ void genie_tri_tuple_set_silent_adv(void)
 uint8_t *genie_tri_tuple_get_uuid(void)
 {
     int i;
+#ifdef CONFIG_BT_MESH_ALI_TMALL_GENIE
+    // all fields in uuid should be in little-endian
+    // CID: Taobao
+    g_uuid[0] = (u8)g_cid;
+    g_uuid[1] = (u8)(g_cid>>8);
+//	  g_uuid[0] = 0x11;
+//	  g_uuid[1] = 0x02;
+
+    // PID
+    // Bit0~Bit3: 0001 (broadcast version)
+    // Bit4(one secret pre device)
+    // Bit5: 1 (OTA support)
+    // Bit6~Bit7: 01 (ble 4.0)
+    g_uuid[2] = 0x71;
+
+    // Product ID
+    for (i = 0; i < 4; i++) {
+        g_uuid[3 + i] = (g_pid >> (i<<3)) & 0xFF;
+    }
+
+    // mac addr (device name)
+    for (i = 0; i < 6; i++) {
+//        g_uuid[7 + i] = g_mac[5 - i];
+        g_uuid[7 + i] = g_mac[i];
+    }
+
+    g_uuid[13] = 0;
+    g_uuid[13] |= UNPROV_ADV_FEATURE_AUTO_BIND_MODEL_SUB;
+    g_uuid[14] =0;
+//    g_uuid[14] =(1<<2) +(1<<3);//2:µÍ¹¦ºÄ£¬  3£ºÉîË¯Ãß
+    g_uuid[14] =(1<<2);//2:µÍ¹¦ºÄ£¬  3£ºÉîË¯Ãß
+
+    BT_DBG("uuid: %s", bt_hex(g_uuid, 16));
+#else /*CONFIG_BT_MESH_ALI_TMALL_GENIE*/
     uint32_t off_set = 0x000;
     uint8_t addr[6] = {0};
     uint8_t dummy_addr[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
-    
+
     static_partition_write_addr_head(STATIC_SECTION_MAC);
 
     if(static_partition_read(STATIC_SECTION_MAC, addr, sizeof(addr)) == 0 &&
@@ -101,45 +243,37 @@ uint8_t *genie_tri_tuple_get_uuid(void)
 
     printf("%s, addr:%02x : %02x: %02x : %02x : %02x: %02x\n",
            __func__, addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
-#if 0  
-    // all fields in uuid should be in little-endian
-    // CID: Taobao
-    g_uuid[0] = 0xa8;
-    g_uuid[1] = 0x01;
 
-    // PID
-    // Bit0~Bit3: 0001 (broadcast version)
-    // Bit4：1 (one secret pre device)
-    // Bit5: 1 (OTA support)
-    // Bit6~Bit7: 01 (ble 4.0)
-    g_uuid[2] = 0x71;
+#if (CONFIG_BT_MESH_JINGXUN)
+    u32_t pid = 0x47aeb9d5;
+    g_uuid[0] = 0x00;
+    g_uuid[1] = (u8_t)pid;
+    g_uuid[2] = (u8_t)(pid >> 8);
+    g_uuid[3] = (u8_t)(pid >> 16);
+    g_uuid[4] = (u8_t)(pid >> 24);
+    g_uuid[5] = 0x00;
+    g_uuid[6] = 0x01;
 
-    // Product ID
-    for (i = 0; i < 4; i++) {
-        g_uuid[3 + i] = (g_pid >> (i<<3)) & 0xFF;
+    for(i = 0; i < 6; i++) {
+        g_uuid[i+7] = g_mac[i];
     }
-
-    // mac addr (device name)
-    for (i = 0; i < 6; i++) {
-        g_uuid[7 + i] = g_mac[5 - i];
-    }
-
-    g_uuid[13] = 0;
-    g_uuid[13] |= UNPROV_ADV_FEATURE_AUTO_BIND_MODEL_SUB;
-
-    BT_DBG("uuid: %s", bt_hex(g_uuid, 16));
-    return g_uuid;
-#endif
+    g_uuid[13] = 0x00;
+    g_uuid[14] = 0x00;
+    g_uuid[15] = 0x01;
+#else
    for (i = 0; i < 6; i++) {
         g_uuid[i] = g_mac[i];
     }
-    
+
     g_uuid[6]=0x02; g_uuid[7]=0x15;
     //pid//dfvoarca
     g_uuid[8] = 0x64;// PID
     g_uuid[9] = 0x66; g_uuid[10] = 0x76; g_uuid[11] = 0x6f;g_uuid[12] = 0x61;
     g_uuid[13] = 0x72;g_uuid[14] = 0x63; g_uuid[15] = 0x61; //RFU
-    BT_DBG("uuid: %s", bt_hex(g_uuid, 16));
+#endif
+
+#endif //CONFIG_BT_MESH_ALI_TMALL_GENIE
+    // printf("uuid: %s\n", bt_hex(g_uuid, 16));
     return g_uuid;
 }
 
@@ -151,8 +285,16 @@ uint8_t *genie_tri_tuple_get_auth(void)
     char key_str[(GENIE_SIZE_KEY<<1)+1] = "";
     char static_str[55] = ""; // pid + ',' + mac + ',' + secret = 8+1+12+1+32+'\0'
     struct tc_sha256_state_struct sha256_ctx;
-    
-    hextostring(g_mac, mac_str, GENIE_SIZE_MAC);
+
+	u8 i;
+	uint8_t mac_temp[GENIE_SIZE_MAC];
+	for(i=0; i<6; i++)
+	{
+		mac_temp[i] =g_mac[5 -i];
+	}
+
+//    hextostring(g_mac, mac_str, GENIE_SIZE_MAC);
+    hextostring(mac_temp, mac_str, GENIE_SIZE_MAC);
     hextostring(g_key, key_str, GENIE_SIZE_KEY);
 
     sprintf(static_str, "%08x,%s,%s", g_pid, mac_str, key_str);
@@ -257,7 +399,7 @@ void genie_ais_get_cipher(const uint8_t random[16], uint8_t *cipher)
     char key_str[(GENIE_SIZE_KEY<<1)+1] = "";
     char static_str[72] = ""; // random + ',' + pid + ',' + mac + ',' + secret = 16+1+8+1+12+1+32'\0'
     struct tc_sha256_state_struct sha256_ctx;
-    
+
     hextostring(g_mac, mac_str, GENIE_SIZE_MAC);
     hextostring(g_key, key_str, GENIE_SIZE_KEY);
 
@@ -319,17 +461,29 @@ uint8_t genie_tri_tuple_check_pid(uint32_t pid)
 
 int8_t genie_tri_tuple_load(void)
 {
+	u8 i;
+	u8 temp;
+
     char l_mac[] = DEFAULT_MAC;
     char l_key[] = DEFAULT_SECRET;
     E_GENIE_FLASH_ERRCODE ret;
 
-    ret = genie_flash_read_trituple(&g_pid, g_mac, g_key);
+    ret = genie_flash_read_fourtuple(&g_pid, g_mac, g_key, &g_cid);
+
+
+	for(i=0; i<GENIE_SIZE_KEY/2; i++)
+	{
+		temp =g_key[i];
+		g_key[i] =g_key[GENIE_SIZE_KEY -1 -i];
+		g_key[GENIE_SIZE_KEY -1 -i] =temp;
+	}
 
     if(ret != GENIE_FLASH_SUCCESS) {
         BT_ERR("read error, use default");
         g_pid = DEFAULT_PID;
         stringtohex(l_key, g_key, 16);
         stringtohex(l_mac, g_mac, 6);
+        g_cid = CONFIG_CID_JX;
         return -1;
     }
 

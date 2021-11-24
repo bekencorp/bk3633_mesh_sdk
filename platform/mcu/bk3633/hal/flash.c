@@ -135,12 +135,23 @@ int32_t hal_flash_erase(hal_partition_t in_partition, uint32_t off_set, uint32_t
 
     start_addr = (partition_info->partition_start_addr + off_set) & (~0xFFF);
     end_addr = ((partition_info->partition_start_addr + off_set + size  - 1) & (~0xFFF)) + 0x1000;
-
+os_printf("%s, start 0x%x, end 0x%x append 0x%x\r\n",__func__, start_addr, end_addr, ((uint32_t)&_app_data_flash_end|(SECTOR_SIZE-1)));
+#ifdef CONFIG_OTA_DUAL_SWITCH
+    uint32_t base_addr = *((volatile uint32_t *)0x400000);
+    base_addr = base_addr * 0x22 / 0x20;
+    if((start_addr <= ((uint32_t)&_app_data_flash_end|(SECTOR_SIZE-1)) && start_addr >= base_addr) ||
+        (end_addr > base_addr && start_addr <= base_addr))
+    {
+    	os_printf("Not allowed to erase code area, start_addr 0x%x! base 0x%x \r\n", start_addr, base_addr);
+        return -1;
+    }
+#else
     if(start_addr <= ((uint32_t)&_app_data_flash_end|(SECTOR_SIZE-1)))
     {
     	os_printf("Not allowed to erase code area, start_addr 0x%x!\r\n", start_addr);
         return -1;
     }
+#endif
 
     PROTECT_TYPE sec = secure_sector_switch(start_addr);
     hal_flash_secure_sector(sec);
@@ -151,8 +162,6 @@ int32_t hal_flash_erase(hal_partition_t in_partition, uint32_t off_set, uint32_t
     uint32_t erase_size, cmd;
     while(addr < end_addr)
     {
-        // keep sleep each erash procudure, 
-        // k_sleep(50);
         if(addr%BLOCK1_SIZE || end_addr - addr < BLOCK1_SIZE)
         {
             cmd = CMD_FLASH_ERASE_SECTOR;
@@ -211,12 +220,22 @@ int32_t hal_flash_write(hal_partition_t in_partition, uint32_t *off_set, const v
 
     start_addr = partition_info->partition_start_addr + *off_set;
 
+#ifdef CONFIG_OTA_DUAL_SWITCH
+    uint32_t base_addr = *((volatile uint32_t *)0x400000);
+    base_addr = base_addr * 0x22 / 0x20;
+    if((start_addr <= ((uint32_t)&_app_data_flash_end|(SECTOR_SIZE-1)) && start_addr >= base_addr) ||
+        (start_addr + in_buf_len  > base_addr && start_addr <= base_addr))
+    {
+    	os_printf("Not allowed to write code area, start_addr 0x%x! base 0x%x \r\n", start_addr, base_addr);
+        return -1;
+    }
+#else
     if(start_addr <= (uint32_t)&_app_data_flash_end)
     {
     	os_printf("Not allowed to write code area, start_addr 0x%x.\r\n", start_addr);
         return -1;
     }
-
+#endif
     if(flash_secure_sector == true)
     {
         PROTECT_TYPE sec = secure_sector_switch(start_addr);
@@ -268,7 +287,7 @@ int32_t hal_flash_read(hal_partition_t in_partition, int32_t *off_set, void *out
     start_addr = partition_info->partition_start_addr + *off_set;
 
 	flash_hdl = ddev_open(FLASH_DEV_NAME, &status, 0);
-    //hal_wdg_reload(&wdg);
+    hal_wdg_reload(&wdg);
     hal_aon_wdt_feed();
     hal_flash_lock();
     if (ddev_read(flash_hdl, out_buf, out_buf_len, start_addr) != 0) {

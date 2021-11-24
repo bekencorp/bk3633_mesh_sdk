@@ -550,6 +550,6 @@ void bt_mesh_beacon_disable(void)
     }
     // Check if the beacon adv have been.
     if (beacon_is_start) {
-        bt_mesh_adv_stop();
+        //bt_mesh_adv_stop();
     }
 }

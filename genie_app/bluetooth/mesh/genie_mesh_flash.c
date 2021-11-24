@@ -99,9 +99,11 @@ E_GENIE_FLASH_ERRCODE genie_flash_reset_system(void)
     uint32_t pid = 0;
     uint8_t mac[6];
     uint8_t key[32];
+	uint16_t cid;
 
     /* read tri truple */
-    ret = genie_flash_read_trituple(&pid, mac, key);
+//    ret = genie_flash_read_trituple(&pid, mac, key);
+    ret = genie_flash_read_fourtuple(&pid, mac, key, &cid);
     if(ret == GENIE_FLASH_SUCCESS || ret == GENIE_FLASH_SEARCH_NONE) {
         /* erase system and seq */
         ret = genie_flash_delete_seq();
@@ -111,7 +113,8 @@ E_GENIE_FLASH_ERRCODE genie_flash_reset_system(void)
 
         /* write tri truple */
         if(pid != 0) {
-            ret = genie_flash_write_trituple(&pid, mac, key);
+//         	ret = genie_flash_write_trituple(&pid, mac, key);
+			ret = genie_flash_write_fourtuple(&pid, mac, key, &cid);
             RETURN_WHEN_ERR(ret, ret);
         }
 

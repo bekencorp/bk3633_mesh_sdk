@@ -1,6 +1,8 @@
 #include "genie_flash.h"
 #include "uart_pub.h"
 
+#include "JX_app.h"
+
 #define ARRAY_LEN(array)   (sizeof((array))/sizeof((array)[0]))
 
 u8 ATE_mode =0;
@@ -67,36 +69,6 @@ u32 Convert_Buffer_To_Hex(u8 *ConvertData, int Length);
 u32 Convert_Buffer_To_Dec(u8 *ConvertData, int Length);
 u8 *Buffer_Part_Cmp(u8 *Buffer1, int Length1, u8 *Buffer2, int Length2);
 
-typedef struct{
-    uint16_t dst;
-    uint8_t count;
-    uint8_t period;
-    uint8_t ttl;
-    uint16_t feat;
-    uint16_t net_idx;
-} mesh_cmd_hb_para_t;
-
-typedef struct {
-    uint16_t net_index;
-    uint8_t flag;
-    uint32_t ivi;
-    uint8_t key[16];
-} mesh_cmd_netkey_para_t;
-
-typedef struct{
-    uint16_t net_index;
-    uint16_t key_index;
-    uint8_t flag;
-    uint8_t key[16];
-} mesh_cmd_appkey_para_t;
-
-static mesh_cmd_hb_para_t cmd_hb;
-static mesh_cmd_netkey_para_t cmd_netkey;
-static mesh_cmd_appkey_para_t cmd_appkey;
-static uint16_t mesh_cmd_prim_addr;
-static uint8_t mesh_cmd_devkey[16];
-static uint32_t mesh_cmd_seq;
-
 void erase_reboot_uart_cmd_handler(char *para)
 {
 	u8 i;
@@ -105,6 +77,14 @@ void erase_reboot_uart_cmd_handler(char *para)
     //genie_flash_erase_userdata();
     genie_flash_erase_reliable();
     genie_flash_delete_seq();
+
+	JX_flash_write_switch_para();
+	JX_ble_flash_write();
+
+	for(i=0; i<SWITCH_NUM; i++)
+	{
+		JX_led_set(i, LED_OFF);
+	}
 
     aos_reboot();
 }
@@ -223,100 +203,6 @@ void save_rf_power_cmd_handler(char *para)
 	app_rf_power_level_save();
 }
 
-void mesh_appkey_add_cmd_handler(char *para)
-{
-    printf("%s, param %s\n", __func__, para);
-	if (strlen(para) > 16 * 2) {
-		printf("Invalid appkey len(%d)\n", strlen(para));
-		return;
-	}
-	uint8_t app_key[16] = {0};
-	stringtohex(para, app_key, strlen(para) >> 1);
-	for (int i = 0; i < sizeof(app_key); i++)
-	{
-		printf("app_key[%d]: 0x%x\n", i, app_key[i]);
-	}
-
-	memcpy(cmd_appkey.key, app_key, sizeof(app_key));
-}
-
-void mesh_netkey_cmd_handler(char *para)
-{
-	printf("%s, param %s\n", __func__, para);
-	if (strlen(para) > 16 * 2) {
-		printf("Invalid netkey len(%d)\n", strlen(para));
-		return;
-	}
-	uint8_t net_key[16] = {0};
-	stringtohex(para, net_key, strlen(para) >> 1);
-	for (int i = 0; i < sizeof(net_key); i++)
-	{
-		printf("app_key[%d]: 0x%x\n", i, net_key[i]);
-	}
-
-	memcpy(cmd_netkey.key, net_key, sizeof(net_key));
-}
-
-void mesh_devkey_cmd_handler(char *para)
-{
-	printf("%s, param %s\n", __func__, para);
-	if (strlen(para) > 16 * 2) {
-		printf("Invalid devkey len(%d)\n", strlen(para));
-		return;
-	}
-	uint8_t dev_key[16] = {0};
-	stringtohex(para, dev_key, strlen(para) >> 1);
-	for (int i = 0; i < sizeof(dev_key); i++)
-	{
-		printf("app_key[%d]: 0x%x\n", i, dev_key[i]);
-	}
-
-	memcpy(mesh_cmd_devkey, dev_key, sizeof(dev_key));
-}
-
-void mesh_netkey_idx_cmd_handler(char *para)
-{
-	uint16_t net_idx = 0;
-    stringtohex(para, &net_idx, strlen(para) >> 1);
-	printf("%s, param %s, net_idx 0x%x\n", __func__, para, net_idx);
-    cmd_netkey.net_index = net_idx;
-}
-
-void mesh_appkey_idx_cmd_handler(char *para)
-{
-	uint16_t app_idx = 0;
-    stringtohex(para, &app_idx, strlen(para) >> 1);
-	printf("%s, param %s, app_idx 0x%x\n", __func__, para, app_idx);
-    cmd_appkey.key_index = app_idx;
-}
-
-void mesh_seq_add_cmd_handler(char *para)
-{
-	uint32_t seq = 0;
-	stringtohex(para, &seq, strlen(para) >> 1);
-	printf("%s, param %s, seq 0x%x\n", __func__, para, seq);
-
-	mesh_cmd_seq = seq;
-}
-
-void mesh_prim_addr_add_cmd_handler(char *para)
-{
-	uint16_t prim_addr;
-	stringtohex(para, &prim_addr, strlen(para) >> 1);
-	printf("%s, param %s, prim_addr 0x%x\n", __func__, para, prim_addr);
-
-	mesh_cmd_prim_addr = prim_addr;
-}
-
-void mesh_prov_done_cmd_handler(char *para)
-{
-	bt_mesh_provision(cmd_netkey.key, cmd_netkey.net_index, cmd_netkey.flag, cmd_netkey.ivi,
-	                  mesh_cmd_seq, mesh_cmd_prim_addr, mesh_cmd_devkey);
-    genie_appkey_register(cmd_appkey.net_index, cmd_appkey.key_index, cmd_appkey.key, cmd_appkey.flag);
-}
-
-
-
 #ifdef CONFIG_DUT_TEST_CMD
 void rf_fcc_tx_test_cmd_handler(char *para)
 {
@@ -347,6 +233,7 @@ int uart_rx_dut_cmd(uint8_t *data, uint8_t len)
 	//recieve hci cmd
 	if((data[0] != 1) || (len < 4) || (data[3] != (len - 4)))
 	{
+		printf("%s, data[0]:0x%x, len %d, data[3]:0x%x\n", __func__, data[0], len, data[3]);
 		return -1;
 	}
 
@@ -408,7 +295,7 @@ void uart_check_func(uint8_t *pBuffer, uint8_t len)
 		uart2_send(AT_S_MODE_OK, ARRAY_LEN(AT_S_MODE_OK));
 		if(get_dut_flag()==0)
 		{
-			// icu_set_reset_reason(REG_ATE);
+			icu_set_reset_reason(REG_ATE);
 			k_sleep(50);
 			aos_reboot();
 		}
@@ -707,7 +594,7 @@ void uart_check_func(uint8_t *pBuffer, uint8_t len)
 	}
 	else if(Buffer_Part_Cmp(pBuffer, len, AT_FREQ_SET, ARRAY_LEN(AT_FREQ_SET)) !=NULL)
 	{
-		uint8_t freq_value =0;
+		uint8_t freq_value = 0;
 
 		pos =ARRAY_LEN(AT_FREQ_SET);
 		pBuffer +=pos;
@@ -936,7 +823,7 @@ u32 Convert_Buffer_To_Hex(u8 *ConvertData, int Length)
 //	printf("Convert_Buffer_To_Hex:%d length:%d\r\n", LengthTemp, Length);
 	if(LengthTemp < Length)
 	{
-		Length =LengthTemp;
+		Length = LengthTemp;
 	}
 
 	for(i=0; i<Length; i++)
@@ -945,15 +832,15 @@ u32 Convert_Buffer_To_Hex(u8 *ConvertData, int Length)
 		HexData <<=4;
 		if(ConvertData[i] >='0' && ConvertData[i] <='9')
 		{
-			HexData +=ConvertData[i] -'0';
+			HexData +=ConvertData[i] - '0';
 		}
 		else if(ConvertData[i] >='a' && ConvertData[i] <='f')
 		{
-			HexData +=ConvertData[i] -'a'+10;
+			HexData +=ConvertData[i] - 'a' + 10;
 		}
-		else if(ConvertData[i] >='A' && ConvertData[i] <='F')
+		else if(ConvertData[i] >= 'A' && ConvertData[i] <= 'F')
 		{
-			HexData +=ConvertData[i] -'A'+10;
+			HexData += ConvertData[i] -'A' + 10;
 		}
 	}
 	return HexData;

@@ -6,7 +6,7 @@
 #include "genie_app.h"
 #include <aos/aos.h>
 #include "crc16.h"
- 
+
 #define BT_DBG_ENABLED IS_ENABLED(CONFIG_BT_MESH_DEBUG_FLASH)
 #include "common/log.h"
 
@@ -185,9 +185,11 @@ static E_GENIE_FLASH_ERRCODE _genie_flash_checkflag(hal_partition_t in_partition
         return GENIE_FLASH_DATA_ORIGIN;
     }
 
-    if ((in_partition == GENIE_FLASH_PARTITION_SYSTEM && flash_flag != GENIE_FLASH_FLAG_INITED_SYS) ||
-        (in_partition == GENIE_FLASH_PARTITION_USERDATA && flash_flag != GENIE_FLASH_FLAG_INITED_UD) ||
-        (in_partition == GENIE_FLASH_PARTITION_SEQ && flash_flag != GENIE_FLASH_FLAG_INITED_SEQ)) {
+    if ((in_partition == GENIE_FLASH_PARTITION_SYSTEM && flash_flag != GENIE_FLASH_FLAG_INITED_SYS)
+		|| (in_partition == GENIE_FLASH_PARTITION_USERDATA && flash_flag != GENIE_FLASH_FLAG_INITED_UD)
+//        || (in_partition == GENIE_FLASH_PARTITION_SEQ && flash_flag != GENIE_FLASH_FLAG_INITED_SEQ)
+	)
+    {
         return GENIE_FLASH_DATA_INVALID;
     }
 
@@ -389,7 +391,7 @@ E_GENIE_FLASH_ERRCODE genie_flash_init(void)
     RETURN_WHEN_ERR(ret, GENIE_FLASH_INIT_FAIL);
 #if 0
     ret = genie_flash_seq_init();
-    RETURN_WHEN_ERR(ret, GENIE_FLASH_INIT_FAIL); 
+    RETURN_WHEN_ERR(ret, GENIE_FLASH_INIT_FAIL);
 #endif
 
     ret = _genie_flash_check_remain();

@@ -77,7 +77,7 @@
 /// Parameters API
 struct rwip_param_api      rwip_param;
 
-__attribute__((section("STACK_RAM"))) struct rwip_env_tag        rwip_env;
+struct rwip_env_tag        rwip_env;
 #if 1//(BLE_EMB_PRESENT || BT_EMB_PRESENT)
 /// Local supported commands
 struct rwip_prio rwip_priority[RWIP_PRIO_IDX_MAX]={
@@ -518,9 +518,6 @@ inline rwip_time_t rwip_time_get(void)
 
     return res;
 }
-
-
-
 
 #if (BLE_EMB_PRESENT || BT_EMB_PRESENT)
 #if (BT_EMB_PRESENT)

@@ -8,10 +8,13 @@
 #include "static_partition.h"
 
 #define OTA_CRC32_INIT_PARA     0xEDB88320
-#define OTA_PAGE_SIZE           256
-#define PLATFORM_OTA_PARTATION  HAL_PARTITION_OTA_TEMP
-#define PLATFORM_APP_PARTATION  HAL_PARTITION_APPLICATION
-#define PLATFORM_STACK_PARTATION    HAL_PARTITION_BT_FIRMWARE
+//jx debug
+#define OTA_PAGE_SIZE            2048 //256
+
+
+#ifdef CONFIG_OTA_DUAL_SWITCH
+#define DUAL_SWITCH_MAGIC_NUM       0xaabbccdd
+#endif
 
 typedef struct
 {
@@ -39,5 +42,7 @@ typedef struct
 
 void CRC32_Init(CRC32_Context* contex);
 uint32_t CRC32_Update(CRC32_Context* contex, uint8_t *f_data, uint32_t len);
-
+//jx debug
+//uint32_t crc32(uint32_t crc, const uint8_t *buf, int size);
+uint32_t CRC_Update_api(uint32_t * crc_table, uint32_t crc, uint8_t *f_data, uint32_t len);
 #endif  //_OTA_PORT_H

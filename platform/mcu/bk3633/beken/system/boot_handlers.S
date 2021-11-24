@@ -271,7 +271,6 @@ boot_reserved:
 
 		.align	5
 irq_handler:
-	STMFD  sp!,{r0-r1}
 	LDR    R1, =0x400004
 	LDR    r0, [R1]
 	BX     r0
@@ -279,7 +278,6 @@ irq_handler:
 
 		.align	5
 fiq_handler:
-	STMFD  sp!,{r0-r1}
 	LDR    R1, =0x400008
 	LDR    r0, [R1]
 	BX     r0

@@ -21,16 +21,21 @@ void hal_init(void)
 
     hal_uart_init(&uart_0);
     hal_flash_init();
-
-    // wdg_dev_t  wdg;
-    // wdg.config.timeout = 0xffff;
-    //hal_wdg_init(&wdg);
+// #ifdef CONFIG_DUT_TEST_CMD
+// 	check_and_set_dut_flag();
+// 	if(!get_dut_flag())
+// #endif
+//     {
+//         wdg_dev_t  wdg;
+//         wdg.config.timeout = 0xffff;
+//         hal_wdg_init(&wdg);
+//     }
 #ifdef CONFIG_DUT_TEST_CMD
 	check_and_set_dut_flag();
 	if(!get_dut_flag())
 #endif
 	{
-    	hal_aon_wdt_start(0x4ffff);
+    	hal_aon_wdt_start(0x4ffff * 5);
     	hal_aon_wdt_idle_sleep();
 	}
 

@@ -232,7 +232,7 @@ void cli_service_init(kinit_t *kinit)
 
 int aos_kernel_init(kinit_t *kinit)
 {
-    printf("%s \r\n\r\n", __func__);
+    // printf("%s \r\n\r\n", __func__);
 #ifdef AOS_VFS
     vfs_init();
     vfs_device_init();
@@ -304,7 +304,7 @@ int aos_kernel_init(kinit_t *kinit)
 #endif
 
 #ifdef CONFIG_DUT_TEST_CMD
-	check_and_set_dut_flag();
+    //check_and_set_dut_flag();
 	if(get_dut_flag())
 	{
 		dut_test_start(kinit->argc, kinit->argv);
@@ -312,6 +312,9 @@ int aos_kernel_init(kinit_t *kinit)
 	else
 #endif
 	{
+		extern void JX_gpio_init(void);
+
+		JX_gpio_init();
     	application_start(kinit->argc, kinit->argv);
 	}
 #endif

@@ -269,6 +269,7 @@ int bt_hci_cmd_send_sync(u16_t opcode, struct net_buf *buf, struct net_buf **rsp
 
     time_start = k_uptime_get_32();
 
+    
     while (1) {
         static struct k_poll_event events[1] = {
             K_POLL_EVENT_STATIC_INITIALIZER(K_POLL_TYPE_FIFO_DATA_AVAILABLE,
@@ -786,8 +787,7 @@ static void le_enh_conn_complete(struct bt_hci_evt_le_enh_conn_complete *evt)
     struct bt_conn *conn;
     int             err;
 
-    BT_DBG("status %u handle %u role %u %s", evt->status, handle, evt->role,
-           bt_addr_le_str(&evt->peer_addr));
+    printf("status %u handle %u role %u\n", evt->status, handle, evt->role);
 
 #if defined(CONFIG_BT_SMP)
     if (atomic_test_and_clear_bit(bt_dev.flags, BT_DEV_ID_PENDING)) {
@@ -942,8 +942,7 @@ static void le_legacy_conn_complete(struct net_buf *buf)
     struct bt_hci_evt_le_enh_conn_complete enh;
     const bt_addr_le_t *                   id_addr;
 
-    BT_DBG("status %u role %u %s", evt->status, evt->role,
-           bt_addr_le_str(&evt->peer_addr));
+    printf("status %u role %u \n", evt->status, evt->role);
 
     enh.status         = evt->status;
     enh.handle         = evt->handle;
@@ -2112,9 +2111,11 @@ int has_tx_sem(struct k_poll_event *event)
 
 void process_events(struct k_poll_event *ev, int count)
 {
+    //unsigned int key;
     for (; count; ev++, count--) {
         switch (ev->state) {
-            case K_POLL_STATE_FIFO_DATA_AVAILABLE:
+            case K_POLL_STATE_FIFO_DATA_AVAILABLE: {
+                //key = irq_lock();
                 if (ev->tag == BT_EVENT_CMD_TX) {
                     struct net_buf *buf;
                     buf = net_buf_get(&bt_dev.cmd_tx_queue, K_NO_WAIT);
@@ -2132,7 +2133,9 @@ void process_events(struct k_poll_event *ev, int count)
                         bt_conn_process_tx(conn);
                     }
                 }
+                //irq_unlock(key);
                 break;
+            }
 #ifdef CONFIG_CONTROLLER_IN_ONE_TASK
             case K_POLL_STATE_DATA_RECV:
                 if (ev->tag == BT_EVENT_CONN_RX) {
@@ -2156,7 +2159,7 @@ void process_events(struct k_poll_event *ev, int count)
 #define EV_COUNT (2 + (CONFIG_BT_MAX_CONN * 2))
 #else
 /* command FIFO */
-#define EV_COUNT 1
+#define EV_COUNT 2
 #endif
 
 extern void scheduler_loop(struct k_poll_event *events);

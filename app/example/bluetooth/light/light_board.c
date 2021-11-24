@@ -39,12 +39,11 @@ static void _led_init(void)
     hal_pwm_start(&led.light_led_b);
 
     set_light_board_type(LIGHT_TYPE_IDLE);
-
 }
 
 int led_startup(void)
 {
-    _led_init();
+//    _led_init();
     _init_light_para();
 }
 
@@ -172,7 +171,7 @@ static void _light_lighten(light_channel_e channel, uint16_t state)
 {
     uint32_t led_pwm_count = 16000000/LIGHT_PERIOD;
     uint32_t high_count;
-    uint16_t state_cal = LN_RATIO(state);
+    uint16_t state_cal = state;//LN_RATIO(state);
 
     if (channel >= LED_CHANNEL_MAX)
     {
@@ -181,7 +180,7 @@ static void _light_lighten(light_channel_e channel, uint16_t state)
 
     high_count = led_pwm_count * state_cal / LIGHTNESS_MAX;
 
-    LIGHT_DBG("channel %d, led_pwm_count 0x%x high_count = 0x%x\r\n", channel, led_pwm_count, high_count);
+//    LIGHT_DBG("channel %d, led_pwm_count %d high_count = %d\r\n", channel, led_pwm_count, high_count);
     hal_pwm_duty_cycle_chg(channel, led_pwm_count, high_count);
 }
 
@@ -189,21 +188,27 @@ static void _light_set_rgb(uint16_t rgb[LED_CHANNEL_MAX])
 {
     light_channel_e channel;
 
-    LIGHT_DBG("rgb[0] = 0x%x, rgb[1] = 0x%x, rgb[2] = 0x%x\r\n", rgb[0], rgb[1], rgb[2]);
+//    LIGHT_DBG("rgb[0] = 0x%x, rgb[1] = 0x%x, rgb[2] = 0x%x\r\n", rgb[0], rgb[1], rgb[2]);
 
     light_channel_e ledId;
 
     for (ledId = LED_R_CHANNEL; ledId < LED_CHANNEL_MAX; ledId++)
     {
         _light_lighten(ledId, rgb[ledId]);
-    } 
+    }
 }
+
+#ifdef CONFIG_BT_MESH_JINGXUN
+extern struct k_delayed_work app_timer;
+#endif //CONFIG_BT_MESH_JINGXUN
 
 void led_ctl_set_handler(uint16_t ctl_lightness, uint16_t temperature, uint16_t ctl_UV)
 {
+	return;
+
     uint16_t rgb_cal[LED_CHANNEL_MAX];
 
-    LIGHT_DBG("ctl_lightness = 0x%x, temperature = 0x%x, delta_uv = 0x%x\n", ctl_lightness, temperature, ctl_UV);
+    LIGHT_DBG("ctl_lightness = %d, temperature = %d, delta_uv = %d\n", ctl_lightness, temperature, ctl_UV);
 
     if(ctl_lightness > LIGHTNESS_MAX || temperature > LIGHT_CTL_TEMP_MAX)
     {
@@ -211,15 +216,22 @@ void led_ctl_set_handler(uint16_t ctl_lightness, uint16_t temperature, uint16_t 
         return;
     }
 
-    uint32_t rgb = _temperature_to_rgb(temperature, ctl_UV);
+#ifdef CONFIG_BT_MESH_JINGXUN
+	k_delayed_work_submit(&app_timer, 3000);
+#endif // CONFIG_BT_MESH_JINGXUN
 
-    rgb_cal[0] = _color_8to16(rgb >> 16) * ctl_lightness / LIGHTNESS_MAX;
-    rgb_cal[1] = _color_8to16(rgb >> 8) * ctl_lightness / LIGHTNESS_MAX;
-    rgb_cal[2] = _color_8to16(rgb) * ctl_lightness / LIGHTNESS_MAX;
+//    uint32_t rgb = _temperature_to_rgb(temperature, ctl_UV);
+
+//    rgb_cal[0] = _color_8to16(rgb >> 16) * ctl_lightness / LIGHTNESS_MAX;
+//    rgb_cal[1] = _color_8to16(rgb >> 8) * ctl_lightness / LIGHTNESS_MAX;
+//    rgb_cal[2] = _color_8to16(rgb) * ctl_lightness / LIGHTNESS_MAX;
+	  rgb_cal[0] = ctl_lightness;
+	  rgb_cal[1] = temperature;
+	  rgb_cal[2] = 0;
     _light_set_rgb(rgb_cal);
-
 }
 
+#ifdef CONFIG_MESH_MODEL_HSL_SRV
 void led_hsl_set_handler(uint16_t hue, uint16_t saturation, uint16_t lightness)
 {
     LIGHT_DBG("hue = 0x%x, sat = 0x%x, ln = 0x%x\n", hue, saturation, lightness);
@@ -240,5 +252,6 @@ void led_hsl_set_handler(uint16_t hue, uint16_t saturation, uint16_t lightness)
     rgb_cal[2] = rgb[2] * lightness / LIGHTNESS_MAX;
     _light_set_rgb(rgb_cal);
 }
+#endif
 
 

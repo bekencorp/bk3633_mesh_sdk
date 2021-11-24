@@ -182,8 +182,8 @@ struct prov_rx {
     u8_t  gpc;
 };
 
-#define RETRANSMIT_TIMEOUT   K_MSEC(500)
-#define BUF_TIMEOUT          K_MSEC(400)
+#define RETRANSMIT_TIMEOUT   K_MSEC(500)//K_MSEC(500)
+#define BUF_TIMEOUT          K_MSEC(400)//K_MSEC(400)
 #define TRANSACTION_TIMEOUT  K_SECONDS(30)
 
 #if defined(CONFIG_BT_MESH_PB_GATT)

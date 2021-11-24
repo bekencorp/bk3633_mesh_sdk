@@ -59,7 +59,7 @@ void bt_mesh_setup(u32_t seq, u16_t addr)
     if (IS_ENABLED(CONFIG_BT_MESH_LOW_POWER)) {
         bt_mesh_lpn_init();
     } else {
-        bt_mesh_scan_enable();
+        // bt_mesh_scan_enable();   //not scan when software init (provisioned).
     }
 
     if (IS_ENABLED(CONFIG_BT_MESH_FRIEND)) {
@@ -78,6 +78,11 @@ int bt_mesh_provision(const u8_t net_key[16], u16_t net_idx,
     BT_INFO("dk %s", bt_hex(dev_key, 16));
     BT_INFO("nk %s", bt_hex(net_key, 16));
     BT_DBG("net_idx 0x%04x flags 0x%02x iv_index 0x%04x",
+           net_idx, flags, iv_index);
+    printf("ua(%04x)\n ", addr);
+    printf(" dk %s\n", bt_hex(dev_key, 16));
+    printf(" nk %s\n", bt_hex(net_key, 16));
+    printf(" net_idx 0x%04x flags 0x%02x iv_index 0x%04x \r\n",
            net_idx, flags, iv_index);
 
     if (IS_ENABLED(CONFIG_BT_MESH_PB_GATT)) {
@@ -174,7 +179,7 @@ int bt_mesh_prov_enable(bt_mesh_prov_bearer_t bearers)
     if (IS_ENABLED(CONFIG_BT_MESH_PB_ADV) &&
         (bearers & BT_MESH_PROV_ADV)) {
         /* Make sure we're scanning for provisioning inviations */
-        bt_mesh_scan_enable();
+        // bt_mesh_scan_enable();   //not scan when software init (unprovisioned).
         /* Enable unprovisioned beacon sending */
         bt_mesh_beacon_enable();
     }

@@ -61,8 +61,8 @@ struct bt_mesh_cfg_srv cfg_srv = {
     .default_ttl = 7,
 
     /* 5 transmissions with 20ms interval */
-    .net_transmit = BT_MESH_TRANSMIT(5, 20),
-    .relay_retransmit = BT_MESH_TRANSMIT(5, 20),
+    .net_transmit = BT_MESH_TRANSMIT(7, 20),
+    .relay_retransmit = BT_MESH_TRANSMIT(7, 20),
 };
 
 static void hb_send(struct bt_mesh_model *model)
@@ -404,6 +404,8 @@ static u8_t app_key_set(u16_t net_idx, u16_t app_idx, const u8_t val[16],
 
     BT_DBG("net_idx 0x%04x app_idx %04x update %u val %s",
            net_idx, app_idx, update, bt_hex(val, 16));
+    // printf("net_idx 0x%04x app_idx %04x update %u app_key:val %s",
+    //        net_idx, app_idx, update, bt_hex(val, 16));
 
     sub = bt_mesh_subnet_get(net_idx);
     if (!sub) {
@@ -540,13 +542,11 @@ static void app_key_add(struct bt_mesh_model *model,
         BT_ERR("Unable to send App Key Status response");
     }
 
-#ifdef CONFIG_BT_MESH_ALI_TMALL_GENIE
     genie_sub_list_init();
 
     genie_mesh_setup();
 
     genie_event(GENIE_EVT_SDK_APPKEY_ADD, &status);
-#endif  /* CONFIG_BT_MESH_ALI_TMALL_GENIE */
 }
 
 void genie_appkey_register(u16_t net_idx, u16_t app_idx, const u8_t val[16], bool update)
@@ -581,9 +581,7 @@ static void app_key_update(struct bt_mesh_model *model,
         BT_ERR("Unable to send App Key Status response");
     }
 
-#ifdef CONFIG_BT_MESH_ALI_TMALL_GENIE
     genie_event(GENIE_EVT_SDK_APPKEY_UPDATE, &status);
-#endif  /* CONFIG_BT_MESH_ALI_TMALL_GENIE */
 
 }
 
@@ -638,9 +636,7 @@ static void app_key_del(struct bt_mesh_model *model,
     _app_key_del(key);
     status = STATUS_SUCCESS;
 
-#ifdef CONFIG_BT_MESH_ALI_TMALL_GENIE
     genie_event(GENIE_EVT_SDK_APPKEY_DEL, &status);
-#endif  /* CONFIG_BT_MESH_ALI_TMALL_GENIE */
 
 send_status:
     bt_mesh_model_msg_init(msg, OP_APP_KEY_STATUS);
@@ -1445,10 +1441,9 @@ static void mod_sub_add(struct bt_mesh_model *model,
 send_status:
     send_mod_sub_status(model, ctx, status, elem_addr, sub_addr,
                 mod_id, vnd);
-#ifdef CONFIG_BT_MESH_ALI_TMALL_GENIE
+
     if(status == STATUS_SUCCESS)
         genie_event(GENIE_EVT_SDK_SUB_ADD, (void *)&sub_addr);
-#endif  /* CONFIG_BT_MESH_ALI_TMALL_GENIE */
 
 }
 
@@ -1520,10 +1515,9 @@ static void mod_sub_del(struct bt_mesh_model *model,
 send_status:
     send_mod_sub_status(model, ctx, status, elem_addr, sub_addr,
                 mod_id, vnd);
-#ifdef CONFIG_BT_MESH_ALI_TMALL_GENIE
+
     if(status == STATUS_SUCCESS)
         genie_event(GENIE_EVT_SDK_SUB_DEL, &sub_addr);
-#endif  /* CONFIG_BT_MESH_ALI_TMALL_GENIE */
 
 }
 
@@ -2092,9 +2086,9 @@ static void net_key_add(struct bt_mesh_model *model,
         } else {
             status = STATUS_SUCCESS;
         }
-#ifdef CONFIG_BT_MESH_ALI_TMALL_GENIE
+
         genie_event(GENIE_EVT_SDK_NETKEY_ADD, &status);
-#endif  /* CONFIG_BT_MESH_ALI_TMALL_GENIE */
+
         send_net_key_status(model, ctx, idx, status);
         return;
     }
@@ -2181,9 +2175,7 @@ static void net_key_update(struct bt_mesh_model *model,
 
     sub->kr_phase = BT_MESH_KR_PHASE_1;
     status = STATUS_SUCCESS;
-#ifdef CONFIG_BT_MESH_ALI_TMALL_GENIE
     genie_event(GENIE_EVT_SDK_NETKEY_UPDATE, &status);
-#endif /* CONFIG_BT_MESH_ALI_TMALL_GENIE */
     bt_mesh_net_beacon_update(sub);
 
 send_status:
@@ -2257,9 +2249,8 @@ static void net_key_del(struct bt_mesh_model *model,
     sub->net_idx = BT_MESH_KEY_UNUSED;
 
     status = STATUS_SUCCESS;
-#ifdef CONFIG_BT_MESH_ALI_TMALL_GENIE
     genie_event(GENIE_EVT_SDK_NETKEY_DEL, &status);
-#endif /* CONFIG_BT_MESH_ALI_TMALL_GENIE */
+
 send_status:
     send_net_key_status(model, ctx, del_idx, status);
 }
@@ -2591,17 +2582,13 @@ static void node_reset(struct bt_mesh_model *model,
         BT_ERR("Unable to send Node Reset Status");
     }
 
-#ifdef CONFIG_BT_MESH_ALI_TMALL_GENIE
     if (genie_reset_get_flag()) {
         return;
     }
-#endif /* CONFIG_BT_MESH_ALI_TMALL_GENIE */
 
     bt_mesh_reset();
 
-#ifdef CONFIG_BT_MESH_ALI_TMALL_GENIE
     genie_event(GENIE_EVT_SW_RESET, NULL);
-#endif /* CONFIG_BT_MESH_ALI_TMALL_GENIE */
 
 }
 
@@ -2900,7 +2887,7 @@ static void heartbeat_pub_get(struct bt_mesh_model *model,
 
     hb_pub_send_status(model, ctx, STATUS_SUCCESS, NULL);
 }
-#ifdef CONFIG_BT_MESH_ALI_TMALL_GENIE
+
 uint8_t genie_heartbeat_set(mesh_hb_para_t *p_para)
 {
     /* All other address types but virtual are valid */
@@ -3059,7 +3046,6 @@ failed:
     hb_pub_send_status(model, ctx, status, param);
 #endif
 }
-#endif /* CONFIG_BT_MESH_ALI_TMALL_GENIE */
 
 static void hb_sub_send_status(struct bt_mesh_model *model,
                    struct bt_mesh_msg_ctx *ctx, u8_t status)
@@ -3230,9 +3216,7 @@ const struct bt_mesh_model_op bt_mesh_cfg_srv_op[] = {
     { OP_KRP_GET,                  2,   krp_get },
     { OP_KRP_SET,                  3,   krp_set },
     { OP_HEARTBEAT_PUB_GET,        0,   heartbeat_pub_get },
-#ifdef CONFIG_BT_MESH_ALI_TMALL_GENIE
     { OP_HEARTBEAT_PUB_SET,        9,   heartbeat_pub_set },
-#endif /* CONFIG_BT_MESH_ALI_TMALL_GENIE */
     { OP_HEARTBEAT_SUB_GET,        0,   heartbeat_sub_get },
     { OP_HEARTBEAT_SUB_SET,        5,   heartbeat_sub_set },
     BT_MESH_MODEL_OP_END,

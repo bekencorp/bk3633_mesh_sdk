@@ -73,6 +73,7 @@ uint8_t get_rw_sleep_flag(void)
 }
 
 #include "reg_ipcore.h"
+extern u8 JX_power_on_flag;
 uint32_t curr_sleep_hs = 0;
 static uint32_t sleep_flag_2 = 0;
 static uint8_t sleep_start_flag = 0;
@@ -142,8 +143,8 @@ void idle_mode(void)
             cpu_reduce_voltage_sleep();
             //sleep_mode_enable(0);
             cpu_wakeup();
-            //hal_wdg_reload(NULL);
-            hal_aon_wdt_feed();
+            hal_wdg_reload(NULL);
+            //hal_aon_wdt_feed();
 			//sleep_mode_enable(0);
 			break;
         case RWIP_CPU_SLEEP:
@@ -165,9 +166,6 @@ void idle_mode(void)
             sleep_flag_2++;
             if ((sleep_flag_2 % 2000) == 0) {
                 sleep_flag_2 = 0;
-                // os_printf("sleep_start_flag %d\n", sleep_start_flag);
-                // os_printf("rwip_sleep_flag 0x%x\n", get_rw_sleep_flag());
-                // os_printf("clknintmsk 0x%x\n", ip_intcntl1_clknintmsk_getf());
             }
         }
         GLOBAL_INT_DISABLE();
