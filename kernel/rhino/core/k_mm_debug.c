@@ -465,6 +465,50 @@ uint32_t dump_mm_info_used(void)
     return RHINO_SUCCESS;
 }
 
+void dump_mm_info_check(void)
+{
+    MM_CRITICAL_ENTER(g_kmm_head);
+    k_mm_region_info_t *reginfo, *nextreg;
+    k_mm_list_t *next, *cur;
+
+    if (!g_kmm_head) {
+        return;
+    }
+
+    reginfo = g_kmm_head->regioninfo;
+    while (reginfo) {
+        cur = MM_GET_THIS_BLK(reginfo);
+        while (cur) {
+            // printf("%s cur->dye = 0x%x, cur->buf_size & RHINO_MM_FREE %d\n", __func__, cur->dye,  cur->buf_size & RHINO_MM_FREE);
+            if (cur->buf_size & RHINO_MM_FREE) {
+                if (cur->dye != RHINO_MM_FREE_DYE) {
+                    goto exit_err;
+                }
+            } else {
+                if (cur->dye != RHINO_MM_CORRUPT_DYE) {
+                    goto exit_err;
+                }
+            }
+            if (MM_GET_BUF_SIZE(cur)) {
+                next = MM_GET_NEXT_BLK(cur);
+            } else {
+                next = NULL;
+            }
+            cur = next;
+        }
+        nextreg = reginfo->next;
+        reginfo = nextreg;
+    }
+
+    MM_CRITICAL_EXIT(g_kmm_head);
+    return;
+exit_err:
+    MM_CRITICAL_EXIT(g_kmm_head);
+    printf("WARNING,memory maybe corrupt!!\r\n");
+    k_err_proc(RHINO_SYS_FATAL_ERR);
+    return;
+}
+
 #endif
 
 #endif

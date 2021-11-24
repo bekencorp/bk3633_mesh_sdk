@@ -70,7 +70,7 @@ typedef struct {
     void         *priv;    /* priv data */
 } uart_dev_t;
 
-#define HCI_DATA_LEN 30
+#define HCI_DATA_LEN 100
 typedef struct 
 {
 	uint8_t dut_data[HCI_DATA_LEN];

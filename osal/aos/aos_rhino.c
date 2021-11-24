@@ -20,6 +20,7 @@ static unsigned int used_bitmap;
 extern void hal_reboot(void);
 void aos_reboot(void)
 {
+	icu_set_reset_reason(0x1234);
     hal_reboot();
 }
 

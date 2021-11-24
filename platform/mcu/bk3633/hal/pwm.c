@@ -1,17 +1,3 @@
-/**
-****************************************************************************************
-*
-* @file pwm.c
-*
-* @brief pwm user interfaces
-*
-* Copyright (C) Beken Leonardo 2021
-*
-* $Rev: $
-*
-****************************************************************************************
-*/
-
 #include "hal/soc/soc.h"
 #include "rtos_pub.h"
 #include "drv_model_pub.h"
@@ -29,18 +15,13 @@ int32_t hal_pwm_init(pwm_dev_t *pwm)
     param.cfg.bits.int_en = PWM_INT_DIS;
     param.cfg.bits.mode   = PMODE_PWM;
     param.p_Int_Handler   = pwm->p_Int_Handler;
+    param.contiu_mode = 0;
+    param.cpedg_sel = 1;
+    param.pre_divid = 0;
 
-    ///select base clock
-    if(pwm->config.freq > 250)
-    {
-    	param.cfg.bits.clk = PWM_CLK_16M;
-    	base_freq = 16000000ul;
-    }
-    else
-    {
-    	param.cfg.bits.clk = PWM_CLK_32K;
-    	base_freq = 32000;
-    }
+    param.cfg.bits.clk = PWM_CLK_16M;
+    base_freq = 16000000ul;
+
 
     param.end_value  = (uint16_t)(base_freq/pwm->config.freq);
     param.duty_cycle = (uint16_t)(param.end_value*pwm->config.duty_cycle);

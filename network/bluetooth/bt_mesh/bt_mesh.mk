@@ -8,7 +8,7 @@ ifeq ($(bt_mesh_standalone_deploy),1)
 GLOBAL_DEFINES += CONFIG_MESH_STACK_ALONE
 $(NAME)_COMPONENTS += bluetooth.bt_mesh.util
 else
-$(NAME)_COMPONENTS += bluetooth.bt_host.bt_common 
+$(NAME)_COMPONENTS += bluetooth.bt_host.bt_common
 endif
 
 $(NAME)_COMPONENTS += bluetooth.bt_mesh.ref_impl
@@ -29,8 +29,8 @@ $(NAME)_INCLUDES += ../../../network/bluetooth/bt_mesh/inc \
 					../../../genie_app/base \
 					../../../genie_app/bluetooth/host \
 					../../../genie_app/bluetooth/mesh \
-					../../../network/bluetooth/bt_mesh \
 
+                    
 $(NAME)_SOURCES  :=  ./src/access.c \
                      ./src/adv.c \
                      ./src/beacon.c \
@@ -51,23 +51,11 @@ $(NAME)_SOURCES  :=  ./src/access.c \
                      ./src/provisioner_main.c \
                      ./src/provisioner_prov.c \
                      ./src/provisioner_proxy.c \
-                     ./mod_src/gen_onoff_cli.c  \
-                     ./mod_src/gen_dtt_cli.c  \
-                     ./mod_src/gen_lvl_cli.c    \
-                     ./mod_src/gen_battery_cli.c   \
-                     ./mod_src/gen_plvl_cli.c   \
-                     ./mod_src/gen_ponoff_cli.c   \
-                     ./mod_src/gen_loc_cli.c   \
-                     ./mod_src/light_ctl_cli.c  \
-                     ./mod_src/lightness_cli.c  \
-                     ./mod_src/light_hsl_cli.c  \
-                     ./mod_src/light_xyl_cli.c  \
-                     ./mod_src/model_utils.c  \
+
 
 GLOBAL_INCLUDES += ./inc/ \
-                   ./inc/api \
-                   ./mod_inc \
-                   ./mod_src \
+                   ./inc/api
+
 
 GLOBAL_DEFINES += CRC16_ENABLED
 
@@ -90,5 +78,3 @@ GLOBAL_DEFINES += CONFIG_BT_MESH_DEBUG_VENDOR_MODEL
 #GLOBAL_DEFINES += CONFIG_BT_MESH_DEBUG_PROVISIONER_MAIN
 #GLOBAL_DEFINES += CONFIG_BT_MESH_DEBUG_PROVISIONER_PROV
 #GLOBAL_DEFINES += CONFIG_BT_MESH_DEBUG_PROVISIONER_PROXY
-
-#GLOBAL_DEFINES += CONFIG_BT_MESH_REDUCE_RAM

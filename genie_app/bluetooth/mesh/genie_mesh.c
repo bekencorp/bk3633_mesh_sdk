@@ -320,6 +320,76 @@ void genie_indicate_start(uint16_t delay_ms, S_ELEM_STATE *p_elem)
     k_timer_start(&g_indc_timer, random_time);
 }
 
+void vendor_C7_ack(u8_t tid)
+{
+	 struct bt_mesh_elem *elem;
+	 struct bt_mesh_model *model;
+
+	 u8_t status;
+	 u16_t addr = bt_mesh_primary_addr();
+
+	 u8 len =0;
+	 u8 payload[10] = {0};
+
+	 elem = bt_mesh_elem_find(addr);
+	 LOG_EN_DBG("addr=%x elem=%x", addr, elem);
+
+	 if(elem == NULL)
+	 {
+		BT_DBG("elem is not exit !");
+		return ;
+	 }
+
+	model = bt_mesh_model_find_vnd(elem, BT_MESH_MODEL_VND_COMPANY_ID, BT_MESH_MODEL_VND_MODEL_SRV);
+
+	if(model == NULL)
+	{
+		BT_DBG("model is not exit !");
+		return;
+	}
+	else
+	{
+		int err;
+		S_MODEL_STATE *p_state = &((S_ELEM_STATE *)model->user_data)->state;
+
+		struct bt_mesh_msg_ctx ctx;
+
+		struct net_buf_simple *p_msg_buf = NET_BUF_SIMPLE(3 + 17 + 4 + 10);//op:3 par ????17
+
+		bt_mesh_model_msg_init(p_msg_buf, BT_MESH_MODEL_OP_3(VENDOR_OP_C7_INDICATE, CONFIG_CID_JX));
+
+
+//		payload[len++] = 0x01;
+//		payload[len++] = tid;
+		payload[len++] = 0x07;
+		payload[len++] = 0x02;
+
+		payload[len++] = g_elem_state[0].state.onoff[T_CUR];
+		payload[len++] = (u8)((u32)(g_elem_state[0].state.light_ln_actual[T_CUR] *100)/65535);
+		payload[len++] = (u8)((u32)((g_elem_state[0].state.ctl_temp[T_CUR] -800)*100)/(20000-800));
+		payload[len++] = 0x00;
+		payload[len++] = 0x00;
+		payload[len++] = 0x00;
+		LOG_EN_DBG("len %d: %s", len, bt_hex(payload, len));
+		net_buf_simple_add_mem(p_msg_buf, payload, len);
+
+		ctx.addr = 0xFFFF;
+		ctx.app_idx = 0;
+		ctx.net_idx = 0;
+		ctx.send_ttl = 5;
+
+        LOG_EN_DBG("+++++%s, before send +++++\n", __func__);
+		err = bt_mesh_model_send(model, &ctx, p_msg_buf, NULL, NULL);
+        LOG_EN_DBG("+++++%s, after send +++++\n", __func__);
+		if (err)
+		{
+			BT_ERR("bt_mesh_model_publish err %d\n", err);
+			return;
+		}
+	}
+}
+
+
 #ifdef MESH_MODEL_VENDOR_TIMER
 static void _vendor_timer_operate_status(uint8_t tid, u16_t attr_type)
 {
@@ -708,19 +778,15 @@ u16_t genie_indicate_hw_reset_event (void)
     return 0;
 }
 
- 
 u16_t genie_vnd_msg_handle(vnd_model_msg *p_msg){
     uint8_t *p_data = NULL;
     BT_DBG("vendor model message received");
-
     if (!p_msg || !p_msg->data)
         return -1;
     p_data = p_msg->data;
     BT_DBG("opcode:0x%x, tid:%d, len:%d", p_msg->opid, p_msg->tid, p_msg->len);
     if (p_data && p_msg->len)
         BT_DBG("payload: %s", bt_hex(p_data, p_msg->len));
-
-	printf("[%s, %d] opid: 0x%02X, tid: 0x%02X, len: 0x%02X \r\n", __func__, __LINE__, p_msg->opid, p_msg->tid, p_msg->len);
 
     switch (p_msg->opid) {
         case VENDOR_OP_ATTR_INDICATE:
@@ -737,20 +803,76 @@ u16_t genie_vnd_msg_handle(vnd_model_msg *p_msg){
                         break;
                 }
             }
+
             break;
         }
+        case VENDOR_OP_C7_INDICATE:
+        {
+			if(p_data[0] ==0x01 && p_data[1] ==0x01)
+			{
+				vendor_C7_ack(p_msg->tid);
+			}
+
+			break;
+        }
         case VENDOR_OP_ATTR_GET_STATUS: {
-
-			
-
+#ifdef MESH_MODEL_VENDOR_TIMER
+            u16_t attr_type = *p_data++;
+            attr_type += (*p_data++ << 8);
+            if (attr_type == UNIX_TIME_T ||
+                attr_type == TIMEZONE_SETTING_T ||
+                attr_type == TIMING_SYNC_T) {
+                _vendor_timer_operate_status(p_msg->tid, attr_type);
+            } else if (attr_type == TIMING_SETTING_T) {
+                _vendor_timer_timing_settting_event(VENDOR_OP_ATTR_GET_STATUS, p_msg->data, p_msg->len, p_msg->tid);
+            } else if (attr_type == TIMING_PERIODIC_SETTING_T) {
+                _vendor_timer_priordic_timing_settting_event(VENDOR_OP_ATTR_GET_STATUS, p_msg->data, p_msg->len, p_msg->tid);
+            }
+#endif
             break;
         }
 
         case VENDOR_OP_ATTR_SET_ACK: {
+#ifdef MESH_MODEL_VENDOR_TIMER
+            u16_t attr_type = *p_data++;
+            attr_type += (*p_data++ << 8);
+            if (attr_type == UNIX_TIME_T) {
+                uint32_t unix_time = (p_data[0]) | (p_data[1] << 8) | (p_data[2] << 16) | (p_data[3] << 24);
+                p_data += 4;
+                vendor_timer_local_time_update(unix_time);
+                _vendor_timer_operate_status(p_msg->tid, attr_type);
+            } else if (attr_type == TIMEZONE_SETTING_T) {
+                int8_t timezone = *p_data++;
+                vendor_timer_timezone_update(timezone);
+                _vendor_timer_operate_status(p_msg->tid, attr_type);
+            } else if (attr_type == TIMING_SYNC_T) {
+                u16_t period_time = (p_data[0]) | (p_data[1] << 8);
+                p_data += 2;
+                u8_t  retry_delay = *p_data++;
+                u8_t  retry_times = *p_data++;
+                vendor_timer_time_sync_set(period_time, retry_delay, retry_times);
+                _vendor_timer_operate_status(p_msg->tid, attr_type);
+            } else if (attr_type == TIMING_SETTING_T) {
+                _vendor_timer_timing_settting_event(VENDOR_OP_ATTR_SET_ACK, p_msg->data, p_msg->len, p_msg->tid);
+            } else if (attr_type == TIMING_PERIODIC_SETTING_T) {
+                _vendor_timer_priordic_timing_settting_event(VENDOR_OP_ATTR_SET_ACK, p_msg->data, p_msg->len, p_msg->tid);
+            } else if (attr_type == TIMING_DELETE_T) {
+                _vendor_timer_timing_remove_event(VENDOR_OP_ATTR_SET_ACK, p_msg->data, p_msg->len, p_msg->tid);
+            }
+#endif
             break;
         }
 
         case VENDOR_OP_ATTR_CONFIME_TG: {
+#ifdef MESH_MODEL_VENDOR_TIMER
+            u16_t attr_type = *p_data++;
+            attr_type += (*p_data++ << 8);
+            if (attr_type == UNIX_TIME_T) {
+                uint32_t unix_time = (p_data[0]) | (p_data[1] << 8) | (p_data[2] << 16) | (p_data[3] << 24);
+                p_data += 4;
+                vendor_timer_local_time_update(unix_time);
+            }
+#endif
             break;
         }
 
@@ -939,6 +1061,7 @@ s16_t genie_vendor_model_msg_send(vnd_model_msg *p_vendor_msg) {
         case VENDOR_OP_ATTR_INDICATE:
         case VENDOR_OP_ATTR_INDICATE_TG:
         case VENDOR_OP_ATTR_TRANS_MSG:
+		case VENDOR_OP_C7_INDICATE:
             vendor_model_msg_send(p_vendor_msg);
             break;
         default:
@@ -1036,7 +1159,7 @@ uint8_t genie_restore_user_state(uint8_t state_count,S_ELEM_STATE *p_elem, S_MOD
     
     while(i < state_count) 
     {
-#ifdef CONFIG_GENIE_OTA
+#if defined(CONFIG_BEKEN_OTA) || defined(CONFIG_GENIE_OTA)
         // if the device reboot by ota, it must be off.
         if(p_pup[i].last_onoff == 0)
         {
@@ -1235,6 +1358,7 @@ static void _prov_reset(void)
 
 }
 
+// bool bt_ready_count = false;
 static void _genie_mesh_ready(int err)
 {
     if (err) {
@@ -1248,6 +1372,8 @@ static void _genie_mesh_ready(int err)
         BT_INFO("mesh init err %d", err);
         return;
     }
+
+    // bt_ready_count = true;
 #ifdef MESH_MODEL_VENDOR_TIMER
     vendor_timer_init(_vendor_timer_event);
 #endif
@@ -1262,17 +1388,20 @@ void genie_mesh_init(void)
 
     BT_INFO(">>>init genie<<<");
 
-    // genie_tri_tuple_load();
-
-    prov.uuid = genie_tri_tuple_get_uuid();
-#ifdef GENIE_OLD_AUTH
+#ifdef CONFIG_BT_MESH_ALI_TMALL_GENIE
+    genie_tri_tuple_load();
     prov.static_val = genie_tri_tuple_get_auth();
     prov.static_val_len = STATIC_OOB_LENGTH;
-#endif
+#endif /*CONFIG_BT_MESH_ALI_TMALL_GENIE*/
+    prov.uuid = genie_tri_tuple_get_uuid();
     prov.complete = _prov_complete;
     prov.reset = _prov_reset;
 
-    comp.cid = CONFIG_MESH_VENDOR_COMPANY_ID;
+#ifdef CONFIG_BT_MESH_ALI_TMALL_GENIE
+    comp.cid = CONFIG_CID_TAOBAO;
+#else /*CONFIG_BT_MESH_ALI_TMALL_GENIE*/
+    comp.cid = CONFIG_CID_JX;
+#endif
     comp.pid = 0;
     comp.vid = 1; // firmware version fir ota
     comp.elem = elements;

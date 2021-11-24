@@ -19,7 +19,7 @@ $(NAME)_INCLUDES += ../network/bluetooth/bt_mesh/inc \
 					../utility/crc \
 					../genie_app/bluetooth/mesh/mesh_model	\
 					../genie_app \
-					../genie_app/bluetooth/mesh/mesh_model/inc	
+					../genie_app/bluetooth/mesh/mesh_model/inc 
 
 $(NAME)_SOURCES  += genie_app.c \
 					base/genie_cmds.c \
@@ -41,10 +41,13 @@ GLOBAL_DEFINES += CONFIG_GENIE_RESET_BY_REPEAT
 #GLOBAL_DEFINES += CONFIG_GENIE_RESET_BY_PRESS
 #GLOBAL_DEFINES += AES_CMAC_DECRYPT
 
+
 ####### beken ota config #######
 ifeq ($(beken_ota),1)
 GLOBAL_DEFINES += CONFIG_BEKEN_OTA
-$(NAME)_SOURCES  += bluetooth/host/profile/ota_srv/ota_service.c
+#jx debug
+#$(NAME)_SOURCES  += bluetooth/host/profile/ota_srv/ota_service.c
+$(NAME)_SOURCES  += bluetooth/host/profile/ota_srv/hilink_ota_service.c
 endif
 
 

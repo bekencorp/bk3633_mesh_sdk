@@ -839,9 +839,7 @@ int bt_mesh_net_encode(struct bt_mesh_net_tx *tx, struct net_buf_simple *buf,
     seq[1] = (bt_mesh.seq >> 8);
     seq[2] = bt_mesh.seq++;
 
-#ifdef CONFIG_BT_MESH_ALI_TMALL_GENIE
     genie_event(GENIE_EVT_SDK_SEQ_UPDATE, NULL);
-#endif  /* CONFIG_BT_MESH_ALI_TMALL_GENIE */
 
 
     if (ctl) {

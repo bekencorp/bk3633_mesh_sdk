@@ -63,7 +63,7 @@ static const struct bt_mesh_le_adv_param fast_adv_param = {
 };
 
 static bool proxy_adv_enabled;
-static bool proxy_adv_stoped;
+static bool proxy_adv_stoped = false;
 
 void bt_mesh_proxy_adv_enabled(void)
 {
@@ -1378,7 +1378,7 @@ void bt_mesh_proxy_adv_stop(void)
 
     //BT_DBG("adv_enabled %u", proxy_adv_enabled);
 
-    if (!proxy_adv_enabled) {
+    if (!proxy_adv_enabled || proxy_adv_stoped) {
         return;
     }
 

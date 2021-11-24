@@ -120,7 +120,7 @@ static u8_t generate_keys(void)
 
         rc = uECC_make_key(ecc.pk, ecc.private_key, &curve_secp256r1);
         if (rc == TC_CRYPTO_FAIL) {
-            BT_ERR("Failed to create ECC public/private pair.");
+            BT_ERR("Failed to create ECC public/private pair");
             return BT_HCI_ERR_UNSPECIFIED;
         }
 

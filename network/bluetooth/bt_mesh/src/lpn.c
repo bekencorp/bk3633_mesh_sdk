@@ -62,7 +62,7 @@
 
 #define POLL_TIMEOUT_INIT     (CONFIG_BT_MESH_LPN_INIT_POLL_TIMEOUT * 100)
 #define POLL_TIMEOUT_MAX(lpn) ((CONFIG_BT_MESH_LPN_POLL_TIMEOUT * 100) - \
-			       REQ_RETRY_DURATION(lpn))
+			                    REQ_RETRY_DURATION(lpn))
 
 #define REQ_ATTEMPTS(lpn)     (POLL_TIMEOUT_MAX(lpn) < K_SECONDS(3) ? 2 : REQ_RETRY_TIMES_MAX)
 
@@ -479,14 +479,14 @@ void bt_mesh_lpn_msg_received(struct bt_mesh_net_rx *rx)
 	struct bt_mesh_lpn *lpn = &bt_mesh.lpn;
 
 	if (lpn->state == BT_MESH_LPN_TIMER) {
-		BT_DBG("Restarting establishment timer");
-		k_delayed_work_submit(&lpn->timer, LPN_AUTO_TIMEOUT);
+        BT_DBG("Restarting establishment timer");
+        k_delayed_work_submit(&lpn->timer, LPN_AUTO_TIMEOUT);
 		return;
 	}
 
 	if (lpn->sent_req != TRANS_CTL_OP_FRIEND_POLL) {
-		BT_WARN("Unexpected message withouth a preceding Poll");
-		return;
+        BT_WARN("Unexpected message withouth a preceding Poll");
+        return;
 	}
 
 	friend_response_received(lpn);
@@ -950,12 +950,12 @@ int bt_mesh_lpn_friend_update(struct bt_mesh_net_rx *rx,
 	struct bt_mesh_ctl_friend_update *msg = (void *)buf->data;
 	struct bt_mesh_lpn *lpn = &bt_mesh.lpn;
 	struct bt_mesh_subnet *sub = rx->sub;
-	u32_t iv_index;
+    u32_t iv_index;
 
-	if (buf->len < sizeof(*msg)) {
-		BT_WARN("Too short Friend Update");
-		return -EINVAL;
-	}
+    if (buf->len < sizeof(*msg)) {
+        BT_WARN("Too short Friend Update");
+        return -EINVAL;
+    }
 
 	if (lpn->sent_req != TRANS_CTL_OP_FRIEND_POLL) {
 		BT_WARN("Unexpected friend update");
@@ -1067,8 +1067,8 @@ int bt_mesh_lpn_init(void)
 	} else {
 		bt_mesh_scan_enable();
 
-		if (IS_ENABLED(CONFIG_BT_MESH_LPN_AUTO)) {
-			BT_DBG("Waiting %u ms for messages", LPN_AUTO_TIMEOUT);
+        if (IS_ENABLED(CONFIG_BT_MESH_LPN_AUTO)) {
+            BT_DBG("Waiting %u ms for messages", LPN_AUTO_TIMEOUT);
 			lpn_set_state(BT_MESH_LPN_TIMER);
 			k_delayed_work_submit(&lpn->timer, LPN_AUTO_TIMEOUT);
 		}

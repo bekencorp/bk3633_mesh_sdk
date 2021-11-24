@@ -11,7 +11,6 @@
 #include "flash_pub.h"
 #include "spi_pub.h"
 #include "i2s_pub.h"
-#include "timer_pub.h"
 #include "aon_wdt_pub.h"
 
 #if CFG_USE_STA_PS
@@ -31,23 +30,14 @@ static DD_INIT_S dd_init_tbl[] =
     
     {UART1_DEV_NAME,        uart1_init,                 uart1_exit},
 
-#ifdef CONFIG_DUT_TEST_COM2
     {UART2_DEV_NAME,        uart2_init,                 uart2_exit},
-#endif
 
     {FLASH_DEV_NAME,        flash_init,                 flash_exit},
     
     {PWM_DEV_NAME,          pwm_init,                   pwm_exit},
 
     {AON_WDT_DEV_NAME,      aon_wdt_init,               aon_wdt_exit},
-
-#ifdef __HW_TIMER_DRIVER__
-	{TIMER_DEV_NAME,        timer_init,                 timer_exit},
-#endif
-
-#ifdef __SPI_DRIVER__
-    {SPI_DEV_NAME,          spi_init,                   spi_exit},
-#endif
+    // {SPI_DEV_NAME,          spi_init,                   spi_exit},
 
     //{I2S_DEV_NAME,          i2s_init,                   i2s_exit},
 

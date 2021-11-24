@@ -1,24 +1,10 @@
-/**
-****************************************************************************************
-*
-* @file pwm.c
-*
-* @brief pwm driver
-*
-* Copyright (C) Beken Leonardo 2021
-*
-* $Rev: $
-*
-****************************************************************************************
-*/
-
 #include "include.h"
 
 #include "pwm.h"
 #include "pwm_pub.h"
 #include "pwm_init.h"
 
-#include "driver_pub.h"
+#include "drv_model_pub.h"
 #include "intc_pub.h"
 #include "icu_pub.h"
 #include "gpio_pub.h"
@@ -29,7 +15,7 @@ static SDD_OPERATIONS pwm_op =
     pwm_ctrl
 };
 
-void (*p_PWM_Int_Handler[PWM_COUNT])(UINT8) = {NULL};
+void (*p_PWM_Int_Handler[PWM_CHANNEL_NUMBER_MAX])(UINT8) = {NULL};
 
 static void pwm_gpio_configuration(UINT8 chan, UINT8 enable)
 {
@@ -38,32 +24,32 @@ static void pwm_gpio_configuration(UINT8 chan, UINT8 enable)
 
     switch(chan)
     {
-        case PWM0:
-            param = GFUNC_MODE_PWM0;
-            break;
+    case PWM0:
+        param = GFUNC_MODE_PWM0;
+        break;
 
-        case PWM1:
-            param = GFUNC_MODE_PWM1;
-            break;
+    case PWM1:
+        param = GFUNC_MODE_PWM1;
+        break;
 
-        case PWM2:
-            param = GFUNC_MODE_PWM2;
-            break;
+    case PWM2:
+        param = GFUNC_MODE_PWM2;
+        break;
 
-        case PWM3:
-            param = GFUNC_MODE_PWM3;
-            break;
+    case PWM3:
+        param = GFUNC_MODE_PWM3;
+        break;
 
-        case PWM4:
-            param = GFUNC_MODE_PWM4;
-            break;
+    case PWM4:
+        param = GFUNC_MODE_PWM4;
+        break;
 
-        case PWM5:
-            param = GFUNC_MODE_PWM5;
-            break;
+    case PWM5:
+        param = GFUNC_MODE_PWM5;
+        break;
 
-        default:
-            break;
+    default:
+        break;
     }
 
 	if(enable)
@@ -72,16 +58,16 @@ static void pwm_gpio_configuration(UINT8 chan, UINT8 enable)
 	}
 	else
 	{
-		param = GPIO_CFG_PARAM(param, GMODE_DISABLE);
+		param = GPIO_CFG_PARAM(param, GMODE_INPUT);
     	ret = sddev_control(GPIO_DEV_NAME, CMD_GPIO_CFG, &param);
 	}
-    ASSERT(DRIV_SUCCESS == ret);
+    ASSERT(GPIO_SUCCESS == ret);
 }
 
 static void pwm_icu_configuration(pwm_param_t *pwm_param, UINT8 enable)
 {
     UINT32 ret;
-    icu_clk_pwr_dev prm;
+    UINT32 prm;
 
     /* set clock power down of icu module*/
     if(pwm_param->channel >= PWM_COUNT)
@@ -92,39 +78,28 @@ static void pwm_icu_configuration(pwm_param_t *pwm_param, UINT8 enable)
 
     PWM_PRT("%s, enable %d\n", __func__, enable);
 
-    switch(pwm_param->channel)
-    {
-        case PWM0:
-        case PWM1:
-        case PWM2:
-            prm = CLK_PWR_DEV_PWM0;
-            break;
-        case PWM3:
-        case PWM4:
-        case PWM5:
-            prm = CLK_PWR_DEV_PWM1;
-            break;
-    }
-
  	if(enable)
 	{
+		prm = pwm_param->channel;
 		ret = sddev_control(ICU_DEV_NAME, CMD_CLK_PWR_UP, (void *)&prm);
-		ASSERT(DRIV_SUCCESS == ret);
+		ASSERT(ICU_SUCCESS == ret);
 
 		if(PWM_CLK_32K == pwm_param->cfg.bits.clk)
 		{
+			prm = pwm_param->channel;
 			ret = sddev_control(ICU_DEV_NAME, CMD_CONF_PWM_LPOCLK, (void *)&prm);
 		}
 		else
 		{
+			prm = pwm_param->channel;
 			ret = sddev_control(ICU_DEV_NAME, CMD_CONF_PWM_PCLK, (void *)&prm);
 		}
-		ASSERT(DRIV_SUCCESS == ret);
+		ASSERT(ICU_SUCCESS == ret);
 	}
 	else
 	{
     	ret = sddev_control(ICU_DEV_NAME, CMD_CLK_PWR_DOWN, (void *)&prm);
-		ASSERT(DRIV_SUCCESS == ret);
+		ASSERT(ICU_SUCCESS == ret);
 	}
 
 exit_icu:
@@ -193,7 +168,6 @@ static void init_pwm_param(pwm_param_t *pwm_param, UINT8 enable)
             || (pwm_param->channel >= PWM_COUNT)
             || ((pwm_param->duty_cycle > pwm_param->end_value) & enable))
     {
-        PWM_WARN("init_pwm_param fail\r\n");
         return;
     }
 
@@ -216,25 +190,23 @@ static void init_pwm_param(pwm_param_t *pwm_param, UINT8 enable)
 	{
 		pwm_gpio_configuration(pwm_param->channel, enable);
 	}
-    
+	
     pwm_icu_configuration(pwm_param, enable);
 
     if(enable)
     {
-        //pwm restart might fail if duty_cycle was cleared when disabled  --Leonardo
+    *pwm_reg &= ~(0x7 << (5 * channel_offset + posPWM0_Reg0x0_pwm0_mode));
+    *pwm_reg |= ((pwm_param->cfg.bits.mode & 0x7) << (5 * channel_offset + posPWM0_Reg0x0_pwm0_mode)); //set mode
 
-        *pwm_reg &= ~(0x7 << (5 * channel_offset + posPWM0_Reg0x0_pwm0_mode));
-        *pwm_reg |= ((pwm_param->cfg.bits.mode & 0x7) << (5 * channel_offset + posPWM0_Reg0x0_pwm0_mode)); //set mode
+    *pwm_reg &= ~(0x3 << (2 * channel_offset + posPWM0_Reg0x0_pwm0_cpedg_sel));
+    *pwm_reg |= ((pwm_param->cpedg_sel & 0x3) << (2 * channel_offset + posPWM0_Reg0x0_pwm0_cpedg_sel));//set cpedg_sel
+    
+    *pwm_reg &= ~(0x1 << (channel_offset + posPWM0_Reg0x0_pwm0_ctnu_mod));
+    *pwm_reg |= ((pwm_param->contiu_mode & 0x1) << (channel_offset + posPWM0_Reg0x0_pwm0_ctnu_mod));
 
-        *pwm_reg &= ~(0x3 << (2 * channel_offset + posPWM0_Reg0x0_pwm0_cpedg_sel));
-        *pwm_reg |= ((pwm_param->cpedg_sel & 0x3) << (2 * channel_offset + posPWM0_Reg0x0_pwm0_cpedg_sel));//set cpedg_sel
-        
-        *pwm_reg &= ~(0x1 << (channel_offset + posPWM0_Reg0x0_pwm0_ctnu_mod));
-        *pwm_reg |= ((pwm_param->contiu_mode & 0x1) << (channel_offset + posPWM0_Reg0x0_pwm0_ctnu_mod));
-
-        pwm_duty_cycle(pwm_param);
+    pwm_duty_cycle(pwm_param);
     }
-
+    p_PWM_Int_Handler[pwm_param->channel] = pwm_param->p_Int_Handler;
 
     if(pwm_param->cfg.bits.int_en)
     {
@@ -261,7 +233,7 @@ static void init_pwm_param(pwm_param_t *pwm_param, UINT8 enable)
     else
     {
         p_PWM_Int_Handler[pwm_param->channel] = NULL;
-        //intc_disable(intc_group);
+        intc_disable(intc_group);
     }
 }
 
@@ -314,12 +286,12 @@ void pwm_exit(void)
 
 UINT32 pwm_ctrl(UINT32 cmd, void *param)
 {
-    DRIVER_CTRL_RES ret = DRIV_SUCCESS;
+    UINT32 ret = PWM_SUCCESS;
     UINT32 ucChannel;
     UINT32 value;
     pwm_param_t *p_param;
     pwm_capture_t *p_capture;
-
+    //os_printf("%s, cmd 0x%x.\n", __func__, cmd);
     switch(cmd)
     {
     case CMD_PWM_UNIT_ENABLE:
@@ -332,7 +304,7 @@ UINT32 pwm_ctrl(UINT32 cmd, void *param)
 
         if(ucChannel > 5)
         {
-            ret = DRIV_FAIL;
+            ret = PWM_FAILURE;
             break;
         }
 
@@ -371,7 +343,7 @@ UINT32 pwm_ctrl(UINT32 cmd, void *param)
         ucChannel = (*(UINT32 *)param);
         if(ucChannel > 5)
         {
-            ret = DRIV_FAIL;
+            ret = PWM_FAILURE;
             break;
         }
         pwm_int_handler_clear(ucChannel);
@@ -384,7 +356,7 @@ UINT32 pwm_ctrl(UINT32 cmd, void *param)
         p_capture = (pwm_capture_t *)param;
         if(p_capture->ucChannel > 5)
         {
-            ret = DRIV_FAIL;
+            ret = PWM_FAILURE;
             break;
         }
         p_capture->value = pwm_capture_value_get(p_capture->ucChannel);
@@ -398,7 +370,7 @@ UINT32 pwm_ctrl(UINT32 cmd, void *param)
         init_pwm_param(p_param, 0);
 		break;
     default:
-        ret = DRIV_FAIL;
+        ret = PWM_FAILURE;
         break;
     }
 
@@ -407,14 +379,15 @@ UINT32 pwm_ctrl(UINT32 cmd, void *param)
 
 void pwm_isr(void)
 {
-    UINT8 i;
-    UINT32 ulIntStatus0, ulIntStatus1;
+    int i;
+    unsigned long ulIntStatus0, ulIntStatus1;
+    //gpio_set(0x27, 1);
     ulIntStatus0 = REG_PWM0_INTR;
     ulIntStatus1 = REG_PWM1_INTR;
     //PWM_PRT("+++ %s ulIntStatus0 0x%x, ulIntStatus1 0x%x +++\n", __func__, ulIntStatus0, ulIntStatus1);
-    for (i=0; i<PWM_COUNT; i++)
+    for (i=PWM_CHANNEL_NUMBER_MAX; i>=0; i--)
     {
-        if (ulIntStatus0 & (0x01<<i))
+        if (ulIntStatus0 & (0x01 << i))
         {
             if (p_PWM_Int_Handler[i] != NULL)
             {
@@ -424,9 +397,9 @@ void pwm_isr(void)
 
         if (ulIntStatus1 & (0x01<<i))
         {
-            if (p_PWM_Int_Handler[i+3] != NULL)
+            if (p_PWM_Int_Handler[i + 3] != NULL)
             {
-                (void)p_PWM_Int_Handler[i+3]((unsigned char)i+3);
+                (void)p_PWM_Int_Handler[i + 3]((unsigned char)i + 3);
             }
         }
     }
@@ -435,5 +408,6 @@ void pwm_isr(void)
         REG_PWM0_INTR = ulIntStatus0;
         REG_PWM1_INTR = ulIntStatus1;
     } while ((REG_PWM0_INTR & ulIntStatus0 & REG_PWM0_INTR_MASK) || (REG_PWM1_INTR & ulIntStatus1 & REG_PWM1_INTR_MASK));   // delays
+    //gpio_set(0x27, 0);
 }
 

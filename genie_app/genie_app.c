@@ -15,14 +15,21 @@
 
 #include "genie_app.h"
 
+extern void ota_mutex_init();
 void genie_init(void)
 {
+    printf("genie start\r\n");
+    ota_mutex_init();
+//
 #ifdef CONFIG_GENIE_CLI
     genie_cmds_register();
 #endif
 
     //add genie app init func
     genie_flash_init();
+
+	led_startup();
+
 
 #ifdef CONFIG_GENIE_RESET_BY_REPEAT
     genie_reset_by_repeat_init();

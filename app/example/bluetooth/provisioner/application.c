@@ -21,7 +21,7 @@
 #include "main.h"
 #include "foundation.h"
 #include "static_partition.h"
-#include "gen_onoff_cli.h"
+
 #define BT_DBG_ENABLED IS_ENABLED(CONFIG_BT_MESH_DEBUG_PROVISIONER)
 #include "common/log.h"
 
@@ -29,7 +29,9 @@
 static struct bt_mesh_cfg_cli cfg_cli = {
 
 };
-struct bt_mesh_onoff_cli onoff_cli = BT_MESH_ONOFF_CLI_INIT(NULL);
+struct bt_mesh_cfg_cli onoff_cli = {
+
+};
 #endif
 
 static struct bt_mesh_model root_models[] = {
@@ -38,9 +40,7 @@ static struct bt_mesh_model root_models[] = {
     //BT_MESH_MODEL_HEALTH_SRV(),
 #ifdef CONFIG_BT_MESH_CFG_CLI
     BT_MESH_MODEL_CFG_CLI(&cfg_cli),
-#endif
-#ifdef CONFIG_BT_MESH_GEN_ONOFF_CLI
-    BT_MESH_MODEL_ONOFF_CLI(&onoff_cli),
+    BT_MESH_MODEL(BT_MESH_MODEL_ID_GEN_ONOFF_CLI, NULL, NULL, &onoff_cli),
 #endif
 };
 
@@ -353,7 +353,7 @@ static void _provisioner_ready(int err)
     bt_mesh_provisioner_enable(BT_MESH_PROV_GATT | BT_MESH_PROV_ADV);
 	BT_DBG(">>> provisioner enable <<<");   
 	//create provisioner config thread.
-    k_thread_create(&provisioner_config_thread_data, provisioner_config_thread_stack,
+    k_thread_create(&provisioner_config_thread_data, "Mesh provisioner", provisioner_config_thread_stack,
                     K_THREAD_STACK_SIZEOF(provisioner_config_thread_stack), provisioner_config_thread,
                     NULL, NULL, NULL, CONFIG_BT_MESH_PROVISIONER_CONFIG_PRIO, 0, K_NO_WAIT);
 }
@@ -399,41 +399,12 @@ void provisioner_init(void)
     }
 }
 
-
-void gen_onoff_set(u16_t net_idx, u16_t app_idx, u16_t dst_addr, u16_t onoff_val, bool ack)
-{
-	struct bt_mesh_onoff_set set;
-	struct bt_mesh_onoff_status status = {0};
-	struct bt_mesh_model_transition transition;
-	struct bt_mesh_msg_ctx ctx = {
-		.net_idx = net_idx,
-		.app_idx = 0x0,
-		.send_ttl = 0x2,
-		.addr    = dst_addr,
-	};
-	int err;
-
-	set.on_off = onoff_val;
-
-	BT_DBG("tt=%u delay=%u", transition.time, transition.delay);
-
-	if (ack) {
-		err = bt_mesh_onoff_cli_set(&onoff_cli, &ctx, &set, &status);
-		BT_DBG("status: %d %d %d\n", status.present_on_off, status.target_on_off, status.remaining_time);
-	} else {
-		err = bt_mesh_onoff_cli_set_unack(&onoff_cli, &ctx, &set);
-	}
-	if (err) {
-		BT_DBG("err=%d", err);
-	}
-}
-
 static void provisioner_config_thread(void *p1, void *p2, void *p3)
 {
     u16_t app_index = 0x0001;
     u16_t net_index = 0x0000;
     u8_t status = 0;
-	u16_t temp_onoff_val = 0x0001;
+	//u16_t temp_onoff_val = 0x0001;
    
     k_sem_init(&provisioner_config_sem, 0, 1);
 
@@ -461,8 +432,8 @@ static void provisioner_config_thread(void *p1, void *p2, void *p3)
                 BT_DBG("Subscrip group addr");
                 provisioner_config_mod_sub_add(prov_msg.comp_get_t.netkey_idx, prov_msg.comp_get_t.unicast_addr);
                 
-				BT_DBG("Set node's onoff model!");
-                gen_onoff_set(net_index, app_index, prov_msg.comp_get_t.unicast_addr, temp_onoff_val, false);
+				// BT_DBG("Set node's onoff model!");
+                // bt_mesh_cfg_cli_gen_onoff_set(net_index, provisioner.prov_unicast_addr, prov_msg.comp_get_t.unicast_addr, temp_onoff_val);
 				
                 extern char temp_uuid[16];
                 temp_uuid[0x0c]++;

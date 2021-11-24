@@ -75,7 +75,7 @@ struct ke_event_env_tag
 /// KE EVENT environment
 static struct ke_event_env_tag ke_event_env;
 
-__attribute__((section("STACK_RAM"))) ksem_t ke_event_sem;
+ksem_t ke_event_sem;
 
 /*
  * LOCAL FUNCTION DEFINITIONS

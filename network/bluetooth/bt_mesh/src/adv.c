@@ -137,7 +137,7 @@ static inline void adv_send(struct net_buf *buf)
            buf->len, bt_hex(buf->data, buf->len));
     BT_DBG("count %u interval %ums, %ums, %ums duration %ums",
            BT_MESH_ADV(buf)->count + 1, adv_int, adv_int, BT_MESH_ADV(buf)->adv_int, duration);
-  
+
     ad.type = adv_type[BT_MESH_ADV(buf)->type];
     ad.data_len = buf->len;
     ad.data = buf->data;
@@ -146,7 +146,7 @@ static inline void adv_send(struct net_buf *buf)
     param.interval_min = ADV_INT(adv_int);
     param.interval_max = param.interval_min;
     param.own_addr = NULL;
- 
+
     err = bt_mesh_adv_start(&param, &ad, 1, NULL, 0);
     net_buf_unref(buf);
     adv_send_start(duration, err, cb, cb_data);
@@ -169,7 +169,7 @@ exit:
 
     BT_DBG("Advertising stopped");
 }
- 
+
 #ifdef CONFIG_BT_MESH_MULTIADV
 static inline int adv_send_multi(struct net_buf *buf)
 {
@@ -256,7 +256,7 @@ void bt_mesh_adv_timer_event_process(void)
     if (multi_adv->cb) {
         const struct bt_mesh_send_cb *cb = multi_adv->cb;
         void *cb_data = multi_adv->cb_data;
-    
+
         adv_send_end(0, cb, cb_data);
         multi_adv->cb = 0;
         multi_adv->cb_data = 0;
@@ -397,7 +397,7 @@ struct net_buf *bt_mesh_adv_create_from_pool(struct net_buf_pool *pool,
     BT_MESH_ADV(buf) = adv;
 
     memset(adv, 0, sizeof(*adv));
- 
+
     adv->type         = type;
     adv->count        = xmit_count;
     adv->adv_int      = xmit_int;
@@ -444,7 +444,7 @@ void bt_mesh_adv_send(struct net_buf *buf, const struct bt_mesh_send_cb *cb,
 
 const bt_addr_le_t *bt_mesh_pba_get_addr(void)
 {
-    return dev_addr;
+	return dev_addr;
 }
 
 static void bt_mesh_scan_cb(const bt_mesh_addr_le_t *addr, s8_t rssi,
@@ -460,7 +460,7 @@ static void bt_mesh_scan_cb(const bt_mesh_addr_le_t *addr, s8_t rssi,
 
     //BT_DBG("len %u: %s", buf->len, bt_hex(buf->data, buf->len));
 
-    dev_addr = (bt_addr_le_t *)addr;
+	dev_addr = (bt_addr_le_t *)addr;
 
     while (buf->len > 1) {
         struct net_buf_simple_state state;
@@ -541,7 +541,7 @@ static void bt_mesh_scan_cb(const bt_mesh_addr_le_t *addr, s8_t rssi,
                 default:
                     break;
             }
-        }
+    	}
 
         net_buf_simple_restore(buf, &state);
         net_buf_simple_pull(buf, len);

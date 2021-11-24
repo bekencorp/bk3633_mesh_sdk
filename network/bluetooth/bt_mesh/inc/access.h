@@ -54,37 +54,4 @@ void bt_mesh_model_recv(struct bt_mesh_net_rx *rx, struct net_buf_simple *buf);
 
 int bt_mesh_comp_register(const struct bt_mesh_comp *comp);
 
-#define MESH_UTIL_LISTIFY(LEN, F, ...) UTIL_EVAL(UTIL_REPEAT(LEN, F, __VA_ARGS__))
-
-/* Internal macros used to initialize array members */
-#define BT_MESH_KEY_UNUSED_ELT_(IDX, _) BT_MESH_KEY_UNUSED,
-#define BT_MESH_ADDR_UNASSIGNED_ELT_(IDX, _) BT_MESH_ADDR_UNASSIGNED,
-#define BT_MESH_MODEL_KEYS_UNUSED			\
-	{ MESH_UTIL_LISTIFY(CONFIG_BT_MESH_MODEL_KEY_COUNT,	\
-		       BT_MESH_KEY_UNUSED_ELT_) }
-#define BT_MESH_MODEL_GROUPS_UNASSIGNED				\
-	{ MESH_UTIL_LISTIFY(CONFIG_BT_MESH_MODEL_GROUP_COUNT,	\
-		       BT_MESH_ADDR_UNASSIGNED_ELT_) }
-
-
-/** @def BT_MESH_MODEL_CB
- *
- *  @brief Composition data SIG model entry with callback functions.
- *
- *  @param _id        Model ID.
- *  @param _op        Array of model opcode handlers.
- *  @param _pub       Model publish parameters.
- *  @param _user_data User data for the model.
- *  @param _cb        Callback structure, or NULL to keep no callbacks.
- */
-#define BT_MESH_MODEL_CB(_id, _op, _pub, _user_data, _cb)                    \
-{                                                                            \
-	.id = (_id),                                                         \
-	.pub = _pub,                                                         \
-	.keys = BT_MESH_MODEL_KEYS_UNUSED,                                   \
-	.groups = BT_MESH_MODEL_GROUPS_UNASSIGNED,                           \
-	.op = _op,                                                           \
-	.cb = _cb,                                                           \
-	.user_data = _user_data,                                             \
-}
 #endif

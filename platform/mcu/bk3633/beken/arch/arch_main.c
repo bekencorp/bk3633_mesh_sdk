@@ -76,6 +76,7 @@
 #include "fake_clock_pub.h"
 #include "em_map.h"
 #include "icu_pub.h"
+#include "gpio_pub.h"
 
 /**
  ****************************************************************************************
@@ -314,18 +315,10 @@ void ble_handler(void *arg)
     UART_PRINTF("Initialize RW SW stack\r\n");
     // Initialize RW SW stack
     rwip_func.rwip_init(0);
-    // Set the CPU default clock to 80M Hz.
-    // UINT32 param = ICU_MCU_CLK_SEL_80M; //ICU_MCU_CLK_SEL_16M;
-    // sddev_control(ICU_DEV_NAME, CMD_ICU_MCU_CLK_SEL, &param);
 
-	
-#ifdef CONFIG_DUT_TEST_CMD
-    if(get_dut_flag())
-	{
-        core_peri_clk_freq_set(6, 6);   //3, 1  
-    }
-	else
-#endif
+    // Set the CPU default clock to 80M Hz.
+    UINT32 param = ICU_MCU_CLK_SEL_80M;
+    sddev_control(ICU_DEV_NAME, CMD_ICU_MCU_CLK_SEL, &param);
     //flash_init();
 
     if(hdr_arg->public_addr)
@@ -359,16 +352,15 @@ void ble_handler(void *arg)
 
 	if(hdr_arg->ready_sem)	krhino_sem_give(hdr_arg->ready_sem);
 	krhino_sem_give(&ke_event_sem);
-
-    while(1)
+    while(1) 
     {
     	cont_loop_cnt++;
 		if(!krhino_sem_take(&ke_event_sem, -1)) {
 			cont_loop_cnt = 0;
 		}
 
-        //schedule all pending events
-        rwip_func.rwip_schedule();
+    	//schedule all pending events
+		rwip_func.rwip_schedule();
     }
 }
 

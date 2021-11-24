@@ -50,6 +50,10 @@ static E_GENIE_FLASH_ERRCODE _genie_reset_read_count(uint8_t *p_count)
 
     if(ret != GENIE_FLASH_SUCCESS) {
         *p_count = 0;
+
+
+		printf("++++[%s, %d] ret = %d+++++++\r\n", __func__, __LINE__, ret);
+		
         BT_ERR("read error %d", ret);
     }
 
@@ -94,7 +98,6 @@ void genie_reset_by_repeat_init(void)
         k_timer_start(&g_genie_reset_timer, GENIE_RESET_BY_REPEAT_TIMEOUT);
     } else {
         BT_DBG("Match the repeat num %d", GENIE_RESET_BY_REPEAT_COUNTER);
-		_genie_reset_write_count(0);
         genie_event(GENIE_EVT_REPEAT_RESET, NULL);
         _genie_reset_set_flag(1);
     }

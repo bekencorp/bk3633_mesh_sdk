@@ -1,24 +1,9 @@
-/**
-****************************************************************************************
-*
-* @file pwm.h
-*
-* @brief pub definations
-*
-* Copyright (C) Beken Leonardo 2021
-*
-* $Rev: $
-*
-****************************************************************************************
-*/
-
-
 #ifndef _PWM_H_
 #define _PWM_H_
 
 #include "BK3633_RegList.h"
 
-//#define PWM_DEBUG
+#define PWM_DEBUG
 
 #ifdef PWM_DEBUG
 #define PWM_PRT      os_printf
@@ -29,6 +14,8 @@
 #define PWM_WARN     null_prf
 #define PWM_FATAL    null_prf
 #endif
+
+#define PWM_BASE                                     BASEADDR_PWM0
 
 #define REG_APB1_PWM0_CAP_OUT                        &addPWM0_Reg0x4
 #define REG_APB1_PWM1_CAP_OUT                        &addPWM0_Reg0x7

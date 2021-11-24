@@ -6,7 +6,6 @@ $(NAME)_INCLUDES += ../ \
 					../../../../network/bluetooth/bt_mesh/inc/api \
 					../../../../network/bluetooth/bt_mesh/inc/api/mesh \
 					../../../../network/bluetooth/bt_host/bt_common/include/common \
-					../../../../network/bluetooth/bt_mesh \
 
 $(NAME)_SOURCES  := main.c	\
 					application.c
@@ -28,7 +27,7 @@ GLOBAL_DEFINES += CONFIG_BT_MESH_GATT_PROXY
 GLOBAL_DEFINES += CONFIG_BT_MESH_RELAY
 GLOBAL_DEFINES += CONFIG_BT_CENTRAL
 GLOBAL_DEFINES += CONFIG_BT_MESH_PROVISIONER
-# GLOBAL_DEFINES += CONFIG_BT_MESH_SHELL
+GLOBAL_DEFINES += CONFIG_BT_MESH_SHELL
 GLOBAL_DEFINES += CONFIG_BT_GATT_CLIENT
 
 # Mesh foundation model select

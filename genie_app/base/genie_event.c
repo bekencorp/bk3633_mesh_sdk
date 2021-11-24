@@ -1,14 +1,12 @@
 /*
  * Copyright (C) 2018-2020 Alibaba Group Holding Limited
  */
-
+#include <misc/byteorder.h>
 #include "genie_app.h"
 //#include "mesh_hal_ble.h"
 #include "mesh/cfg_srv.h"
 #include "mesh.h"
 #include "prov.h"
-#include "foundation.h"
-
 
 #define BT_DBG_ENABLED IS_ENABLED(CONFIG_BT_MESH_DEBUG_EVENT)
 #include "common/log.h"
@@ -93,7 +91,7 @@ static E_GENIE_EVENT _genie_event_handle_sw_reset(void)
 {
     _genie_reset_prov();
     bt_mesh_adv_stop();
-#if 0
+#if 1
     aos_reboot();
 #endif
     bt_mesh_prov_enable(BT_MESH_PROV_GATT | BT_MESH_PROV_ADV);
@@ -110,6 +108,9 @@ static E_GENIE_EVENT _genie_event_handle_hw_reset_start(void)
 #endif
     bt_mesh_adv_stop();
     genie_reset_done();
+#ifdef MESH_MODEL_VENDOR_TIMER
+    vendor_timer_finalize();
+#endif
     return GENIE_EVT_HW_RESET_START;
 }
 
@@ -125,7 +126,7 @@ static E_GENIE_EVENT _genie_event_handle_hw_reset_done(void)
     return GENIE_EVT_SDK_MESH_PBADV_START;
 }
 
-extern int ota_service_register(void);
+extern struct k_delayed_work app_timer;
 static E_GENIE_EVENT _genie_event_handle_mesh_init(void)
 {
     //check provsioning status
@@ -138,7 +139,7 @@ static E_GENIE_EVENT _genie_event_handle_mesh_init(void)
     BT_DBG("\r\n");
 
 #ifdef CONFIG_GENIE_OTA
-    ////ais_check_ota_change();
+    ais_check_ota_change();
 #endif
 
 #if defined(CONFIG_GENIE_DEBUG_CMD)
@@ -201,9 +202,14 @@ static E_GENIE_EVENT _genie_event_handle_mesh_init(void)
     if((read_flag & 0x1F) == 0x1D) {            ////(0x1F)
 #endif
         BT_INFO(">>>proved<<<");
+		k_delayed_work_submit(&app_timer, 3000);
+
 #if CONFIG_MESH_SEQ_COUNT_INT
         seq += CONFIG_MESH_SEQ_COUNT_INT;
 #endif
+#if (defined CONFIG_BT_MESH_TELINK) || (defined CONFIG_BT_MESH_JINGXUN)
+        bt_mesh_proved_reset_flag_set(1);
+#endif /* CONFIG_BT_MESH_TELINK||CONFIG_BT_MESH_JINGXUN */
         bt_mesh_provision(netkey.key, netkey.net_index, netkey.flag, netkey.ivi, seq, addr, devkey);
         extern void genie_appkey_register(u16_t net_idx, u16_t app_idx, const u8_t val[16], bool update);
         genie_appkey_register(appkey.net_index, appkey.key_index, appkey.key, appkey.flag);
@@ -343,7 +349,7 @@ static E_GENIE_EVENT _genie_event_handle_appkey_add(uint8_t *p_status)
     if(bt_mesh_is_provisioned()) {
         /* disable prov timer */
         genie_prov_timer_stop();
-        if(*p_status == STATUS_SUCCESS) {
+        if(*p_status == 0) {
             //genie_flash_write_para(&bt_mesh);
             uint8_t devkey[16];
             mesh_netkey_para_t netkey;
@@ -351,7 +357,6 @@ static E_GENIE_EVENT _genie_event_handle_appkey_add(uint8_t *p_status)
             
             memcpy(devkey, bt_mesh.dev_key, 16);
             memset(&netkey, 0, sizeof(netkey));
-
             memcpy(netkey.key, bt_mesh.sub[0].keys[0].net, 16);
             memset(&appkey, 0, sizeof(appkey));
             memcpy(appkey.key, bt_mesh.app_keys[0].keys[0].val, 16);
@@ -359,11 +364,7 @@ static E_GENIE_EVENT _genie_event_handle_appkey_add(uint8_t *p_status)
             genie_flash_write_netkey(&netkey);
             genie_flash_write_appkey(&appkey);
             return GENIE_EVT_SDK_MESH_PROV_SUCCESS;
-        }
-		else if (STATUS_INSUFF_RESOURCES == *p_status) {
-			return GENIE_EVT_SDK_MESH_PROV_SUCCESS;
-		}
-		else {
+        } else {
             return GENIE_EVT_SDK_MESH_PROV_FAIL;
         }
     } else {
@@ -374,6 +375,9 @@ static E_GENIE_EVENT _genie_event_handle_appkey_add(uint8_t *p_status)
 
 static E_GENIE_EVENT _genie_event_handle_sub_add(void)
 {
+    for (int i = 0; i < sizeof(g_sub_list) / sizeof(g_sub_list[0]); i++) {
+        BT_ERR("g_sub_list[%d]: 0x%x\n", i, g_sub_list[i]);
+    }
     genie_flash_write_sub(g_sub_list);
     return GENIE_EVT_SDK_SUB_ADD;
 }
@@ -701,7 +705,7 @@ void genie_event(E_GENIE_EVENT event, void *p_arg)
                     break;
                 }
             }
-        }
+        } 
             break;
         case GENIE_EVT_SDK_SUB_DEL: {
             int i;

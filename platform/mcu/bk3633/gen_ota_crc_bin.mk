@@ -35,7 +35,6 @@ gen_ota_crc_bin:
 	$(ECHO) 4M bits flash
 	$(eval OUT_MSG := $(shell cp $(BIN_OUTPUT_FILE) $(APP_BIN_FILE)))
 	$(eval OUT_MSG := $(shell $(ENCRYPT) -oad $(BIM_BIN_FILE) $(STACK_BIN_FILE) $(APP_BIN_FILE) -m $(PARTITION_STACK_CPU_ADDR) -l $(PARTITION_APP_CPU_ADDR) -v $(img_ver) -rom_v $(rom_ver) -e  00000000 00000000 00000000 00000000))
-        $(shell cp $(SOURCE_ROOT)out/bluetooth.light@bk3633devkit/libraries/bt_common.a $(SOURCE_ROOT)/network/bluetooth/bt_host/bt_common/lib)
 
 copy_bin_to_out:
 	$(eval OUT_MSG := $(shell cp $(MERGE_BIN_FILE) $(CRC_BIN_OUTPUT_FILE)))

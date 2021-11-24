@@ -20,21 +20,30 @@ int32_t hal_gpio_init(gpio_dev_t *gpio)
 
 	switch(gpio->config)
 	{
+		case ANALOG_MODE:
+			mode = GMODE_SECOND_FUNC;
+			break;
 		case INPUT_PULL_UP:
-            bk_gpio_config_input_pup(gpio->port);
-            break;
+			mode = GMODE_INPUT_PULLUP;
+			break;
 		case INPUT_PULL_DOWN:
-            bk_gpio_config_input_pdwn(gpio->port);
+			mode = GMODE_INPUT_PULLDOWN;
 			break;
 		case INPUT_HIGH_IMPEDANCE:
-            bk_gpio_config_input(gpio->port);
+			mode = GMODE_INPUT;
 			break;
 		case OUTPUT_PUSH_PULL:
-            bk_gpio_config_output(gpio->port);
+			mode = GMODE_OUTPUT;
 			break;
 		default:
 			ret = -1;
 			break;
+	}
+
+	if(ret == 0)
+	{
+		param = GPIO_CFG_PARAM(gpio->port, mode);
+		sddev_control(GPIO_DEV_NAME, CMD_GPIO_CFG, &param);
 	}
 	
     return ret;
@@ -42,25 +51,35 @@ int32_t hal_gpio_init(gpio_dev_t *gpio)
 
 int32_t hal_gpio_finalize(gpio_dev_t *gpio)
 {
-    bk_gpio_config_input(gpio->port);
+    uint32_t param;
+
+    param = GPIO_CFG_PARAM(gpio->port, GMODE_INPUT);
+	sddev_control(GPIO_DEV_NAME, CMD_GPIO_CFG, &param);
+
     return 0;
 }
 
 int32_t hal_gpio_output_high(gpio_dev_t *gpio)
 {
 	bk_gpio_output(gpio->port, 1);
+	
     return 0;
 }
 
 int32_t hal_gpio_output_low(gpio_dev_t *gpio)
 {
 	bk_gpio_output(gpio->port, 0);
+
     return 0;
 }
 
 int32_t hal_gpio_output_toggle(gpio_dev_t *gpio)
 {
-    bk_gpio_output_reverse(gpio->port);
+    uint32_t param;
+
+    param = gpio->port;
+	sddev_control(GPIO_DEV_NAME, CMD_GPIO_OUTPUT_REVERSE, &param);
+
     return 0;
 }
 
@@ -108,13 +127,13 @@ int32_t hal_gpio_enable_irq(gpio_dev_t *gpio, gpio_irq_trigger_t trigger,
 
 	if(ret == 0)
 	{
-		uint8_t idx = GPIO_PORT2ID(gpio->port);
+		uint8_t idx = ((gpio->port&0x30)>>1)|(gpio->port&0x07);
 	    int_struct.id = gpio->port;
 	    int_struct.phandler = gpio_int_cb;
 	    gpio_int_hdls[ idx ].arg = arg;
 	    gpio_int_hdls[ idx ].handler = handler;
 
-	    bk_gpio_enable_irq(&int_struct);
+	    sddev_control(GPIO_DEV_NAME, CMD_GPIO_INT_ENABLE, &int_struct);
 	}
 
     return ret;
@@ -122,12 +141,22 @@ int32_t hal_gpio_enable_irq(gpio_dev_t *gpio, gpio_irq_trigger_t trigger,
 
 int32_t hal_gpio_disable_irq(gpio_dev_t *gpio)
 {
-    bk_gpio_disable_irq(gpio->port);
+    uint32_t param;
+
+    param = gpio->port;
+
+    sddev_control(GPIO_DEV_NAME, CMD_GPIO_INT_DISABLE, &param);
+
     return 0;
 }
 
 int32_t hal_gpio_clear_irq(gpio_dev_t *gpio)
 {
-    bk_gpio_clear_irq(gpio->port);
+    uint32_t param;
+
+    param = gpio->port;
+
+    sddev_control(GPIO_DEV_NAME, CMD_GPIO_CLR_DPLL_UNLOOK_INT_BIT, &param);
+
     return 0;
 }

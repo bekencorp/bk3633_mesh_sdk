@@ -112,6 +112,9 @@
 // Generic RSSI Threshold
 #define RF_RPL_RSSI_THR             0x29
 
+#define RF_CAL_DEF 0x4E
+
+
 /**
 ****************************************************************************************
 * MACROS
@@ -412,7 +415,7 @@ static void rf_force_agc_enable(bool en)
     ip_radiocntl1_forceagc_en_setf(en);
     #else
     ip_radiocntl1_forceagc_en_setf(en);
-    #endif //CFG_BLE
+    #endif //CFG_BLE 
 
     ble_radiocntl1_forceagc_en_setf(en);
 
@@ -421,18 +424,39 @@ static void rf_force_agc_enable(bool en)
 
 //======================================
 extern volatile uint32_t XVR_ANALOG_REG_BAK[32];
-#define LDO_MODE 0
-void  xvr_reg_initial(void)
+
+void  xvr_reg_initial(void) 
 {
     addXVR_Reg0x0 = 0xC4B0323F  ;XVR_ANALOG_REG_BAK[0] = 0xC4B0323F;
-    addXVR_Reg0x1 = 0x8295C200  ;XVR_ANALOG_REG_BAK[1] = 0x8295C200;
+
+
+#ifdef CONFIG_DUT_TEST_CMD
+	if(get_dut_flag()) //dut mode
+	{
+	    addXVR_Reg0x1 = 0x8295C300  ; XVR_ANALOG_REG_BAK[1] = 0x8295C300;
+	}
+	else
+#endif
+	{
+    	addXVR_Reg0x1 = 0x8295C200  ;XVR_ANALOG_REG_BAK[1] = 0x8295C200;
+	}
     addXVR_Reg0x2 = 0x2F42A000  ;XVR_ANALOG_REG_BAK[2] = 0x2F42A000;
     addXVR_Reg0x3 = 0x60035C62  ;XVR_ANALOG_REG_BAK[3] = 0x60035C62;
-    addXVR_Reg0x4 = 0xFF56AACF  ;XVR_ANALOG_REG_BAK[4] = 0xFF56AACF;//0xFFD6BBCC
+
+#ifdef CONFIG_DUT_TEST_CMD
+	if(get_dut_flag()) //dut mode
+	{
+		addXVR_Reg0x4 = 0xFFD741CF; XVR_ANALOG_REG_BAK[4] = 0xFFD741CF;//0xFFD6BBCC
+	}
+	else 
+#endif
+	{
+    	addXVR_Reg0x4 = 0xFF56AACF  ;XVR_ANALOG_REG_BAK[4] = 0xFF56AACF;//0xFFD6BBCC
+	}
     addXVR_Reg0x5 = 0x4620501F  ;XVR_ANALOG_REG_BAK[5] = 0x4620501F; //0x4620501F 03.31 // 0x4420501F 04.01
     addXVR_Reg0x6 = 0x8097CE20  ;XVR_ANALOG_REG_BAK[6] = 0x8097CE20;
     addXVR_Reg0x7 = 0xAA023DC0  ;XVR_ANALOG_REG_BAK[7] = 0xAA023DC0;
-    addXVR_Reg0x8 = 0x0DB0C02F  ;XVR_ANALOG_REG_BAK[8] =  0x0DB0C02F;//8B0C02F
+    addXVR_Reg0x8 = 0x0DB0C02F  ;XVR_ANALOG_REG_BAK[8] = 0x0DB0C02F;//8B0C02F
     addXVR_Reg0x9 = 0x7093220C  ;XVR_ANALOG_REG_BAK[9] = 0x7093220C;
     addXVR_Reg0xa = 0x9C27585B  ;XVR_ANALOG_REG_BAK[0xa] = 0x9C27585B;
     addXVR_Reg0xb = 0x0FD93F23  ;XVR_ANALOG_REG_BAK[0xb] = 0x0FD93F23;
@@ -497,46 +521,40 @@ void  xvr_reg_initial(void)
     addXVR_Reg0x4d = 0xF5F3F0ED;// REG_4D
     addXVR_Reg0x4e = 0xFDFBFAF8;// REG_4E
     addXVR_Reg0x4f = 0xFFFFFFFE;// REG_4F
-    
+        
     addPMU_Reg0x10 |= (0X1 << 8);
     addPMU_Reg0x12 &= ~(0X1 << 8);
     
     addPMU_Reg0x13 = 0XFFFFFF80;
     
     kmod_calibration();
-	
-#if 1   
-  //  addXVR_Reg0x6 = 0x85a7cc00;XVR_ANALOG_REG_BAK[0x6] = 0x85a7cc00;
-#if LDO_MODE
-    addXVR_Reg0x6 = 0x8097CE20  ;XVR_ANALOG_REG_BAK[6] = 0x8097CE20;
-#else
-    addXVR_Reg0x6 = 0x80b7ce20;XVR_ANALOG_REG_BAK[0x6] = 0x80b7ce20;
-#endif
-   
-    addXVR_Reg0x7 = 0xAA023FC0;XVR_ANALOG_REG_BAK[0x7] = 0xAA023FC0;
-  //  
-#if LDO_MODE
-    addXVR_Reg0xa = 0x9C03785B;XVR_ANALOG_REG_BAK[0xa] = 0x9C03785B;
-#else
-    addXVR_Reg0xa = 0x9C03785f;XVR_ANALOG_REG_BAK[0xa] = 0x9C03785f;
-#endif
-   //
+
+#if 1
+    //  addXVR_Reg0x6 = 0x85a7cc00;XVR_ANALOG_REG_BAK[0x6] = 0x85a7cc00;
+    addXVR_Reg0x6 = 0x80b7ce20; XVR_ANALOG_REG_BAK[0x6] = 0x80b7ce20;
+       
+    addXVR_Reg0x7 = 0xAA023FC0; XVR_ANALOG_REG_BAK[0x7] = 0xAA023FC0;
+    //
+    addXVR_Reg0xa = 0x9C03785f; XVR_ANALOG_REG_BAK[0xa] = 0x9C03785f;
+    //
     addXVR_Reg0x1c = 0x919CDDC5;XVR_ANALOG_REG_BAK[0x1c] = 0x919CDDC5;
 #endif
 
     XVR_ANALOG_REG_BAK[9] &= ~(0x01 << 26);
-    addXVR_Reg0x9 = XVR_ANALOG_REG_BAK[9];
+    addXVR_Reg0x9 = XVR_ANALOG_REG_BAK[9]; 
 
     XVR_ANALOG_REG_BAK[0x1e]  |= 0x80000000;
     addXVR_Reg0x1e = XVR_ANALOG_REG_BAK[0x1e];
     CLK32K_AutoCali_init();
-    Delay_ms(5);
+    Delay_ms(50);
+    // Fix the Frequency deviation is too large issue.
+    xtal_cal_set(RF_CAL_DEF);
 }
 
 void rf_init(struct rwip_rf_api *api)
 {
 	////IP
-	#if defined(CFG_BT)
+	#if defined(CFG_BT) 
 		uint8_t length = PARAM_LEN_RSSI_THR;
     #endif //CFG_BT
 
@@ -550,7 +568,7 @@ void rf_init(struct rwip_rf_api *api)
 		api->reset = rf_reset;
 
     #if defined(CFG_BLE)
-		api->force_agc_enable = rf_force_agc_enable;
+			api->force_agc_enable = rf_force_agc_enable;
     #endif //CFG_BLE
 
 		api->rssi_convert = rf_rssi_convert;
@@ -577,11 +595,6 @@ void rf_init(struct rwip_rf_api *api)
       //  xvr_reg_init();		//// ????
 
         xvr_reg_initial();
-
-#if(LDO_MODE)
-        addPMU_Reg0x11 |= (1<<12);
-        addPMU_Reg0x13 |= (1<<12);
-#endif
         //UART_PRINTF("xvr_reg_init ok\r\n");
         
 //		ip_radiocntl0_pack(/*uint16_t spiptr*/	 (EM_RF_SW_SPI_OFFSET >> 2),
@@ -606,16 +619,9 @@ void rf_init(struct rwip_rf_api *api)
         
         ip_radiocntl1_set(0x00000020);
         //UART_PRINTF("ip RADIOCNTL1 addr:0x%08x,val:0x%08x\r\n",ip_RADIOCNTL1_ADDR,ip_radiocntl1_get());
-#if (CONFIG_DUT_TEST_CMD)
-		if(get_dut_flag())
-		{
-        	ip_timgencntl_set(0x01df00f0);		////Beken,
-        }
-		else
-#endif //CONFIG_DUT_TEST_CMD
-		{
-			ip_timgencntl_set(0x01df0120);		////Beken,
-		}
+
+		//ip_timgencntl_set(0x01df0120);		////Beken
+		ip_timgencntl_set(0x01df00f0);		//in dut test, this value will affect to the restat time
         //UART_PRINTF("ip_TIMGENCNTL addr:0x%08x,val:0x%08x\r\n",ip_TIMGENCNTL_ADDR,ip_timgencntl_get());
 	#endif
 
@@ -801,23 +807,7 @@ void rf_init(struct rwip_rf_api *api)
     void  rf_debug_gpio_init(uint8_t GPIO_C_D);
     rf_debug_gpio_init(1);
 }
-
-void rf_set_bulk_mode(void)
-{
-    XVR_ANALOG_REG_BAK[0x6] |= (1 << 21);
-    addXVR_Reg0x6 = XVR_ANALOG_REG_BAK[0x6];
-    XVR_ANALOG_REG_BAK[0xa] |= (1 << 2);
-    addXVR_Reg0xa = XVR_ANALOG_REG_BAK[0xa];
-}
-
-void rf_set_ldo_mode(void)
-{
-    XVR_ANALOG_REG_BAK[0x6] &= ~(1 << 21);
-    addXVR_Reg0x6 = XVR_ANALOG_REG_BAK[0x6];
-    XVR_ANALOG_REG_BAK[0xa] &= ~(1 << 2);
-    addXVR_Reg0xa = XVR_ANALOG_REG_BAK[0xa];
-}
-
+/*
 void Delay_us(int num)
 {
     volatile int x, y;
@@ -834,11 +824,12 @@ void Delay(int num)
     {
         for(x = 0; x < 50; x++);
     }
-}
+}*/
 
 void Delay_ms(int num) //sync from svn revision 18
 {
     volatile int x, y;
+	
     for(y = 0; y < num; y ++ )
     {
         for(x = 0; x < 3260; x++);
@@ -940,7 +931,6 @@ void kmod_calibration(void)
 {
     uint32_t value;
     uint32_t value_kcal_result;
-    uint32_t value_addXVR_Reg0x24;
 
 // start
     addXVR_Reg0x30 &= ~(0x3 << 0);
@@ -956,29 +946,27 @@ void kmod_calibration(void)
     
     addXVR_Reg0x24 &= ~(0x7f);
     addXVR_Reg0x24 |= (0x2 << 0);
-    value_addXVR_Reg0x24 = addXVR_Reg0x24;
-    addXVR_Reg0x24 &= ~(0xf << 7);
     
 
     
-    Delay_ms(1);
+    Delay_ms(10);
     addXVR_Reg0x25 |= (1<<12);
-    Delay_ms(1);
+    Delay_ms(10);
     addXVR_Reg0x25 |= (1<<13);
-    Delay_ms(1);
+    Delay_ms(10);
     addXVR_Reg0x25 |= (1<<11);
     
-    Delay_ms(1);
+    Delay_ms(10);
     XVR_ANALOG_REG_BAK[3] &= ~(0x1 << 6);
     addXVR_Reg0x3 = XVR_ANALOG_REG_BAK[3];
-    Delay_ms(1);
+    Delay_ms(10);
     XVR_ANALOG_REG_BAK[3] |= (0x1 << 7);
     addXVR_Reg0x3 = XVR_ANALOG_REG_BAK[3];
-    Delay_ms(1);
+    Delay_ms(10);
     addXVR_Reg0x25 |= (1<<16);
     
     ///////////////////////////start end
-    Delay_ms(15);   //the minimum value to delay is 10.
+    Delay_ms(200);
     value = addXVR_Reg0x12;
 
     value = ((value >> 16) & 0x1fff);
@@ -1005,7 +993,6 @@ void kmod_calibration(void)
     
     addXVR_Reg0x25 &= ~(1<<12); 
     
-    addXVR_Reg0x24 = value_addXVR_Reg0x24;
     addXVR_Reg0x24 |= (0x1 << 17);
     
     ////////////////////////
@@ -1075,7 +1062,7 @@ void CLK32K_AutoCali_init(void)
     XVR_ANALOG_REG_BAK[0xc] |= (0x1 << 14);    
     addXVR_Reg0xc = XVR_ANALOG_REG_BAK[0xc]; 
     addXVR_Reg0xc = 0x13881004; 
-    Delay_ms(1);
+    Delay_ms(10);
     XVR_ANALOG_REG_BAK[0xc] = 0x1388d004;
     addXVR_Reg0xc = 0x1388d004;
 }
@@ -1147,3 +1134,4 @@ void rf_fcc_tx_test_stop(void)
 	}
 }
 #endif
+

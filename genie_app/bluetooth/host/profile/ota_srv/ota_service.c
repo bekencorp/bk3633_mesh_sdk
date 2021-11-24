@@ -7,6 +7,7 @@
 #include "genie_app.h"
 #include "ota_module.h"
 #include "hal_ota.h"
+#include "flash_pub.h"
 
 #define BT_DBG_ENABLED IS_ENABLED(CONFIG_BT_MESH_DEBUG_OTA)
 #include "common/log.h"
@@ -19,37 +20,74 @@ static struct bt_gatt_ccc_cfg beken_ota_ffc2_ccc_cfg[BT_GATT_CCC_MAX] = {};
 
 uint8_t ota_get_firmware_type(void)
 {
+    if(!otas_env)
+    {
+        os_printf("OTA NOT INITIATED %d\n", __LINE__);
+        return 0xFF;
+    }
     return otas_env->config_para.ota_firmware_type;
 }
 
 uint8_t ota_set_firmware_type(uint8_t type)
 {
+    if(!otas_env)
+    {
+        os_printf("OTA NOT INITIATED %d\n", __LINE__);
+        return 0xFF;
+    }
     otas_env->config_para.ota_firmware_type = type;
+
+    return 0;
 }
 
 bool ota_update_complete_get(void)
 {
+    if(!otas_env)
+    {
+        os_printf("OTA NOT INITIATED %d\n", __LINE__);
+        return 0;
+    }
     return otas_env->config_para.update_comp;
 }
 
 bool ota_update_complete_set(void)
 {
+    if(!otas_env)
+    {
+        os_printf("OTA NOT INITIATED %d\n", __LINE__);
+        return 0;
+    }
     otas_env->config_para.update_comp = 1;
 }
 
 bool ota_update_start_set(void)
 {
+    if(!otas_env)
+    {
+        os_printf("OTA NOT INITIATED %d\n", __LINE__);
+        return 0;
+    }
     otas_env->config_para.update_start = 1;
 }
 
 bool ota_update_abort(void)
 {
     BT_DBG("");
+    if(!otas_env)
+    {
+        os_printf("OTA NOT INITIATED %d\n", __LINE__);
+        return 0;
+    }
     otas_env->config_para.update_start = 0;
 }
 
 bool ota_update_in_progress(void)
 {
+    if(!otas_env)
+    {
+        os_printf("OTA NOT INITIATED %d\n", __LINE__);
+        return 0;
+    }
     return otas_env->config_para.update_start;
 }
 
@@ -84,12 +122,6 @@ static void otaImgBlockReq(const struct bt_gatt_attr *p_attr, uint16_t blkNum)
  */
 uint8_t otaImgBlockWrite(const struct bt_gatt_attr *p_attr, uint8_t *pValue, u16_t len)
 {
-    if(!otas_env)
-    {
-        BT_DBG("OTA not CONNECTED");
-        return 1;
-    }
-
     static uint16_t  validBlockCnt = 0x0 ;
     uint16_t* otaBlkNum = &otas_env->config_para.otaBlkNum;
     uint16_t* otaBlkTot = &otas_env->config_para.otaBlkTot;
@@ -185,12 +217,6 @@ void beken_get_image_header(beken_image_hdr* img_hdr)
 
 uint8_t otaImgIdentifyWrite( const struct bt_gatt_attr *p_attr, uint16_t length, uint8_t *pValue )
 {
-    if(!otas_env)
-    {
-        BT_DBG("OTA not CONNECTED");
-        return 1;
-    }
-
     ota_hdr_para_t* img_hdr = &otas_env->img_hdr;
     uint16_t* otaBlkNum = &otas_env->config_para.otaBlkNum;
     uint16_t* otaBlkTot = &otas_env->config_para.otaBlkTot;
@@ -321,7 +347,6 @@ static ssize_t beken_ota_ffc1_write(struct bt_conn *p_conn, const struct bt_gatt
                                         const void *p_buf, u16_t len, u16_t offset, u8_t flags)
 {
     BT_DBG("len %d: %s", len, bt_hex(p_buf, len));
-
     otaImgIdentifyWrite(p_attr, len, (uint8_t *)p_buf);
     return len;
 }
@@ -329,6 +354,7 @@ static ssize_t beken_ota_ffc1_write(struct bt_conn *p_conn, const struct bt_gatt
 static ssize_t beken_ota_ffc2_write(struct bt_conn *p_conn, const struct bt_gatt_attr *p_attr,
                                         const void *p_buf, u16_t len, u16_t offset, u8_t flags)
 {
+    //BT_DBG("len %d: %s", len, bt_hex(p_buf, len));
     otaImgBlockWrite(p_attr, (uint8_t *)p_buf, len);
     return len;
 }
@@ -418,7 +444,7 @@ void ota_srv_connected(struct bt_conn *p_conn)
 {
     if(!otas_env)
     {
-        otas_env = (struct otas_env_tag*)aos_zalloc(sizeof(struct otas_env_tag));
+        otas_env = (struct otas_env_tag*)aos_malloc(sizeof(struct otas_env_tag));
     }
 
     if(!otas_env)
@@ -434,22 +460,18 @@ void ota_srv_connected(struct bt_conn *p_conn)
     otas_env->p_conn = p_conn;
     otas_env->fcc1_attr = &_ota_srv_attrs[2];
     otas_env->fcc2_attr = &_ota_srv_attrs[6];
-
-    hal_flash_secure_sector(FLASH_PROTECT_SEC_64);
 }
 
 void ota_srv_disconnect(void)
 {
     uint32_t offset = 0;
-    ota_reset(offset, otas_env->p_conn);
 
     if(otas_env)
     {
+        ota_reset(offset, otas_env->p_conn);
         aos_free(otas_env);
         otas_env = NULL;
     }
-
-    hal_flash_secure_sector(FLASH_PROTECT_SEC_120);
 }
 
 int ota_service_register(void)
@@ -468,9 +490,11 @@ int ota_service_register(void)
 
 void ota_init(uint32_t p_offset)
 {
+    hal_flash_secure_sector(FLASH_PROTECT_SEC_64);
     hal_ota_register_module(&bk3633_ota_module);
 
     hal_ota_init(&p_offset);
+    hal_flash_secure_sector(FLASH_PROTECT_SEC_120);
 }
 
 void ota_reset(uint32_t p_offset, struct bt_conn *p_conn)

@@ -21,7 +21,25 @@ E_GENIE_FLASH_ERRCODE genie_flash_write_trituple(uint32_t *p_pid, uint8_t *p_mac
  * @param[in] p_key
  * @return the status of the reading operation, 0 for success.
  */
-E_GENIE_FLASH_ERRCODE genie_flash_read_trituple(uint32_t *p_pid, uint8_t *p_mac,  uint8_t *p_key);
+E_GENIE_FLASH_ERRCODE genie_flash_read_trituple(uint32_t *p_pid, uint8_t *p_mac, uint8_t *p_key);
+
+/**
+ * @brief writes the trituple info into flash.
+ * @param[in] p_pid: product ID
+ * @param[in] p_mac: device address
+ * @param[in] p_key: secret key
+ * @return the status of the writing operation, 0 for success.
+ */
+E_GENIE_FLASH_ERRCODE genie_flash_write_fourtuple(uint32_t *p_pid, uint8_t *p_mac, uint8_t *p_key, uint8_t *p_cid);
+
+/**
+ * @brief get the trituple info from flash.
+ * @param[in] p_pid
+ * @param[in] p_mac
+ * @param[in] p_key
+ * @return the status of the reading operation, 0 for success.
+ */
+E_GENIE_FLASH_ERRCODE genie_flash_read_fourtuple(uint32_t *p_pid, uint8_t *p_mac, uint8_t *p_key, uint8_t *p_cid);
 
 /**
  * @brief get the trituple info formatted in uuid

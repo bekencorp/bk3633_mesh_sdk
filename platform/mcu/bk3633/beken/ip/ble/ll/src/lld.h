@@ -387,8 +387,8 @@ struct lld_adv_end_ind
      * Peer address type
      * 0x00 Public Device Address
      * 0x01 Random Device Address
-     * 0x02 Public Identity Address (Corresponds to peer’s Resolvable Private Address)
-     * 0x03 Random (static) Identity Address (Corresponds to peer’s Resolvable Private Address)
+     * 0x02 Public Identity Address (Corresponds to peerâ€™s Resolvable Private Address)
+     * 0x03 Random (static) Identity Address (Corresponds to peerâ€™s Resolvable Private Address)
      * 0x04 - 0xFF Reserved for future use
      */
     uint8_t peer_addr_type;
@@ -464,8 +464,8 @@ struct lld_init_end_ind
      * Peer address type
      * 0x00 Public Device Address
      * 0x01 Random Device Address
-     * 0x02 Public Identity Address (Corresponds to peer’s Resolvable Private Address)
-     * 0x03 Random (static) Identity Address (Corresponds to peer’s Resolvable Private Address)
+     * 0x02 Public Identity Address (Corresponds to peerâ€™s Resolvable Private Address)
+     * 0x03 Random (static) Identity Address (Corresponds to peerâ€™s Resolvable Private Address)
      * 0x04 - 0xFF Reserved for future use
      */
     uint8_t peer_addr_type;
@@ -814,14 +814,14 @@ struct lld_scan_params
      * 0x00 Accept all
      *   - advertisement packets except directed advertising packets not addressed to this device (default)
      * 0x01 Accept only
-     *   - advertisement packets from devices where the advertiser’s address is in the White list.
+     *   - advertisement packets from devices where the advertiserâ€™s address is in the White list.
      *   - Directed advertising packets which are not addressed for this device shall be ignored.
      * 0x02 Accept all
      *   - undirected advertisement packets, and
      *   - directed advertising packets where the initiator address is a resolvable private address, and
      *   - directed advertising packets addressed to this device.
      * 0x03 Accept all
-     *   - advertisement packets from devices where the advertiser’s address is in the White list, and
+     *   - advertisement packets from devices where the advertiserâ€™s address is in the White list, and
      *   - directed advertising packets where the initiator address is a resolvable private address, and
      *   - directed advertising packets addressed to this device.
      * 0x04 - 0xFF Reserved for future use.
@@ -942,8 +942,8 @@ struct lld_init_params
      * Peer address type (only for directed advertising)
      * 0x00 Public Device Address
      * 0x01 Random Device Address
-     * 0x02 Public Identity Address (Corresponds to peer’s Resolvable Private Address)
-     * 0x03 Random (static) Identity Address (Corresponds to peer’s Resolvable Private Address)
+     * 0x02 Public Identity Address (Corresponds to peerâ€™s Resolvable Private Address)
+     * 0x03 Random (static) Identity Address (Corresponds to peerâ€™s Resolvable Private Address)
      * 0x04 - 0xFF Reserved for future use
      */
     uint8_t peer_addr_type;

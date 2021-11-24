@@ -94,7 +94,7 @@ static void flash_get_current_flash_config(void)
 UINT32 flash_get_id(void)
 {
     UINT32 value, i;
-
+    GLOBAL_INT_DISABLE();
 	while(flash_sw_busy());
 
     value = REG_READ(REG_FLASH_OPERATE_SW);
@@ -110,14 +110,15 @@ UINT32 flash_get_id(void)
     }
 
     value = REG_READ(REG_FLASH_RDID_DATA_FLASH);
-
+    GLOBAL_INT_RESTORE();
 	return value ;
 }
 
 static UINT16 flash_read_sr(void)
 {
-	UINT32 value;
 
+	UINT32 value;
+    GLOBAL_INT_DISABLE();
 	while(flash_sw_busy());
 
     value = REG_READ(REG_FLASH_OPERATE_SW);
@@ -129,7 +130,7 @@ static UINT16 flash_read_sr(void)
 
     value = REG_READ(REG_FLASH_SR_DATA_CRC_CNT);
     value &= MASK_SR_DATA_FLASH;
-
+    GLOBAL_INT_RESTORE();
 	return value;
 }
 
@@ -141,9 +142,9 @@ void flash_write_sr(UINT16 val)
     value &= (~WRSR_DATA_MASK);
     value |= (val << BIT_WRSR_DATA)|SET_FWREN_FLASH_CPU;
     REG_WRITE(REG_FLASH_CONF, value);
-    GLOBAL_INT_RESTORE();
+
     while(flash_sw_busy());
-    GLOBAL_INT_DISABLE();
+
     value = REG_READ(REG_FLASH_OPERATE_SW);
     value &= (~SET_OP_TYPE_SW);
 
@@ -159,14 +160,15 @@ void flash_write_sr(UINT16 val)
 	}
 
     REG_WRITE(REG_FLASH_OPERATE_SW, value);
-    GLOBAL_INT_RESTORE();
+
     while(flash_sw_busy());
-    GLOBAL_INT_DISABLE();
+
     value = REG_READ(REG_FLASH_OPERATE_SW);
     value = FLASH_ADDR_FIX;
     REG_WRITE(REG_FLASH_OPERATE_SW, value);
-    GLOBAL_INT_RESTORE();
+
     while(flash_sw_busy());
+    GLOBAL_INT_RESTORE();
 }
 
 UINT8 flash_get_line_mode(void)
@@ -177,17 +179,18 @@ UINT8 flash_get_line_mode(void)
 static void flash_set_qwfr(void)
 {
     UINT32 value;
-
+    GLOBAL_INT_DISABLE();
     value = REG_READ(REG_FLASH_CONF);
     value &= ~(MODEL_SEL_MASK << BIT_MODE_SEL);
     value |= (flash_current_config->mode_sel << BIT_MODE_SEL);
     REG_WRITE(REG_FLASH_CONF, value);
+    GLOBAL_INT_RESTORE();
 }
 
 void flash_set_line_mode(UINT8 mode)
 {
     UINT32 value;
-    
+    GLOBAL_INT_DISABLE();
     if(1 == mode)
     {
         clr_flash_qwfr();
@@ -211,6 +214,7 @@ void flash_set_line_mode(UINT8 mode)
 
         flash_set_qwfr();
     }
+    GLOBAL_INT_RESTORE();
 }
 
 void flash_erase(UINT32 cmd, UINT32 address)
@@ -260,9 +264,9 @@ void flash_read_data(UINT8 *buffer, UINT32 address, UINT32 len)
     {
         return;
     }
-
+	GLOBAL_INT_DISABLE();
     while(flash_sw_busy());
-
+    GLOBAL_INT_RESTORE();
     while(len)
     {
 	    GLOBAL_INT_DISABLE();
@@ -273,16 +277,15 @@ void flash_read_data(UINT8 *buffer, UINT32 address, UINT32 len)
                     | (FLASH_OPCODE_READ << BIT_OP_TYPE_SW)
                     | SET_OP_SW;
         REG_WRITE(REG_FLASH_OPERATE_SW, value);
-        GLOBAL_INT_RESTORE();
+
         while(flash_sw_busy());
 
         addr += 32;
-	    GLOBAL_INT_DISABLE();
         for (i = 0; i < 8; i++)
         {
             buf[i] = REG_READ(REG_FLASH_DATA_FLASH_SW);
         }
-        GLOBAL_INT_RESTORE();
+
         for(i = address % 32; i < 32; i++)
         {
             *buffer++ = pb[i];
@@ -293,6 +296,7 @@ void flash_read_data(UINT8 *buffer, UINT32 address, UINT32 len)
                 break;
             }
         }
+        GLOBAL_INT_RESTORE();
     }
     
 }
@@ -318,11 +322,12 @@ void flash_write_data(UINT8 *buffer, UINT32 address, UINT32 len)
     {
         memset(pb, 0xFF, 32);
     }
-
+    GLOBAL_INT_DISABLE();
     while(flash_sw_busy());
-
+    GLOBAL_INT_RESTORE();
     while(len)
     {
+        GLOBAL_INT_DISABLE();
         if(len < 32)
         {
             flash_read_data(pb, addr, 32);
@@ -336,14 +341,13 @@ void flash_write_data(UINT8 *buffer, UINT32 address, UINT32 len)
             if (len == 0)
                 break;
         }
-        GLOBAL_INT_DISABLE();
+
         for (i = 0; i < 8; i++)
         {
             REG_WRITE(REG_FLASH_DATA_SW_FLASH, buf[i]);
         }
-        GLOBAL_INT_RESTORE();
+
         while(flash_sw_busy());
-        GLOBAL_INT_DISABLE();
         value = REG_READ(REG_FLASH_OPERATE_SW);
         value &= (~SET_ADDRESS_SW);
         value &= (~SET_OP_TYPE_SW);
@@ -351,10 +355,12 @@ void flash_write_data(UINT8 *buffer, UINT32 address, UINT32 len)
                      | (FLASH_OPCODE_PP << BIT_OP_TYPE_SW)
                      | SET_OP_SW;
         REG_WRITE(REG_FLASH_OPERATE_SW, value);
-        GLOBAL_INT_RESTORE();
+
         while(flash_sw_busy());
+
         addr += 32;
         memset(pb, 0xFF, 32);
+        GLOBAL_INT_RESTORE();
     }
 }
 
@@ -362,7 +368,7 @@ void flash_write_page_data(UINT8 *buffer, UINT32 address, UINT32 len)
 {
     UINT32 i, value;
     UINT32 addr = address & (~0xFF);
-
+    
     if (len == 0)
         return;
 
@@ -372,7 +378,7 @@ void flash_write_page_data(UINT8 *buffer, UINT32 address, UINT32 len)
     }
 
     UINT8 *pb = (UINT8 *)&buf[0];
-
+    GLOBAL_INT_DISABLE();
     if(address % 256)
     {
         flash_read_data(pb, addr, 256);
@@ -385,8 +391,10 @@ void flash_write_page_data(UINT8 *buffer, UINT32 address, UINT32 len)
     while(flash_sw_busy());
 
     set_FLASH_Reg0x5_pw_write(1);
+    GLOBAL_INT_RESTORE();
     while(len)
     {
+        GLOBAL_INT_DISABLE();
         if(len < 256)
         {
             flash_read_data(pb, addr, 256);
@@ -421,14 +429,17 @@ void flash_write_page_data(UINT8 *buffer, UINT32 address, UINT32 len)
         while(flash_sw_busy());
         addr += 256;
         memset(pb, 0xFF, 256);
+        GLOBAL_INT_RESTORE();
     }
+    GLOBAL_INT_DISABLE();
     set_FLASH_Reg0x5_pw_write(0);
-
+    GLOBAL_INT_RESTORE();
     os_free(buf);
 }
 
 void clr_flash_qwfr(void)
 {
+    GLOBAL_INT_DISABLE();
     UINT32 value;
     UINT32 temp0;
 
@@ -446,11 +457,13 @@ void clr_flash_qwfr(void)
     REG_WRITE(REG_FLASH_OPERATE_SW, value);
 
     while(flash_sw_busy());
+    GLOBAL_INT_RESTORE();
 
 }
 
 void flash_set_dual_mode(void)
 {
+    GLOBAL_INT_DISABLE();
     UINT32 value;
 
     clr_flash_qwfr();
@@ -461,6 +474,7 @@ void flash_set_dual_mode(void)
     REG_WRITE(REG_FLASH_CONF, value);
 
     while(flash_sw_busy());
+    GLOBAL_INT_RESTORE();
 }
 
 void set_flash_clk(unsigned char clk_conf) 
@@ -543,6 +557,8 @@ static void flash_protection_op_P25Q40U(PROTECT_TYPE type)
     }
 
     flash_write_sr((1 << 14) | (bp << 2));
+}
+
 static void flash_protection_op_GD_FLASH_1(PROTECT_TYPE type)
 {
     //GLOBAL_INT_DISABLE();

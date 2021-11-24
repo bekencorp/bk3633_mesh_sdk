@@ -304,7 +304,7 @@ int aos_kernel_init(kinit_t *kinit)
 #endif
 
 #ifdef CONFIG_DUT_TEST_CMD
-	check_and_set_dut_flag();
+    //check_and_set_dut_flag();
 	if(get_dut_flag())
 	{
 		dut_test_start(kinit->argc, kinit->argv);

@@ -7,8 +7,22 @@
 #include "light_board.h"
 
 
-
 static led_board_env_t led_env;
+
+#define PWM_CLK_N   16000000
+#define PWM_FREQ    4000
+#define PWM_END_VALUE   (PWM_CLK_N/PWM_FREQ)
+
+#define PWM_LOOP_MAX    1000     //4000/8 *2
+#define LOOP_TIME       100
+#define BIG_T 21
+#define SMALL_T 1
+
+void mutual_pwm_change(uint32_t pose_val, uint32_t neg_val);
+ktimer_t pwm_config_timer;
+int32_t pwm_loop_pos;
+
+static void _mutual_pwm_init(void);
 
 /**@brief   Function for the LEDs initialization.
  *
@@ -16,36 +30,51 @@ static led_board_env_t led_env;
  */
 static void _led_init(void)
 {
-    light_led_t led = led_env.light_led;
+    light_led_t* led = &(led_env.light_led);
 
-    led.light_led_r.port = GPIO_TO_PWM(LED_R);
-    led.light_led_r.config.duty_cycle = 0;
-    led.light_led_r.config.freq = LIGHT_PERIOD;
-    hal_pwm_init(&led.light_led_r);
-    hal_pwm_start(&led.light_led_r);
-
-
-    led.light_led_g.port = GPIO_TO_PWM(LED_G);
-    led.light_led_g.config.duty_cycle = 0;
-    led.light_led_g.config.freq = LIGHT_PERIOD;
-    hal_pwm_init(&led.light_led_g);
-    hal_pwm_start(&led.light_led_g);
+    led->light_led_r.port = GPIO_TO_PWM(LED_R);
+    led->light_led_r.config.duty_cycle = 0;
+    led->light_led_r.config.freq = LIGHT_PERIOD;
+    hal_pwm_init(&led->light_led_r);
+    hal_pwm_start(&led->light_led_r);
 
 
-    led.light_led_b.port = GPIO_TO_PWM(LED_B);
-    led.light_led_b.config.duty_cycle = 0;
-    led.light_led_b.config.freq = LIGHT_PERIOD;
-    hal_pwm_init(&led.light_led_b);
-    hal_pwm_start(&led.light_led_b);
+    led->light_led_g.port = GPIO_TO_PWM(LED_G);
+    led->light_led_g.config.duty_cycle = 0;
+    led->light_led_g.config.freq = LIGHT_PERIOD;
+    hal_pwm_init(&led->light_led_g);
+    hal_pwm_start(&led->light_led_g);
+
+
+    led->light_led_b.port = GPIO_TO_PWM(LED_B);
+    led->light_led_b.config.duty_cycle = 0;
+    led->light_led_b.config.freq = LIGHT_PERIOD;
+    hal_pwm_init(&led->light_led_b);
+    hal_pwm_start(&led->light_led_b);
 
     set_light_board_type(LIGHT_TYPE_IDLE);
 
 }
+//test_func
+static void pwm_config_cb(void *params)
+{
+    mutual_pwm_change(pwm_loop_pos, 4000 - pwm_loop_pos);
+    pwm_loop_pos+=40;
+    pwm_loop_pos = pwm_loop_pos%4000;
+    krhino_timer_start(&pwm_config_timer);
+}
 
 int led_startup(void)
 {
+
     _led_init();
-    _init_light_para();
+	
+    //_init_light_para();
+
+    _mutual_pwm_init();
+
+    krhino_timer_create(&pwm_config_timer, "pwm_config", pwm_config_cb, 1, 1, NULL, 1);      //test
+
 }
 
 void set_light_board_type(light_type_e type)
@@ -173,16 +202,33 @@ static void _light_lighten(light_channel_e channel, uint16_t state)
     uint32_t led_pwm_count = 16000000/LIGHT_PERIOD;
     uint32_t high_count;
     uint16_t state_cal = LN_RATIO(state);
+    PWM_CHAN_E port;
 
     if (channel >= LED_CHANNEL_MAX)
     {
         return;
     }
+    
+    switch(channel)
+    {
+        case LED_R_CHANNEL:
+            port = led_env.light_led.light_led_r.port;
+            break;
+        case LED_G_CHANNEL:
+            port = led_env.light_led.light_led_g.port;
+            break;
+        case LED_B_CHANNEL:
+            port = led_env.light_led.light_led_b.port;
+            break;
+        default:
+            LIGHT_DBG("Wrong channel!!!!!!\n");
+            return;
+    }
 
     high_count = led_pwm_count * state_cal / LIGHTNESS_MAX;
 
     LIGHT_DBG("channel %d, led_pwm_count 0x%x high_count = 0x%x\r\n", channel, led_pwm_count, high_count);
-    hal_pwm_duty_cycle_chg(channel, led_pwm_count, high_count);
+    hal_pwm_duty_cycle_chg(port, led_pwm_count, high_count);
 }
 
 static void _light_set_rgb(uint16_t rgb[LED_CHANNEL_MAX])
@@ -199,6 +245,8 @@ static void _light_set_rgb(uint16_t rgb[LED_CHANNEL_MAX])
     } 
 }
 
+extern struct k_delayed_work app_timer;
+
 void led_ctl_set_handler(uint16_t ctl_lightness, uint16_t temperature, uint16_t ctl_UV)
 {
     uint16_t rgb_cal[LED_CHANNEL_MAX];
@@ -211,6 +259,7 @@ void led_ctl_set_handler(uint16_t ctl_lightness, uint16_t temperature, uint16_t 
         return;
     }
 
+	k_delayed_work_submit(&app_timer, 3000);
     uint32_t rgb = _temperature_to_rgb(temperature, ctl_UV);
 
     rgb_cal[0] = _color_8to16(rgb >> 16) * ctl_lightness / LIGHTNESS_MAX;
@@ -241,4 +290,100 @@ void led_hsl_set_handler(uint16_t hue, uint16_t saturation, uint16_t lightness)
     _light_set_rgb(rgb_cal);
 }
 
+__attribute__((section(".APP_CODE")))
+void mutual_pwm_change(uint32_t pose_val, uint32_t neg_val)
+{
+    CPSR_ALLOC();
+    uint32_t read_val;
+    RHINO_CRITICAL_ENTER();
+    uint32_t max_v, min_v,mod;
+
+    if(pose_val >= BIG_T)
+    {
+        min_v = pose_val - BIG_T;
+        max_v = pose_val - SMALL_T;
+        mod = 0;
+    }
+    else if(pose_val >= SMALL_T)
+    {
+        mod = 1;
+        min_v = pose_val + PWM_END_VALUE - BIG_T;
+        max_v = pose_val - SMALL_T;
+    }
+    else{
+        min_v = pose_val + PWM_END_VALUE - BIG_T;
+        max_v = pose_val + PWM_END_VALUE - SMALL_T;
+        mod = 2;
+    }
+
+
+    addPWM0_Reg0x0 &= ~((1<<5));
+
+    addPWM0_Reg0x3 = pose_val;
+    addPWM0_Reg0x6 = neg_val;
+
+    addPWM0_Reg0x0 |= (1);
+
+    setf_PWM0_Reg0xe_pwms_cnt_read;
+    while(get_PWM0_Reg0xe_pwms_cnt_read);
+
+    uint32_t loop_protect = 0;
+
+    while(1)
+    {
+        setf_PWM0_Reg0xe_pwms_cnt_read;
+        read_val = addPWM0_Reg0xf;
+
+        if(mod == 1)
+        {
+            if((read_val >= min_v) || (read_val <= max_v))
+            {
+                addPWM0_Reg0x0 |= ((1 << (5)));
+                break;
+            }
+        }
+        else
+        {
+            if((read_val >= min_v) && (read_val <= max_v))
+            {
+                addPWM0_Reg0x0 |= ((1 << (5)));
+                break;
+            }
+        }
+
+        loop_protect++;
+
+        if(loop_protect > PWM_LOOP_MAX)
+        {
+            break;
+        }
+    }
+
+    RHINO_CRITICAL_EXIT();
+}
+
+static void _mutual_pwm_init(void)
+{
+    pwm_param_t pwm_drv_desc;
+
+    pwm_drv_desc.channel         = PWM0;
+    pwm_drv_desc.cfg.bits.en     = PWM_DISABLE;
+    pwm_drv_desc.cfg.bits.int_en = PWM_INT_DIS;
+    pwm_drv_desc.cfg.bits.mode   = PMODE_PWM;
+
+    pwm_drv_desc.cfg.bits.clk = PWM_CLK_16M;
+    pwm_drv_desc.end_value = PWM_END_VALUE;
+    pwm_drv_desc.contiu_mode = 0;
+    pwm_drv_desc.cpedg_sel = 2;
+    pwm_drv_desc.pre_divid = 0;
+
+    pwm_drv_desc.duty_cycle = 0;
+
+    sddev_control(PWM_DEV_NAME, CMD_PWM_INIT_PARAM, &pwm_drv_desc);
+
+    pwm_drv_desc.channel         = PWM1;
+
+    sddev_control(PWM_DEV_NAME, CMD_PWM_INIT_PARAM, &pwm_drv_desc);
+
+}
 

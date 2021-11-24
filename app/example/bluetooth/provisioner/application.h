@@ -2,6 +2,8 @@
 #define __APPLICATION_H
 
 #define CONFIG_CID  0x01A8  //TAOBAO
+#define CONFIG_CID  0x027d  //HILINK
+
 #define LINK_CLOSE_SUCCESS   0x00
 #define LINK_CLOSE_TIMEOUT   0x01
 #define LINK_CLOSE_FAILED    0x02

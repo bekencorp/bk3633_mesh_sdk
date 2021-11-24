@@ -1,24 +1,14 @@
-/**
-****************************************************************************************
-*
-* @file icu_pub.h
-*
-* @brief icu initialization and specific functions
-*
-* Copyright (C) Beken Leonardo 2021
-*
-* $Rev: $
-*
-****************************************************************************************
-*/
-
 #ifndef _ICU_PUB_H_
 #define _ICU_PUB_H_
 
-#include "driver_pub.h"
+#include "typedef.h"
+
+#define ICU_FAILURE                (1)
+#define ICU_SUCCESS                (0)
 
 #define ICU_DEV_NAME                "icu"
 
+#define ICU_CMD_MAGIC              (0xe220000)
 enum
 {
     CMD_ICU_CLKGATING_DISABLE = ICU_CMD_MAGIC + 1,
@@ -44,24 +34,20 @@ enum
 };
 
 
-/* 1: power down; 0: power up */
-#define SYS_PWD_I2S_BIT                                    (1 << 19)
-#define SYS_PWD_DMA_BIT                                    (1 << 18)
-#define SYS_PWD_RWBT_BIT                                   (1 << 17)
-#define SYS_PWD_BK24_BIT                                   (1 << 16)
-#define SYS_PWD_WDT_BIT                                    (1 << 15)
-#define SYS_PWD_EFUSE_BIT                                  (1 << 14)
-#define SYS_PWD_SPI_BIT                                    (1 << 13)
-#define SYS_PWD_I2C_BIT                                    (1 << 12)
-#define SYS_PWD_USB_BIT                                    (1 << 11)
-#define SYS_PWD_SADC_BIT                                   (1 << 10)
-#define SYS_PWD_RTC_BIT                                    (1 << 8)
-#define SYS_PWD_PWM1_BIT                                   (1 << 6)
-#define SYS_PWD_PWM0_BIT                                   (1 << 4)
-#define SYS_PWD_TIMER1_BIT                                 (1 << 3)
-#define SYS_PWD_TIMER0_BIT                                 (1 << 2)
-#define SYS_PWD_UART1_BIT                                  (1 << 1)
-#define SYS_PWD_UART0_BIT                                  (1 << 0)
+#define REG_SYS_PWD                                 &(addSYS_Reg0x3)
+#define REG_SYS_CLK_SEL                             &(addSYS_Reg0x4)
+#define REG_SYS_INT_EN                              &(addSYS_Reg0x10)
+#define REG_SYS_INT_STATUS                          &(addSYS_Reg0x12)
+#define REG_SYS_INT_PRI                             &(addSYS_Reg0x11)
+
+#define SYS_PWM0_PWD_POS                             posSYS_Reg0x3_pwm0_pwd
+#define SYS_PWM0_SEL_POS                             posSYS_Reg0x4_pwm0_sel
+#define SYS_PWM0_INT_EN_POS                          posSYS_Reg0x10_int_pwm0_en
+
+#define SYS_PWM1_PWD_POS                             posSYS_Reg0x3_pwm1_pwd
+#define SYS_PWM1_SEL_POS                             posSYS_Reg0x4_pwm1_sel
+#define SYS_PWM1_INT_EN_POS                          posSYS_Reg0x10_int_pwm1_en
+
 /* CMD_ICU_CLKGATING_DISABLE CMD_ICU_CLKGATING_ENABLE */
 #define CLKGATE_PWM_BIT                      (1 << 9)
 #define CLKGATE_XVR_BIT                      (1 << 8)
@@ -107,6 +93,10 @@ typedef enum
 {
 	CLK_PWR_DEV_PWM0 = 0,
 	CLK_PWR_DEV_PWM1,
+	CLK_PWR_DEV_PWM2,
+	CLK_PWR_DEV_PWM3,
+	CLK_PWR_DEV_PWM4,
+	CLK_PWR_DEV_PWM5,
     CLK_PWR_DEV_UART1,
 	CLK_PWR_DEV_UART2,
 	CLK_PWR_DEV_WDT,
@@ -127,30 +117,12 @@ typedef enum
     MCU_SLEEP_MODE_NUM,
 } MCU_SLEEP_MODE;
 
-typedef enum {
-    ICU_FIRST_POWER_ON,
-    ICU_FORCE_RESET,
-    ICU_WDT_RESET,
-    ICU_DEEP_SLEEP_RESET,
-    ICU_FORCE_RESET_BY_DIGITAL,
-    ICU_RESET_UNKNOW,
-} icu_reset_reason_t;
-
-
-#define C_SOFTWARE_RESET        0x5678
-
 /*******************************************************************************
 * Function Declarations
 *******************************************************************************/
 extern void icu_init(void);
 extern void icu_exit(void);
 extern UINT32 icu_ctrl(UINT32 cmd, void *param);
-
-void cpu_reduce_voltage_sleep(void);
-void cpu_wakeup(void);
-void cpu_idle_sleep(void);
-uint32_t icu_get_reset_reason(void);
-void icu_set_reset_reason(uint32_t reson_data);
 
 #endif //_ICU_PUB_H_ 
 

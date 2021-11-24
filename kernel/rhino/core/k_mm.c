@@ -39,7 +39,7 @@ RHINO_INLINE k_mm_list_t *init_mm_region(void *regionaddr, size_t len)
 
     /* "regionaddr" and "len" is aligned by caller */
 
-    /*first mmblk for region info*/
+    /* first mmblk for region info */
     firstblk = (k_mm_list_t *) regionaddr;
     firstblk->prev  = NULL;
     firstblk->buf_size = MM_ALIGN_UP(sizeof(k_mm_region_info_t))
@@ -181,7 +181,7 @@ kstat_t krhino_init_mm_head(k_mm_head **ppmmhead, void *addr, size_t len )
 
     *ppmmhead = pmmhead;
 
-    /*mark it as free and set it to bitmap*/
+    /* mark it as free and set it to bitmap*/
 #if (RHINO_CONFIG_MM_DEBUG > 0u)
     nextblk->dye   = RHINO_MM_CORRUPT_DYE;
     nextblk->owner = 0;
@@ -190,7 +190,7 @@ kstat_t krhino_init_mm_head(k_mm_head **ppmmhead, void *addr, size_t len )
     /* release free blk */
     k_mm_free(pmmhead, nextblk->mbinfo.buffer);
 
-    /*after free, we need acess mmhead and nextblk again*/
+    /* after free, we need acess mmhead and nextblk again*/
 
 #if (K_MM_STATISTIC > 0)
     pmmhead->free_size = MM_GET_BUF_SIZE(nextblk);
@@ -639,7 +639,7 @@ void *k_mm_realloc(k_mm_head *mmhead, void *oldmem, size_t new_size)
     /*end of mmblk case*/
 #endif
 
-    /*check if there more free block behind oldmem  */
+    /* check if there more free block behind oldmem  */
     this_b   = MM_GET_THIS_BLK(oldmem);
     old_size = MM_GET_BUF_SIZE(this_b);
     next_b   = MM_GET_NEXT_BLK(this_b);

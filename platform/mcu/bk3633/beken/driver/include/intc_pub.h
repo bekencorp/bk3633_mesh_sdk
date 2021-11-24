@@ -5,35 +5,45 @@
 
 #define FIQ_IRQ_END                      (18)
 
+#if 1
 #define FIQ_BLE                          (20)
 #define FIQ_BTDM                         (22)
+#define FIQ_PWM0                         (0)
 
 
-#define IRQ_AON_RTC                      (12)
-#define IRQ_I2S_PCM                      (11)
-#define IRQ_RTC                          (10)
+#define IRQ_RTC                          (12)
+
 #define IRQ_GPIO                         (9)
 #define IRQ_ADC                          (8)
-#define IRQ_I2C                          (7)
+#define IRQ_I2S_PCM                      (7)
 #define IRQ_SPI                          (6)
 #define IRQ_UART2                        (5)
 #define IRQ_UART1                        (4)
-#define IRQ_TIMER1                       (3)
-#define IRQ_TIMER0                       (2)
-#define IRQ_PWM1                         (1)
+
 #define IRQ_PWM0                         (0)
+#define IRQ_PWM1                         (1)
+#endif
+
+#if 2
 #define PRI_FIQ_BLE                      (31)
+#define PRI_FIQ_PWM0                     (30)
+#define PRI_FIQ_PWM1                     (29)
 
-#define PRI_IRQ_I2S_PCM                  (21)
-#define PRI_IRQ_SPI                      (20)
-#define PRI_IRQ_GPIO                     (19)
-#define PRI_FIQ_TIMER1                   (18)
-#define PRI_FIQ_TIMER0                   (17)
-#define PRI_FIQ_PWM1                     (16)
-#define PRI_FIQ_PWM0                     (15)
-#define PRI_IRQ_UART2                    (14)
-#define PRI_IRQ_UART1                    (13)
+#define PRI_IRQ_RTC                      (11)
 
+#define PRI_IRQ_GPIO                     (12)
+#define PRI_IRQ_I2S_PCM                  (28)
+#define PRI_IRQ_SPI                      (13)
+
+#define PRI_IRQ_UART2                    (26)
+#define PRI_IRQ_UART1                    (27)
+
+#define PRI_IRQ_PWM5                     (25)
+#define PRI_IRQ_PWM4                     (24)
+#define PRI_IRQ_PWM3                     (23)
+#define PRI_IRQ_PWM2                     (22)
+#define PRI_IRQ_PWM1                     (21)
+#endif 
 
 extern void intc_service_register(UINT8 int_num, UINT8 int_pri, FUNCPTR isr);
 extern void intc_spurious(void);

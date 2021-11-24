@@ -92,7 +92,6 @@ static void aon_wdt_feed(void)
 
     REG_WRITE(REG_AON_WDT_FEED, value);
     GLOBAL_INT_RESTORE();
-    
 }
 
 static UINT32 aon_wdt_ctrl(UINT32 cmd, void *param)
@@ -112,7 +111,7 @@ static UINT32 aon_wdt_ctrl(UINT32 cmd, void *param)
         case CMD_AON_WDT_MODE:
             aon_wdt_set(*(Aon_wdt_mode *)param);
             break;
-    
+
         default:
             break;
     }

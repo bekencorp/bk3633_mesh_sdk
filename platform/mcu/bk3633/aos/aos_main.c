@@ -29,7 +29,7 @@ static kinit_t kinit = {
 static void sys_init(void)
 {
     int i = 0;
-    // os_printf("%s \r\n", __func__);
+    os_printf("%s \r\n", __func__);
 
     soc_system_init();
 
@@ -40,7 +40,7 @@ static void sys_init(void)
     board_init();
 
 #if 1
-	// os_printf("The APP code build at %s, %s\r\n\n", __TIME__, __DATE__);
+	os_printf("The APP code build at %s, %s\r\n\n", __TIME__, __DATE__);
 #endif
 
     aos_mutex_lock_init();    //add mutex lock, add_provisioner_supported.

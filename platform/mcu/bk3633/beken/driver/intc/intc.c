@@ -60,7 +60,6 @@ void intc_hdl_entry(UINT32 int_status)
     {
         f = list_entry(pos, ISR_T, list);
         i = f->int_num;
-
         if ((BIT(i) & status))
         {
             f->isr_func();
@@ -228,9 +227,11 @@ void rf_ps_wakeup_isr_idle_int_cb()
 void intc_irq(void)
 {
 #if 0
+    // os_printf("intc_irq\n");
     UINT32 irq_status;
     INTC_PRT("%s\n", __func__);
-    irq_status = sddev_control(ICU_DEV_NAME, CMD_GET_INTR_STATUS, 0);
+    // irq_status = sddev_control(ICU_DEV_NAME, CMD_GET_INTR_STATUS, 0);
+    irq_status =  REG_READ(REG_ICU_INT_FLAG);
     //irq_status = irq_status & 0xFFFF;
 	if(0 == irq_status & 0x7FFE)
 	{
@@ -240,8 +241,11 @@ void intc_irq(void)
 	}
 	INTC_PRT("%s status 0x%x\n", __func__, irq_status);
     //irq_status &= 0x7FFF;
-    sddev_control(ICU_DEV_NAME, CMD_CLR_INTR_STATUS, &irq_status);
-
+    // sddev_control(ICU_DEV_NAME, CMD_CLR_INTR_STATUS, &irq_status);
+    UINT32  reg;
+    reg = REG_READ(REG_ICU_INT_FLAG);
+    reg |= irq_status; ///write 1 to clear interrupt status
+    REG_WRITE(REG_ICU_INT_FLAG, reg);
     intc_hdl_entry(irq_status);
 #endif 
     
@@ -324,6 +328,7 @@ void intc_irq(void)
 void intc_fiq(void)
 {
     UINT32 fiq_status;
+    
     // fiq_status = sddev_control(ICU_DEV_NAME, CMD_GET_INTR_STATUS, 0);
     fiq_status =  REG_READ(REG_ICU_INT_FLAG);
     //fiq_status = fiq_status & 0xFFFF0000;
@@ -344,8 +349,14 @@ void intc_fiq(void)
 	{
 		rwip_func.rwip_isr();
 	}
-    //printf("%s\n", __func__);
 }
+
+#if CFG_SUPPORT_ALIOS
+void deafult_swi(void)
+{
+    while(1);
+}
+#endif
 
 void intc_init(void)
 {
@@ -358,9 +369,9 @@ void intc_init(void)
     *((volatile uint32_t *)0x400008) = &do_fiq;
     *((volatile uint32_t *)0x40000C) = &do_swi;
 #endif
-  
-//sddev_control(ICU_DEV_NAME, CMD_ICU_GLOBAL_INT_ENABLE, &param);
-    INTC_PRT("SYS_Reg0x10:%x,SYS_Reg0x11:%x\r\n",addSYS_Reg0x10,addSYS_Reg0x11);
+
+    //sddev_control(ICU_DEV_NAME, CMD_ICU_GLOBAL_INT_ENABLE, &param);
+    INTC_PRT("SYS_Reg0x10:%x,SYS_Reg0x11:%x\r\n", addSYS_Reg0x10, addSYS_Reg0x11);
     addSYS_Reg0x10 = 0; // int enable 0:disable 1::enable
     addSYS_Reg0x11 = 0; // priority; 0: irq  1:fiq
 

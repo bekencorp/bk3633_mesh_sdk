@@ -14,6 +14,34 @@ extern "C" {
 #include <stdint.h>
 #include "base.h"
 
+
+typedef enum
+{
+	//APP
+	HiLink_APP_CMD_BASE							= 0XA000,
+    HiLink_APP_CMD_SWITCH 						= 0XA001,
+    HiLink_APP_CMD_BRIGHTNESS 					= 0XA002,
+    HiLink_APP_CMD_TEMP							= 0XA003,
+    HiLink_APP_CMD_MODE							= 0XA004,
+    HiLink_APP_CMD_SENSRO_GEAR					= 0XA005,
+    HiLink_APP_CMD_CNN_NOTIFY					= 0XA006,
+    HiLink_APP_CMD_TIME							= 0XA0F1,
+    HiLink_APP_CMD_COUNTDOWN					= 0XA0F2,
+    HiLink_APP_CMD_TOMATO_TIME					= 0XA0F3,
+    HiLink_APP_CMD_UNIX_TIME					= 0XA0F4,
+    HiLink_APP_CMD_OTA_AUTH						= 0XA0FF,
+    HiLink_APP_CMD_GET_ALL_STATUS				= 0XAFFF,    
+
+	//OTA
+	HiLink_OTA_CMD_FILE_START					= 0XFF01,
+	HiLink_OTA_CMD_FILE_CHECKSUM				= 0XFF02,
+	HiLink_OTA_CMD_FILE_WRITE					= 0XFF03,
+	HiLink_OTA_CMD_FILE_FINSHED					= 0XFF04,
+	HiLink_OTA_CMD_FILE_RESET					= 0XFF05,
+	HiLink_OTA_CMD_FILE_DEV_VERSION				= 0XFF06,
+} HiLink_app_cmd_t;
+
+
 enum ota_parti_e {
     OTA_PARTITION_DEFAULT = 0,
     OTA_PARTITION_APP,
@@ -59,6 +87,9 @@ struct hal_ota_module_s {
     int (*ota_tag_check)(uint32_t ota_type, uint16_t ver, uint16_t rom_ver, uint32_t size);
     int (*ota_tag_get)(void *something);
     int (*ota_tag_init)(uint16_t ver, uint16_t rom_ver);
+//jx debug
+    int (*ota_app_checksum)(uint32_t checksum);
+    void (*ota_app_mutex_init)(void);
 };
 
 /**

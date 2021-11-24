@@ -27,8 +27,13 @@
 #define fatal_prf                      bk_printf
 #define null_prf                       os_null_printf
 
+#define UART_SUCCESS                 (0)
+#define UART_FAILURE                 ((UINT32)-1)
+
 #define UART2_DEV_NAME               ("uart2")   /*debug purpose*/
 #define UART1_DEV_NAME               ("uart1")   /*comm purpose*/
+
+#define UART_CMD_MAGIC               (0xC124000)
 
 #define UART1_PORT				0
 #define UART2_PORT				1

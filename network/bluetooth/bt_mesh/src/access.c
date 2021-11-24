@@ -288,11 +288,6 @@ static void mod_init(struct bt_mesh_model *mod, struct bt_mesh_elem *elem,
             model_init[i].init(mod, primary);
         }
     }
-
-    if (mod->cb && mod->cb->init) {
-		mod->cb->init(mod);
-	}
-
 }
 
 int bt_mesh_comp_register(const struct bt_mesh_comp *comp)
@@ -512,6 +507,8 @@ bool bt_mesh_model_in_primary(struct bt_mesh_model *mod)
     return (mod->elem_idx == 0);
 }
 
+extern struct k_delayed_work app_timer;
+u16 app_dst;
 void bt_mesh_model_recv(struct bt_mesh_net_rx *rx, struct net_buf_simple *buf)
 {
     struct bt_mesh_model *models, *model;
@@ -531,6 +528,11 @@ void bt_mesh_model_recv(struct bt_mesh_net_rx *rx, struct net_buf_simple *buf)
     }
 
     BT_DBG("OpCode 0x%08x", opcode);
+	if(opcode ==0x00000003)
+	{
+		app_dst =rx->dst;
+		k_delayed_work_submit(&app_timer, 4000);
+	}
 
 #ifdef MESH_DEBUG_RX
     MESH_MSG_RX("");
@@ -764,7 +766,10 @@ struct bt_mesh_model *bt_mesh_model_find_vnd(struct bt_mesh_elem *elem,
 {
     u8_t i;
 
+    //BT_ERR("%s,  vnd_model_count %d\n", __func__, elem->vnd_model_count);
     for (i = 0; i < elem->vnd_model_count; i++) {
+        //BT_ERR("elem->vnd_models[%d].vnd.company 0x%x, elem->vnd_models[%d].vnd.id 0x%x, company 0x%x, id 0x%x\n",
+        //       i, elem->vnd_models[i].vnd.company, i, elem->vnd_models[i].vnd.id, company, id);
         if (elem->vnd_models[i].vnd.company == company &&
             elem->vnd_models[i].vnd.id == id) {
             return &elem->vnd_models[i];

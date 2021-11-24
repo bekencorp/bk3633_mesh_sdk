@@ -7,13 +7,18 @@
 #include "base/genie_flash.h"
 #include "base/genie_reset.h"
 #include "base/tri_tuple.h"
+#ifdef MESH_MODEL_VENDOR_TIMER
+#include "base/vendor_timers.h"
+#endif
 
 #ifdef CONFIG_GENIE_OTA
 #include "bluetooth/host/profile/ais_srv/ais_service.h"
 #endif
 
 #ifdef CONFIG_BEKEN_OTA
-#include "bluetooth/host/profile/ota_srv/ota_service.h"
+//jx debug
+//#include "bluetooth/host/profile/ota_srv/ota_service.h"
+#include "bluetooth/host/profile/ota_srv/hilink_ota_service.h"
 
 #endif
 
@@ -26,6 +31,5 @@
  *        involks this api to initialize AIS/Mesh procedure for bussiness.
  */
 void genie_init(void);
-void dut_init(void);
 
 #endif  //_GENIE_APP_H_

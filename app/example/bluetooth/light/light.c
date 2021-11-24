@@ -4,7 +4,22 @@
  * Copyright (C) 2015-2018 Alibaba Group Holding Limited
  */
 
+#include <aos/aos.h>
+#include <aos/kernel.h>
+
+#include <misc/byteorder.h>
+#include <hal/soc/gpio.h>
+#include <hal/soc/pwm.h>
+#include "inc/time_scene_server.h"
+#ifdef BOARD_BK3633DEVKIT
+#include "gpio_pub.h"
+#endif
+
 #include "light_board.h"
+#include "uart_test_cmd.h"
+
+u8  app_time_flag;
+struct k_delayed_work app_timer;
 
 
 led_flash_t g_flash_para;
@@ -28,21 +43,21 @@ struct bt_mesh_time_setup_srv time_setup_srv_0 = {
 };
 
 struct scene_register scene_reg[5] = {
-//    [0] = {.scene_number = 1,
-//           .scene_value = NET_BUF_SIMPLE(2 + 10),
-//          },
-//    [1] = {.scene_number = 2,
-//           .scene_value = NET_BUF_SIMPLE(2 + 10),
-//          },
-//    [2] = {.scene_number = 3,
-//           .scene_value = NET_BUF_SIMPLE(2 + 10),
-//          },
-//    [3] = {.scene_number = 4,
-//           .scene_value = NET_BUF_SIMPLE(2 + 10),
-//          },
-//    [4] = {.scene_number = 5,
-//           .scene_value = NET_BUF_SIMPLE(2 + 10),
-//          },
+    [0] = {.scene_number = 0x0000,
+           .scene_value = NET_BUF_SIMPLE(2 + 30),
+          },
+    [1] = {.scene_number = 0x0000,
+           .scene_value = NET_BUF_SIMPLE(2 + 30),
+          },
+    [2] = {.scene_number = 0x0000,
+           .scene_value = NET_BUF_SIMPLE(2 + 30),
+          },
+    [3] = {.scene_number = 0x0000,
+           .scene_value = NET_BUF_SIMPLE(2 + 30),
+          },
+    [4] = {.scene_number = 0x0000,
+           .scene_value = NET_BUF_SIMPLE(2 + 30),
+          },
 };
 
 struct bt_mesh_scenes_state scenes_srv_state_0 = {
@@ -213,6 +228,7 @@ void _init_light_para(void)
     }
     LIGHT_DBG("init parameter ret %d", ret);
     led_ctl_set_handler(g_elem_state[0].powerup.light_ln_last, g_elem_state[0].powerup.ctl_temp_last, 0);
+
 
     //LIGHT_DBG("done");
 }
@@ -589,19 +605,38 @@ void user_event(E_GENIE_EVENT event, void *p_arg)
     }
 }
 
+u8 JX_model_flag =0;
+void vendor_C7_ack(u8_t tid);
+
+static void app_timer_cb(void *p_timer, void *args)
+{
+	static uint16_t times = 0;
+
+	times++;
+	JX_model_flag =1;
+
+    app_time_flag = 0;
+//	k_delayed_work_submit(&app_timer, 1000);
+	vendor_C7_ack(times);
+
+    //BT_DBG(" ++++++++++++++++++++++ %s, times %d flag = %d ++++++++++++++++\r\n", 
+     //        __func__,times, app_time_flag);
+}
+
 int application_start(int argc, char **argv)
 {
+
     /* genie initilize */
     genie_init();
+	
+	icu_get_reset_reason();
+
 #if CONFIG_UART_TEST_CMD
     uart_test_init();
 #endif
-    led_startup();
-
-    common_module_init();
 
     BT_INFO("BUILD_TIME:%s", __DATE__","__TIME__);
-
+	k_delayed_work_init(&app_timer, app_timer_cb);
     //aos_loop_run();
 
     return 0;

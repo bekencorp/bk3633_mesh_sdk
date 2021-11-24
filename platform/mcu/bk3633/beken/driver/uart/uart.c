@@ -311,10 +311,10 @@ UINT32 uart_sw_init(UINT8 uport)
         {
             kfifo_free(uart[uport].rx);
         }
-        return DRIV_FAIL;
+        return UART_FAILURE;
     }
 
-    return DRIV_SUCCESS;
+    return UART_SUCCESS;
 }
 
 UINT32 uart_sw_uninit(UINT8 uport)
@@ -331,7 +331,7 @@ UINT32 uart_sw_uninit(UINT8 uport)
 
     os_memset(&uart[uport], 0, sizeof(uart[uport]));
 
-    return DRIV_SUCCESS;
+    return UART_SUCCESS;
 }
 
 void uart_fifo_flush(UINT8 uport)
@@ -591,7 +591,7 @@ void uart1_init(void)
     UINT32 intr_status;
 
     ret = uart_sw_init(UART1_PORT);
-    ASSERT(DRIV_SUCCESS == ret);
+    ASSERT(UART_SUCCESS == ret);
 
     ddev_register_dev(UART1_DEV_NAME, &uart1_op);
 
@@ -624,7 +624,8 @@ void uart1_exit(void)
     UINT32 param;
 
     /*irq enable, Be careful: it is best that irq enable at close routine*/
-    intc_disable(IRQ_UART1);
+    //param = IRQ_UART1_BIT;
+    //sddev_control(ICU_DEV_NAME, CMD_ICU_INT_DISABLE, &param);
 
     uart_hw_uninit(UART1_PORT);
 
@@ -635,12 +636,12 @@ void uart1_exit(void)
 
 UINT32 uart1_open(UINT32 op_flag)
 {
-    return DRIV_SUCCESS;
+    return UART_SUCCESS;
 }
 
 UINT32 uart1_close(void)
 {
-    return DRIV_SUCCESS;
+    return UART_SUCCESS;
 }
 
 UINT32 uart1_read(char *user_buf, UINT32 count, UINT32 op_flag)
@@ -658,7 +659,7 @@ UINT32 uart1_ctrl(UINT32 cmd, void *parm)
     UINT32 ret;
     peri_busy_count_add();
 
-    ret = DRIV_SUCCESS;
+    ret = UART_SUCCESS;
     switch(cmd)
     {
     case CMD_SEND_BACKGROUND:
@@ -791,13 +792,12 @@ void uart2_isr(void)
 #if (!CFG_SUPPORT_RTT)
         uart_read_fifo_frame(UART2_PORT, uart[UART2_PORT].rx);
 #endif
+	        if (uart_receive_callback[1].callback != 0)
+	        {
+	            void *param = uart_receive_callback[1].param;
 
-        if (uart_receive_callback[1].callback != 0)
-        {
-            void *param = uart_receive_callback[1].param;
-
-	            uart_receive_callback[1].callback(UART2_PORT, param);
-	        }
+		            uart_receive_callback[1].callback(UART2_PORT, param);
+		    }
 	        else
 	        {
 	        	uart_read_byte(UART2_PORT); /*drop data for rtt*/
@@ -851,7 +851,7 @@ void uart2_init(void)
     UINT32 param;
     UINT32 intr_status;
     ret = uart_sw_init(UART2_PORT);
-    ASSERT(DRIV_SUCCESS == ret);
+    ASSERT(UART_SUCCESS == ret);
 
     ddev_register_dev(UART2_DEV_NAME, &uart2_op);
 
@@ -870,9 +870,6 @@ void uart2_init(void)
     REG_WRITE(REG_UART2_INTR_STATUS, intr_status);
 
     intc_enable(IRQ_UART2);
-
-
-	// printf("%s %d \r\n", __func__, __LINE__);
 }
 
 void uart2_exit(void)
@@ -880,8 +877,8 @@ void uart2_exit(void)
     UINT32 param;
 
     /*irq enable, Be careful: it is best that irq enable at close routine*/
-
-    intc_disable(IRQ_UART2);
+    //param = IRQ_UART2_BIT;
+    //sddev_control(ICU_DEV_NAME, CMD_ICU_INT_DISABLE, &param);
 
     uart_hw_uninit(UART2_PORT);
 
@@ -892,12 +889,12 @@ void uart2_exit(void)
 
 UINT32 uart2_open(UINT32 op_flag)
 {
-    return DRIV_SUCCESS;
+    return UART_SUCCESS;
 }
 
 UINT32 uart2_close(void)
 {
-    return DRIV_SUCCESS;
+    return UART_SUCCESS;
 }
 
 UINT32 uart2_read(char *user_buf, UINT32 count, UINT32 op_flag)
@@ -913,10 +910,10 @@ UINT32 uart2_write(char *user_buf, UINT32 count, UINT32 op_flag)
 UINT32 uart2_ctrl(UINT32 cmd, void *parm)
 {
     UINT32 ret;
-
+	
     peri_busy_count_add();
-
-    ret = DRIV_SUCCESS;
+        
+    ret = UART_SUCCESS;
     switch(cmd)
     {
     case CMD_SEND_BACKGROUND:

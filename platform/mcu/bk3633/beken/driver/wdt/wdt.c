@@ -40,7 +40,7 @@ UINT32 wdt_ctrl(UINT32 cmd, void *param)
 	UINT32 reg;
 	UINT32 parameter;
 
-	ret = DRIV_SUCCESS;	
+	ret = WDT_SUCCESS;	
 	switch(cmd)
 	{		
 		case WCMD_POWER_DOWN:
@@ -48,13 +48,13 @@ UINT32 wdt_ctrl(UINT32 cmd, void *param)
 			
 			parameter = CLK_PWR_DEV_WDT;
 		    ret = sddev_control(ICU_DEV_NAME, CMD_CLK_PWR_DOWN, (void *)&parameter);
-		    ASSERT(DRIV_SUCCESS == ret);	
+		    ASSERT(ICU_SUCCESS == ret);	
 			break;
 			
 		case WCMD_POWER_UP:
 			parameter = CLK_PWR_DEV_WDT;
 		    ret = sddev_control(ICU_DEV_NAME, CMD_CLK_PWR_UP, (void *)&parameter);
-		    ASSERT(DRIV_SUCCESS == ret);	
+		    ASSERT(ICU_SUCCESS == ret);	
 			break;
 			
 		case WCMD_RELOAD_PERIOD: {
@@ -89,6 +89,7 @@ UINT32 wdt_ctrl(UINT32 cmd, void *param)
 			GLOBAL_INT_RESTORE();
 		}
 			break;
+			
 		default:
 			break;
 	}

@@ -1,23 +1,11 @@
-/**
-****************************************************************************************
-*
-* @file gpio_pub.h
-*
-* @brief icu initialization and specific functions
-*
-* Copyright (C) Beken Leonardo 2021
-*
-* $Rev: $
-*
-****************************************************************************************
-*/
-
 #ifndef _GPIO_PUB_H_
 #define _GPIO_PUB_H_
 
 #include "generic.h"
 #include "drv_model_pub.h"
 
+#define GPIO_FAILURE                (1)
+#define GPIO_SUCCESS                (0)
 
 #define GPIO_DEV_NAME                "gpio"
 
@@ -29,9 +17,8 @@
 #define GPIO_OUTPUT_DEMUX_ID(param)          (param & 0xff)
 #define GPIO_OUTPUT_DEMUX_VAL(param)         ((param >> 8) & 0xff)
 
-#define GPIO_PORT2ID(port)                  (((port & 0x30) >> 1) + (port & 0x7))
 
-
+#define GPIO_CMD_MAGIC              (0xcaa0000)
 enum
 {
     CMD_GPIO_CFG                        = GPIO_CMD_MAGIC + 0,
@@ -57,8 +44,7 @@ enum
     GMODE_INPUT,
     GMODE_SECOND_FUNC_PULL_UP,//Special for uart1
     GMODE_OUTPUT_PULLUP,
-    GMODE_HIGH_Z,
-    GMODE_DISABLE,
+    GMODE_HIGH_Z
 };
 
 typedef enum
@@ -144,7 +130,6 @@ enum
 	GPIO_PWM_2    = GPIO_P12,
 	GPIO_PWM_3    = GPIO_P13,
 	GPIO_PWM_4    = GPIO_P14,
-    GPIO_PWM_5    = GPIO_P15,
 
 	GPIO_UART2_TX = GPIO_P16,
 	GPIO_UART2_RX = GPIO_P17,
@@ -166,12 +151,6 @@ enum
     GPIO_INT_LEVEL_FALLING = 3
 };
 
-enum
-{
-    GPIO_PIN_LOW = 0,
-    GPIO_PIN_HIGH = 1
-};
-
 typedef struct gpio_int_st
 {
 	UINT32 id;
@@ -187,7 +166,7 @@ __inline static void bk_gpio_config_input(GPIO_INDEX id)
     param = GPIO_CFG_PARAM(id, GMODE_INPUT);
     ret = sddev_control(GPIO_DEV_NAME, CMD_GPIO_CFG, &param);
     
-    ASSERT(DRIV_SUCCESS == ret);
+    ASSERT(GPIO_SUCCESS == ret);
 }
 								
 __inline static void bk_gpio_config_input_pup(GPIO_INDEX id)
@@ -198,7 +177,7 @@ __inline static void bk_gpio_config_input_pup(GPIO_INDEX id)
     param = GPIO_CFG_PARAM(id, GMODE_INPUT_PULLUP);
     ret = sddev_control(GPIO_DEV_NAME, CMD_GPIO_CFG, &param);
     
-    ASSERT(DRIV_SUCCESS == ret);
+    ASSERT(GPIO_SUCCESS == ret);
 }
 								
 __inline static void bk_gpio_config_input_pdwn(GPIO_INDEX id)
@@ -209,7 +188,7 @@ __inline static void bk_gpio_config_input_pdwn(GPIO_INDEX id)
 	param = GPIO_CFG_PARAM(id, GMODE_INPUT_PULLDOWN);
 	ret = sddev_control(GPIO_DEV_NAME, CMD_GPIO_CFG, &param);
     
-	ASSERT(DRIV_SUCCESS == ret);
+	ASSERT(GPIO_SUCCESS == ret);
 }
 
 __inline static uint32_t bk_gpio_input(GPIO_INDEX id)
@@ -225,11 +204,12 @@ __inline static uint32_t bk_gpio_input(GPIO_INDEX id)
 __inline static void bk_gpio_config_output(GPIO_INDEX id)
 {
     UINT32 ret;
+    
 	UINT32 param;
     
 	param = GPIO_CFG_PARAM(id, GMODE_OUTPUT);
 	ret = sddev_control(GPIO_DEV_NAME, CMD_GPIO_CFG, &param);
-	ASSERT(DRIV_SUCCESS == ret);
+	ASSERT(GPIO_SUCCESS == ret);  
 }
 
 __inline static void bk_gpio_output(GPIO_INDEX id,UINT32 val)
@@ -239,7 +219,7 @@ __inline static void bk_gpio_output(GPIO_INDEX id,UINT32 val)
     
     param = GPIO_OUTPUT_PARAM(id, val);
     ret = sddev_control(GPIO_DEV_NAME, CMD_GPIO_OUTPUT, &param);
-    ASSERT(DRIV_SUCCESS == ret);           
+    ASSERT(GPIO_SUCCESS == ret);           
 }
 
 __inline static void bk_gpio_output_reverse(GPIO_INDEX id)
@@ -248,38 +228,17 @@ __inline static void bk_gpio_output_reverse(GPIO_INDEX id)
     UINT32 param = id;
     
     ret = sddev_control(GPIO_DEV_NAME, CMD_GPIO_OUTPUT_REVERSE, &param);
-    ASSERT(DRIV_SUCCESS == ret);            
+    ASSERT(GPIO_SUCCESS == ret);            
 }
-
-__inline static void bk_gpio_enable_irq(GPIO_INT_ST* int_struct)
-{
-    UINT32 ret;
-    
-    ret = sddev_control(GPIO_DEV_NAME, CMD_GPIO_INT_ENABLE, int_struct);
-    ASSERT(DRIV_SUCCESS == ret);            
-}
-
-__inline static void bk_gpio_disable_irq(GPIO_INDEX id)
-{
-    UINT32 ret;
-    UINT32 param = id;
-    
-    ret = sddev_control(GPIO_DEV_NAME, CMD_GPIO_INT_DISABLE, &param);
-    ASSERT(DRIV_SUCCESS == ret);            
-}
-
-__inline static void bk_gpio_clear_irq(GPIO_INDEX id)
-{
-    UINT32 ret;
-    UINT32 param = id;
-    
-    ret = sddev_control(GPIO_DEV_NAME, CMD_GPIO_CLR_DPLL_UNLOOK_INT_BIT, &param);
-    ASSERT(DRIV_SUCCESS == ret);            
-}
-
+		
 extern UINT32 gpio_ctrl(UINT32 cmd, void *param);
+//extern UINT32 gpio_input(UINT32 id);
 extern void gpio_init(void);
 extern void gpio_exit(void);
+//void gpio_int_disable(UINT32 index);
+//void gpio_int_enable(UINT32 index, UINT32 mode, void (*p_Int_Handler)(unsigned char));
+//void gpio_config( UINT32 index, UINT32 mode ) ;
+//void gpio_output(UINT32 id, UINT32 val);
 
 #endif // _GPIO_PUB_H_
 

@@ -54,7 +54,6 @@ $(NAME)_INCLUDES += ip/em/api
 $(NAME)_INCLUDES += modules/ke/src
 $(NAME)_INCLUDES += ip/platform/driver/rf
 $(NAME)_INCLUDES += ip/platform/driver/reg
-$(NAME)_INCLUDES += ip/platform/driver/efuse
 
 
 ### source ###
@@ -70,7 +69,6 @@ $(NAME)_SOURCES  += arch/app/app_task.c
 $(NAME)_SOURCES  += func/func.c
 $(NAME)_SOURCES  += func/misc/fake_clock.c
 $(NAME)_SOURCES  += func/power_save/mcu_ps.c
-$(NAME)_SOURCES  += func/power_save/idle_mode.c
 
 $(NAME)_SOURCES  += driver/driver.c
 $(NAME)_SOURCES  += driver/common/dd.c
@@ -78,22 +76,11 @@ $(NAME)_SOURCES  += driver/common/drv_model.c
 $(NAME)_SOURCES  += driver/icu/icu.c
 $(NAME)_SOURCES  += driver/intc/intc.c
 $(NAME)_SOURCES  += driver/flash/flash.c
-$(NAME)_SOURCES  += driver/efuse/efuse.c
 $(NAME)_SOURCES  += driver/gpio/gpio.c
 $(NAME)_SOURCES  += driver/uart/uart.c
 $(NAME)_SOURCES  += driver/wdt/wdt.c
 $(NAME)_SOURCES  += driver/aon_wdt/aon_wdt.c
 $(NAME)_SOURCES  += driver/pwm/pwm.c
-
-ifeq ($(hw_timer),1)
-$(NAME)_INCLUDES += driver/timer
-$(NAME)_SOURCES  += driver/timer/timer.c
-endif
-
-ifeq ($(spi_driver),1)
-$(NAME)_INCLUDES += driver/spi
-$(NAME)_SOURCES  += driver/spi/spi.c
-endif
 
 $(NAME)_SOURCES  += driver/
 $(NAME)_SOURCES  += ip/platform/driver/rf/rf_xvr.c

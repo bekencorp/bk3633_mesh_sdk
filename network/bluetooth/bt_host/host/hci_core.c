@@ -786,8 +786,7 @@ static void le_enh_conn_complete(struct bt_hci_evt_le_enh_conn_complete *evt)
     struct bt_conn *conn;
     int             err;
 
-    BT_DBG("status %u handle %u role %u %s", evt->status, handle, evt->role,
-           bt_addr_le_str(&evt->peer_addr));
+    printf("status %u handle %u role %u\n", evt->status, handle, evt->role);
 
 #if defined(CONFIG_BT_SMP)
     if (atomic_test_and_clear_bit(bt_dev.flags, BT_DEV_ID_PENDING)) {
@@ -942,8 +941,7 @@ static void le_legacy_conn_complete(struct net_buf *buf)
     struct bt_hci_evt_le_enh_conn_complete enh;
     const bt_addr_le_t *                   id_addr;
 
-    BT_DBG("status %u role %u %s", evt->status, evt->role,
-           bt_addr_le_str(&evt->peer_addr));
+    printf("status %u role %u \n", evt->status, evt->role);
 
     enh.status         = evt->status;
     enh.handle         = evt->handle;
@@ -1774,9 +1772,7 @@ static void hci_cmd_complete(struct net_buf *buf)
 		
 #ifdef	CONFIG_DUT_TEST_COM1
 		dut_test_com = UART1_PORT;
-#endif
-
-#ifdef   CONFIG_DUT_TEST_COM2
+#else
 		dut_test_com = UART2_PORT;
 #endif
 
@@ -1784,17 +1780,13 @@ static void hci_cmd_complete(struct net_buf *buf)
 	    bk_send_byte(dut_test_com, 0x0E);
 		bk_send_byte(dut_test_com, buf->len);
 
-		printf("hci complet: 04 0E %02X", buf->len);
-
 		for(int i = 0; i < buf->len; i++)
 		{
-			printf(" %02X", buf->data[i]);
-			bk_send_byte(dut_test_com, buf->data[i]);
+		   bk_send_byte(dut_test_com, buf->data[i]);
 		}
-		printf("\r\n");
-		
 	}
 #endif
+
     net_buf_pull(buf, sizeof(*evt));
 
     /* All command return parameters have a 1-byte status in the
@@ -2156,7 +2148,7 @@ void process_events(struct k_poll_event *ev, int count)
 #define EV_COUNT (2 + (CONFIG_BT_MAX_CONN * 2))
 #else
 /* command FIFO */
-#define EV_COUNT 1
+#define EV_COUNT 2
 #endif
 
 extern void scheduler_loop(struct k_poll_event *events);
