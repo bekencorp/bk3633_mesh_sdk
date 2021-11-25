@@ -57,6 +57,7 @@
 #include "BK3633_RegList.h"
 //#include "RomCallFlash.h"
 #include "gpio.h"
+#include "gpio_pub.h"
 #include "pwm.h"
 //#include "audio.h"
 //#include "app_task.h"

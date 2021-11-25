@@ -543,6 +543,8 @@ static void flash_protection_op_P25Q40U(PROTECT_TYPE type)
     }
 
     flash_write_sr((1 << 14) | (bp << 2));
+}
+
 static void flash_protection_op_GD_FLASH_1(PROTECT_TYPE type)
 {
     //GLOBAL_INT_DISABLE();
