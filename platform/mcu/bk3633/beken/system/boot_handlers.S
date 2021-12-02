@@ -192,8 +192,8 @@ boot_reset:
 
     B entry_main
 
-/*FUNCTION:     _sysboot_copy_data_to_ram*/
-/*DESCRIPTION:  copy main stack code from FLASH/ROM to SRAM*/
+/*FUNCTION:     _sysboot_copy_data_to_ram */
+/*DESCRIPTION:  copy main stack code from FLASH/ROM to SRAM */
 _sysboot_copy_data_to_ram:
     LDR     R0, =_data_flash_begin
     LDR     R1, =_data_ram_begin
@@ -271,7 +271,6 @@ boot_reserved:
 
 		.align	5
 irq_handler:
-	STMFD  sp!,{r0-r1}
 	LDR    R1, =0x400004
 	LDR    r0, [R1]
 	BX     r0
@@ -279,7 +278,6 @@ irq_handler:
 
 		.align	5
 fiq_handler:
-	STMFD  sp!,{r0-r1}
 	LDR    R1, =0x400008
 	LDR    r0, [R1]
 	BX     r0
@@ -384,8 +382,6 @@ WFI:
 	MOV R0, #0
 	MCR p15, 0, R0, c7, c0, 4
 	BX LR
-
-	
 
 /*EOF*/
 

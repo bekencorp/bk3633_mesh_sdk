@@ -40,9 +40,9 @@ int os_memcmp_const(const void *a, const void *b, size_t len)
 	u8 res;
 
 	for (res = 0, i = 0; i < len; i++)
-		res |= aa[i] ^ bb[i];
+        res |= aa[i] ^ bb[i];
 
-	return res;
+    return res;
 }
 
 void *os_malloc(size_t size)
