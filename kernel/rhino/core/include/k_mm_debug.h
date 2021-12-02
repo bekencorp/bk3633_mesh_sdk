@@ -29,6 +29,8 @@ uint32_t dumpsys_mm_info_func(uint32_t len);
 
 uint32_t dump_mmleak(void);
 
+void dump_mm_info_check(void);
+
 #ifdef __cplusplus
 }
 #endif

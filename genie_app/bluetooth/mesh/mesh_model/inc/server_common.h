@@ -140,22 +140,6 @@ struct bt_mesh_server_rsp_ctrl {
         .__buf = net_buf_data_##_name,      \
     }
 
-/** Model callback functions. */
-// struct bt_mesh_model_cb {
-//     /** @brief Model init callback.
-//      *
-//      *  Called on every model instance during mesh initialization.
-//      *
-//      *  If any of the model init callbacks return an error, the mesh
-//      *  subsystem initialization will be aborted, and the error will
-//      *  be returned to the caller of @ref bt_mesh_init.
-//      *
-//      *  @param model Model to be initialized.
-//      *
-//      *  @return 0 on success, error otherwise.
-//      */
-//     int (*const init)(struct bt_mesh_model *model);
-// };
 
 struct bt_mesh_gen_def_trans_time_state {
     uint8_t trans_time;

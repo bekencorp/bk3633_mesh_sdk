@@ -57,7 +57,6 @@
 #include "BK3633_RegList.h"
 //#include "RomCallFlash.h"
 #include "gpio.h"
-#include "gpio_pub.h"
 #include "pwm.h"
 //#include "audio.h"
 //#include "app_task.h"
@@ -77,6 +76,7 @@
 #include "fake_clock_pub.h"
 #include "em_map.h"
 #include "icu_pub.h"
+#include "gpio_pub.h"
 
 /**
  ****************************************************************************************

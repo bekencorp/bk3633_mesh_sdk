@@ -60,7 +60,7 @@
 #define ADV_STACK_SIZE 368
 #endif
 #else
-#define ADV_STACK_SIZE 368//768//(512-256)
+#define ADV_STACK_SIZE 450//768//(512-256)
 #endif
 
 static K_FIFO_DEFINE(adv_queue);

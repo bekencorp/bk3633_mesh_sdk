@@ -1,8 +1,8 @@
-stack_support_flash = 0x00001280;
-rwip_func = 0x00001284;
-ke_msg_func = 0x000012b4;
-ke_task_func = 0x000012bc;
-ke_time_func = 0x000012c8;
-hci_func = 0x000012a8;
-ke_event_sem = 0x004000fc;
-rom_env = 0x00400120;
+stack_support_flash = 0x00002180;
+rwip_func = 0x00002184;
+ke_msg_func = 0x000021b4;
+ke_task_func = 0x000021bc;
+ke_time_func = 0x000021c8;
+hci_func = 0x000021a8;
+ke_event_sem = 0x0040011c;
+rom_env = 0x00400140;

@@ -2112,9 +2112,12 @@ int has_tx_sem(struct k_poll_event *event)
 
 void process_events(struct k_poll_event *ev, int count)
 {
+    //unsigned int key;
     for (; count; ev++, count--) {
         switch (ev->state) {
-            case K_POLL_STATE_FIFO_DATA_AVAILABLE:
+            case K_POLL_STATE_FIFO_DATA_AVAILABLE: {
+                unsigned int key;
+                key = irq_lock();
                 if (ev->tag == BT_EVENT_CMD_TX) {
                     struct net_buf *buf;
                     buf = net_buf_get(&bt_dev.cmd_tx_queue, K_NO_WAIT);
@@ -2132,7 +2135,9 @@ void process_events(struct k_poll_event *ev, int count)
                         bt_conn_process_tx(conn);
                     }
                 }
+                irq_unlock(key);
                 break;
+            }
 #ifdef CONFIG_CONTROLLER_IN_ONE_TASK
             case K_POLL_STATE_DATA_RECV:
                 if (ev->tag == BT_EVENT_CONN_RX) {
@@ -2156,7 +2161,7 @@ void process_events(struct k_poll_event *ev, int count)
 #define EV_COUNT (2 + (CONFIG_BT_MAX_CONN * 2))
 #else
 /* command FIFO */
-#define EV_COUNT 1
+#define EV_COUNT 2
 #endif
 
 extern void scheduler_loop(struct k_poll_event *events);
