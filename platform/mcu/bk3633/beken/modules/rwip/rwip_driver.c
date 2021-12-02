@@ -519,9 +519,6 @@ inline rwip_time_t rwip_time_get(void)
     return res;
 }
 
-
-
-
 #if (BLE_EMB_PRESENT || BT_EMB_PRESENT)
 #if (BT_EMB_PRESENT)
 void rwip_time_set(uint32_t clock)

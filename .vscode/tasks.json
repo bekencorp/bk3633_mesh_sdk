@@ -11,7 +11,10 @@
       ],
       "presentation": {
         "focus": true
-      }
+      },
+      "problemMatcher": [
+        "$gcc"
+      ]
     },
     {
       "label": "alios-studio: Upload",

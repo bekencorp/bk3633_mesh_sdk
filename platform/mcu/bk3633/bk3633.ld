@@ -14,12 +14,12 @@ OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")
 OUTPUT_ARCH(arm)
 ENTRY(_vector_start);
 /* PARTITION_APP_CPU_ADDR */
-_vector_start = 0x15B00;
+_vector_start = 0x17A00;
 
 SECTIONS
 {
-/* vectors go to vectors region */
-	.vectors 0x15B00 : /*Do not change the section order, for image*/
+/* vectors go to vectors region PARTITION_APP_CPU_ADDR */
+	.vectors 0x17A00 : /*Do not change the section order, for image*/
 	{
       KEEP(*(sys.vectors))
       KEEP(*(sys.handlers))
@@ -94,7 +94,7 @@ SECTIONS
 	_data_ram_begin = ADDR(.data);
 	_data_ram_end = .;
 
-/* uninitialized data section - global   int i; */
+/* uninitialized data section - global int i; */
 	.bss ALIGN(8):
 	{
 		_bss_start = .;
