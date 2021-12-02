@@ -76,6 +76,7 @@
 #include "fake_clock_pub.h"
 #include "em_map.h"
 #include "icu_pub.h"
+#include "gpio_pub.h"
 
 /**
  ****************************************************************************************

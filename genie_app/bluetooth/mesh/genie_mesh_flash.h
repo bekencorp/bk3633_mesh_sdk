@@ -31,7 +31,6 @@ typedef struct{
     uint8_t key[16];
 } mesh_appkey_para_t;
 
-
 E_GENIE_FLASH_ERRCODE genie_flash_read_trituple(uint32_t *p_pid, uint8_t *p_mac,  uint8_t *p_key);
 
 /**
