@@ -28,7 +28,7 @@ enum
 #define DEV_2_KEY		0x12
 #define DEV_3_KEY		0x13
 
-#define DEV_TYPE		DEV_3_KEY
+#define DEV_TYPE		DEV_1_KEY
 
 #if DEV_TYPE == DEV_1_KEY
 	#define SWITCH_NUM      1

@@ -232,8 +232,8 @@ void icu_init(void)
     reg = 1 << POS_ENB_BURST_SEL;
     REG_WRITE(REG_SYS_TEST, reg);
 
-//    set_PMU_Reg0x14_voltage_ctrl_sleep_aon(0x04);
-  //  set_PMU_Reg0x14_voltage_ctrl_sleep_core(0x04);
+    // set_PMU_Reg0x14_voltage_ctrl_sleep_aon(0x04);
+    // set_PMU_Reg0x14_voltage_ctrl_sleep_core(0x04);
 
     setf_PMU_Reg0x1_wdt_reset_ctrl;     //set wdt_reset_ctrl to use always_on field.
     setf_PMU_Reg0x1_wdt_reset_ctrl1;    //set wdt_reset_ctrl1 to use always_on field.

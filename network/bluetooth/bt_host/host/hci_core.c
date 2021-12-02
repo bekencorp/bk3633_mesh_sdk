@@ -269,7 +269,6 @@ int bt_hci_cmd_send_sync(u16_t opcode, struct net_buf *buf, struct net_buf **rsp
 
     time_start = k_uptime_get_32();
 
-    
     while (1) {
         static struct k_poll_event events[1] = {
             K_POLL_EVENT_STATIC_INITIALIZER(K_POLL_TYPE_FIFO_DATA_AVAILABLE,
@@ -2115,7 +2114,8 @@ void process_events(struct k_poll_event *ev, int count)
     for (; count; ev++, count--) {
         switch (ev->state) {
             case K_POLL_STATE_FIFO_DATA_AVAILABLE: {
-                //key = irq_lock();
+                unsigned int key;
+                key = irq_lock();
                 if (ev->tag == BT_EVENT_CMD_TX) {
                     struct net_buf *buf;
                     buf = net_buf_get(&bt_dev.cmd_tx_queue, K_NO_WAIT);
@@ -2133,7 +2133,7 @@ void process_events(struct k_poll_event *ev, int count)
                         bt_conn_process_tx(conn);
                     }
                 }
-                //irq_unlock(key);
+                irq_unlock(key);
                 break;
             }
 #ifdef CONFIG_CONTROLLER_IN_ONE_TASK

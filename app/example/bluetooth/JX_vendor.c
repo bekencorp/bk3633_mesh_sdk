@@ -184,7 +184,7 @@ void JX_vendor_queue(void)
 		u8 *pBuffer =pVendor_send->buffer;
 
 		JX_vendor_flag.wait_size--;
-		JX_vendor_flag.cur_num =(JX_vendor_flag.wait_size +1) %JX_VENDOR_SIZE;
+		JX_vendor_flag.cur_num =(JX_vendor_flag.wait_size +1) % JX_VENDOR_SIZE;
 
 		JX_tid_add();
 
@@ -203,7 +203,7 @@ void JX_vendor_queue(void)
 			krhino_backtrace_now();
 			while(1);
 		}
-		JX_vendor_send(elem_num, op, JX_vendor_flag.send_struct.buffer, len+1);
+		JX_vendor_send(elem_num, op, JX_vendor_flag.send_struct.buffer, len + 1);
 		LIGHT_DBG("line:%d elem_num:%d op:%x send_cnt:%d len:%d  %s", __LINE__, JX_vendor_flag.send_struct.elem_num,
 			JX_vendor_flag.send_struct.op, JX_vendor_flag.send_cnt, len, bt_hex(JX_vendor_flag.send_struct.buffer, len+1));
 	}

@@ -13,7 +13,7 @@ endif # Linux32
 endif # Win32
 
 PARTITION_STACK_CPU_ADDR = 0x1F00
-PARTITION_APP_CPU_ADDR = 0x16A00
+PARTITION_APP_CPU_ADDR = 0x17A00
 img_ver = 0x1111
 rom_ver    = 0x0006
 BIM_BIN_FILE   := $(SOURCE_ROOT)platform/mcu/$(HOST_MCU_FAMILY)/bin/bk3633_boot.bin
