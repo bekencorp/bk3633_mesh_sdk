@@ -22,21 +22,21 @@ static void _led_init(void)
     led.light_led_r.config.duty_cycle = 0;
     led.light_led_r.config.freq = LIGHT_PERIOD;
     hal_pwm_init(&led.light_led_r);
-    hal_pwm_start(&led.light_led_r);
+    //hal_pwm_start(&led.light_led_r);
 
 
     led.light_led_g.port = GPIO_TO_PWM(LED_G);
     led.light_led_g.config.duty_cycle = 0;
     led.light_led_g.config.freq = LIGHT_PERIOD;
     hal_pwm_init(&led.light_led_g);
-    hal_pwm_start(&led.light_led_g);
+    //hal_pwm_start(&led.light_led_g);
 
 
     led.light_led_b.port = GPIO_TO_PWM(LED_B);
     led.light_led_b.config.duty_cycle = 0;
     led.light_led_b.config.freq = LIGHT_PERIOD;
     hal_pwm_init(&led.light_led_b);
-    hal_pwm_start(&led.light_led_b);
+    //hal_pwm_start(&led.light_led_b);
 
     set_light_board_type(LIGHT_TYPE_IDLE);
 

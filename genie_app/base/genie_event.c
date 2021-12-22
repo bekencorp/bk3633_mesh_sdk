@@ -70,6 +70,10 @@ const char *genie_event_str[] = {
     "APP->FAC_QUIT",
 };
 
+
+mesh_netkey_para_t genie_netkey[CONFIG_BT_MESH_SUBNET_COUNT];
+mesh_appkey_para_t genie_appkey[CONFIG_BT_MESH_APP_KEY_COUNT];
+
 #if BT_DBG_ENABLED
 #define GENIE_MESH_EVENT_PRINT(id) BT_INFO("%s", genie_event_str[id])
 #else
@@ -132,10 +136,9 @@ static E_GENIE_EVENT _genie_event_handle_mesh_init(void)
     uint16_t addr;
     uint32_t seq = 0;
     uint8_t devkey[16];
-    mesh_netkey_para_t netkey;
-    mesh_appkey_para_t appkey;
-
-    BT_DBG("\r\n");
+    mesh_netkey_para_t netkey[CONFIG_BT_MESH_SUBNET_COUNT];
+    mesh_appkey_para_t appkey[CONFIG_BT_MESH_APP_KEY_COUNT];
+    printf("++++%s ++++\r\n", __func__);
 
 #ifdef CONFIG_GENIE_OTA
     ////ais_check_ota_change();
@@ -152,16 +155,17 @@ static E_GENIE_EVENT _genie_event_handle_mesh_init(void)
     // bit4:appkey
     uint8_t read_flag = 0;
     if(genie_flash_read_addr(&addr) == GENIE_FLASH_SUCCESS) {
-        BT_DBG("addr 0x%x\r\n", addr);
+        printf("addr 0x%x\r\n", addr);
         read_flag |= 0x01;
     }
 
     if(genie_flash_read_seq(&seq) == GENIE_FLASH_SUCCESS) {
+        printf("seq 0x%x\r\n", seq);
         read_flag |= 0x02;
     }
 
 #ifdef CONIFG_OLD_FLASH_PARA
-    if(genie_flash_read_para(&bt_mesh) == GENIE_FLASH_SUCCESS){
+    if(genie_flash_read_para(&bt_mesh) == GENIE_FLASH_SUCCESS) {
         BT_DBG("read old");
         read_flag |= 0x1C;  //0001 1100
         // save data by new format.
@@ -181,20 +185,20 @@ static E_GENIE_EVENT _genie_event_handle_mesh_init(void)
 #endif
     {
         if(genie_flash_read_devkey(devkey) == GENIE_FLASH_SUCCESS) {
-            BT_DBG("devkey %s\r\n", bt_hex(devkey, 16));
+            printf("devkey %s\r\n", bt_hex(devkey, 16));
             read_flag |= 0x04;
         }
-        if(genie_flash_read_netkey(&netkey) == GENIE_FLASH_SUCCESS) {
-            BT_DBG("netkey %s\r\n", bt_hex(netkey.key, 16));
+        if(genie_flash_read_netkey(&netkey, CONFIG_BT_MESH_SUBNET_COUNT) == GENIE_FLASH_SUCCESS) {
+            printf("netkey %s\r\n", bt_hex(netkey[0].key, 16));
             read_flag |= 0x08;
         }
-        if(genie_flash_read_appkey(&appkey) == GENIE_FLASH_SUCCESS) {
-            BT_DBG("appkey %s\r\n", bt_hex(appkey.key, 16));
+        if(genie_flash_read_appkey(&appkey, CONFIG_BT_MESH_APP_KEY_COUNT) == GENIE_FLASH_SUCCESS) {
+            printf("appkey %s\r\n", bt_hex(appkey[0].key, 16));
             read_flag |= 0x10;
         }
     }
 
-    BT_DBG("flag %02x", read_flag);
+    printf("flag %02x\n", read_flag);
 #if 1
 	if((read_flag & 0x1F) == 0x1F) {
 #else
@@ -204,9 +208,28 @@ static E_GENIE_EVENT _genie_event_handle_mesh_init(void)
 #if CONFIG_MESH_SEQ_COUNT_INT
         seq += CONFIG_MESH_SEQ_COUNT_INT;
 #endif
-        bt_mesh_provision(netkey.key, netkey.net_index, netkey.flag, netkey.ivi, seq, addr, devkey);
+        int cmd_netkey_info_sync(mesh_netkey_para_t *subnet, uint16_t count);
+        int cmd_appkey_info_sync(mesh_appkey_para_t *appkeys, uint16_t count);
+        cmd_netkey_info_sync(netkey, CONFIG_BT_MESH_SUBNET_COUNT);
+        cmd_appkey_info_sync(appkey, CONFIG_BT_MESH_APP_KEY_COUNT);
+        bool net_created = false;
+        for (int i = 0; i < CONFIG_BT_MESH_SUBNET_COUNT; i++) {
+            if (netkey[i].net_index != BT_MESH_KEY_UNUSED) {
+                if (!net_created) {
+                    net_created = true;
+                    bt_mesh_provision(&netkey[i].key[0], netkey[i].net_index, netkey[i].flag, 0, seq, addr, devkey);
+                } else {
+                    bt_mesh_net_key_add(netkey[i].net_index, &netkey[i].key[0]);
+                }
+            }
+        }
         extern void genie_appkey_register(u16_t net_idx, u16_t app_idx, const u8_t val[16], bool update);
-        genie_appkey_register(appkey.net_index, appkey.key_index, appkey.key, appkey.flag);
+
+        for (int j = 0; j < CONFIG_BT_MESH_APP_KEY_COUNT; j++) {
+            if (appkey[j].key_index != BT_MESH_KEY_UNUSED) {
+                genie_appkey_register(appkey[j].net_index, appkey[j].key_index, &appkey[j].key[0], 0);
+            }
+        }
 
 #ifdef CONFIG_GENIE_OTA
         ais_service_register();
@@ -230,7 +253,7 @@ static E_GENIE_EVENT _genie_event_handle_mesh_init(void)
         } else {
             return GENIE_EVT_HW_RESET_START;
         }
-    } else if(read_flag){
+    } else if(read_flag) {
         BT_INFO(">>>error<<<");
         genie_flash_reset_system();
         aos_reboot();
@@ -346,18 +369,27 @@ static E_GENIE_EVENT _genie_event_handle_appkey_add(uint8_t *p_status)
         if(*p_status == STATUS_SUCCESS) {
             //genie_flash_write_para(&bt_mesh);
             uint8_t devkey[16];
-            mesh_netkey_para_t netkey;
-            mesh_appkey_para_t appkey;
-            
+            printf("%s, CONFIG_BT_MESH_SUBNET_COUNT %d, CONFIG_BT_MESH_APP_KEY_COUNT %d\n",
+                __func__, CONFIG_BT_MESH_SUBNET_COUNT, CONFIG_BT_MESH_APP_KEY_COUNT);
             memcpy(devkey, bt_mesh.dev_key, 16);
-            memset(&netkey, 0, sizeof(netkey));
-
-            memcpy(netkey.key, bt_mesh.sub[0].keys[0].net, 16);
-            memset(&appkey, 0, sizeof(appkey));
-            memcpy(appkey.key, bt_mesh.app_keys[0].keys[0].val, 16);
             genie_flash_write_devkey(devkey);
-            genie_flash_write_netkey(&netkey);
-            genie_flash_write_appkey(&appkey);
+
+            for (int i = 0; i < CONFIG_BT_MESH_SUBNET_COUNT; i++) {
+                if (bt_mesh.sub[i].net_idx != BT_MESH_KEY_UNUSED) {
+                    genie_netkey[i].net_index = bt_mesh.sub[i].net_idx;
+                    memcpy(genie_netkey[i].key, bt_mesh.sub[i].keys[0].net, 16);
+                }
+            }
+
+            for (int j = 0; j < CONFIG_BT_MESH_APP_KEY_COUNT; j++) {
+                if (bt_mesh.app_keys[j].app_idx != BT_MESH_KEY_UNUSED) {
+                    genie_appkey[j].net_index = bt_mesh.app_keys[j].net_idx;
+                    genie_appkey[j].key_index = bt_mesh.app_keys[j].app_idx;
+                    memcpy(genie_appkey[j].key, bt_mesh.app_keys[j].keys[0].val, 16);
+                }
+            }
+            genie_flash_write_netkey(genie_netkey, CONFIG_BT_MESH_SUBNET_COUNT);
+            genie_flash_write_appkey(genie_appkey, CONFIG_BT_MESH_APP_KEY_COUNT);
             return GENIE_EVT_SDK_MESH_PROV_SUCCESS;
         }
 		else if (STATUS_INSUFF_RESOURCES == *p_status) {

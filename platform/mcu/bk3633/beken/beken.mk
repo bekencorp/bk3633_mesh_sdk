@@ -95,6 +95,11 @@ $(NAME)_INCLUDES += driver/spi
 $(NAME)_SOURCES  += driver/spi/spi.c
 endif
 
+ifeq ($(deep_sleep),1)
+GLOBAL_INCLUDES += driver/deep_sleep
+$(NAME)_SOURCES  += driver/deep_sleep/deep_sleep.c
+endif
+
 $(NAME)_SOURCES  += driver/
 $(NAME)_SOURCES  += ip/platform/driver/rf/rf_xvr.c
 

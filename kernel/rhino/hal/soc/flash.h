@@ -18,6 +18,8 @@
 #define PAR_OPT_WRITE_DIS ( 0x0u << PAR_OPT_WRITE_POS )
 #define PAR_OPT_WRITE_EN  ( 0x1u << PAR_OPT_WRITE_POS )
 
+#define HAL_FLASH_SEGMENTED_LEN    (256 + 512)
+
 typedef enum {
     HAL_PARTITION_ERROR = -1,
     HAL_PARTITION_BOOTLOADER,

@@ -175,7 +175,7 @@ static const struct bt_mesh_comp comp = {
 
 static int output_number(bt_mesh_output_action_t action, uint32_t number)
 {
-        printk("OOB Number: %u\n", number);
+    printk("OOB Number: %u\n", number);
         
     return 0;
 }
@@ -344,7 +344,7 @@ static void handle_set_mac(char *pwbuf, int blen, int argc, char **argv)
         mac[i / 2] = ((char2u8(p) & 0x0f) << 4) | (char2u8(p+1) & 0x0f);
     }
 
-    ais_set_mac(mac);
+    //ais_set_mac(mac);
 }
 
 static struct cli_command ncmd[] = {

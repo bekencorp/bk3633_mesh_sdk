@@ -211,11 +211,6 @@ static void init_pwm_param(pwm_param_t *pwm_param, UINT8 enable)
         intc_group = IRQ_PWM1;
         set_PWM1_Reg0x0_pre_div(pwm_param->pre_divid);
     }
-
-	if(pwm_param->cfg.bits.mode != PMODE_TIMER)
-	{
-		pwm_gpio_configuration(pwm_param->channel, enable);
-	}
     
     pwm_icu_configuration(pwm_param, enable);
 
@@ -263,6 +258,11 @@ static void init_pwm_param(pwm_param_t *pwm_param, UINT8 enable)
         p_PWM_Int_Handler[pwm_param->channel] = NULL;
         //intc_disable(intc_group);
     }
+    
+	if(pwm_param->cfg.bits.mode != PMODE_TIMER)
+	{
+		pwm_gpio_configuration(pwm_param->channel, enable);
+	}
 }
 
 static UINT16 pwm_capture_value_get(UINT8 ucChannel)

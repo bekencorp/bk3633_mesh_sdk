@@ -193,7 +193,8 @@ int32_t hal_flash_write(hal_partition_t in_partition, uint32_t *off_set, const v
     hal_logic_partition_t *partition_info;
 	uint32_t status;
     DD_HANDLE flash_hdl;
-
+    uint32_t par_buf_len = in_buf_len;
+    uint8_t *par_in_buf = (uint8_t *)in_buf;
 #ifdef CONFIG_AOS_KV_MULTIPTN_MODE
     if (in_partition == CONFIG_AOS_KV_PTN) {
         if ((*off_set) >= CONFIG_AOS_KV_PTN_SIZE) {
@@ -206,6 +207,7 @@ int32_t hal_flash_write(hal_partition_t in_partition, uint32_t *off_set, const v
     partition_info = hal_flash_get_info( in_partition );
 
     if(off_set == NULL || in_buf == NULL || *off_set + in_buf_len > partition_info->partition_length) {
+        os_printf("%s, L, Invalid params.\n", __func__, __LINE__);
         return -1;
     }
 
@@ -216,7 +218,7 @@ int32_t hal_flash_write(hal_partition_t in_partition, uint32_t *off_set, const v
     	os_printf("Not allowed to write code area, start_addr 0x%x.\r\n", start_addr);
         return -1;
     }
-
+    do {
     if(flash_secure_sector == true)
     {
         PROTECT_TYPE sec = secure_sector_switch(start_addr);
@@ -227,19 +229,30 @@ int32_t hal_flash_write(hal_partition_t in_partition, uint32_t *off_set, const v
     //hal_wdg_reload(&wdg);
     hal_aon_wdt_feed();
     hal_flash_lock();
-    ddev_write(flash_hdl, in_buf, in_buf_len, start_addr);
+        // printf("%s, par_in_buf %p, par_buf_len %d, len %d, in_buf_len %d start_addr 0x%x\n",\
+        ddev_write(flash_hdl, par_in_buf, (par_buf_len > HAL_FLASH_SEGMENTED_LEN) ? (HAL_FLASH_SEGMENTED_LEN) : par_buf_len, start_addr);
     hal_flash_unlock();
     //hal_wdg_reload(&wdg);
     hal_aon_wdt_feed();
 	ddev_close(flash_hdl);
-
-    *off_set += in_buf_len;
 
     if(flash_secure_sector == true)
     {
         hal_flash_secure_sector(FLASH_PROTECT_ALL);
     }
 
+        if (par_buf_len < HAL_FLASH_SEGMENTED_LEN) {
+            break;
+        }
+
+        par_in_buf += HAL_FLASH_SEGMENTED_LEN;
+        start_addr += HAL_FLASH_SEGMENTED_LEN;
+        par_buf_len -= HAL_FLASH_SEGMENTED_LEN;//(par_buf_len > HAL_FLASH_SEGMENTED_LEN) ? (par_buf_len - HAL_FLASH_SEGMENTED_LEN) : par_buf_len;
+
+        k_sleep(3);
+    } while (true);
+
+    *off_set += in_buf_len;
     return 0;
 }
 
