@@ -115,21 +115,29 @@ struct bt_mesh_lvl_cli lvl_cli = BT_MESH_LVL_CLI_INIT(NULL);
 
 static struct bt_mesh_model root_models[] = {
 #ifdef CONFIG_BT_MESH_CFG_SRV
-        BT_MESH_MODEL_CFG_SRV(),
+    BT_MESH_MODEL_CFG_SRV(),
 #endif
 #ifdef CONFIG_BT_MESH_CFG_CLI
-        BT_MESH_MODEL_CFG_CLI(&cfg_cli),
+    BT_MESH_MODEL_CFG_CLI(&cfg_cli),
 #endif
 #ifdef CONFIG_BT_MESH_HEALTH_SRV
-        BT_MESH_MODEL_HEALTH_SRV(),
+    BT_MESH_MODEL_HEALTH_SRV(),
 #endif
 #ifdef CONFIG_BT_MESH_HEALTH_CLI
-        BT_MESH_MODEL_HEALTH_CLI(&health_cli),
-#endif
-BT_MESH_MODEL_ONOFF_CLI(&onoff_cli),
-BT_MESH_MODEL_LIGHTNESS_CLI(&lightness_cli),
-BT_MESH_MODEL_LIGHT_CTL_CLI(&light_ctl_cli),
-BT_MESH_MODEL_LVL_CLI(&lvl_cli),
+    BT_MESH_MODEL_HEALTH_CLI(&health_cli),
+#endif 
+#ifdef CONFIG_BT_MESH_GEN_ONOFF_CLI
+    BT_MESH_MODEL_ONOFF_CLI(&onoff_cli),
+#endif //CONFIG_BT_MESH_GEN_ONOFF_CLI
+#ifdef CONFIG_BT_MESH_LIGHT_LIGHTNESS_CLI
+    BT_MESH_MODEL_LIGHTNESS_CLI(&lightness_cli),
+#endif //CONFIG_BT_MESH_LIGHT_LIGHTNESS_CLI
+#ifdef CONFIG_BT_MESH_LIGHT_CTL_CLI
+    BT_MESH_MODEL_LIGHT_CTL_CLI(&light_ctl_cli),
+#endif //CONFIG_BT_MESH_LIGHT_CTL_CLI
+#ifdef CONFIG_BT_MESH_GEN_LEVEL_CLI
+    BT_MESH_MODEL_LVL_CLI(&lvl_cli),
+#endif //CONFIG_BT_MESH_GEN_LEVEL_CLI
 };
 #if 0
 static void vendor_model_get(struct bt_mesh_model *model,
@@ -877,7 +885,7 @@ static int cmd_net_pressure_test(int argc, char *argv[])
 	printk("%s ended.\r\n", argv[0]);
 }
 
-#ifdef CONFIG_BT_MESH_BQB
+//#ifdef CONFIG_BT_MESH_BQB
 static uint8_t char2u8(char c)
 {
     if (c >= '0' && c <= '9') return (c - '0');
@@ -958,7 +966,7 @@ int cmd_net_send2(int argc, char *argv[])
                 printk("Failed to send (err %d)\n", err);
         }
 }
-#endif
+//#endif
 
 #if defined(CONFIG_BT_MESH_IV_UPDATE_TEST)
 static int cmd_iv_update(int argc, char *argv[])
@@ -1000,6 +1008,317 @@ static int cmd_rpl_clear(int argc, char *argv[])
 	bt_mesh_rpl_clear();
 	return 0;
 }
+
+static uint16_t cmd_mesh_prim_addr = 0;
+static uint8_t cmd_mesh_devkey[16] = {0};
+static uint32_t cmd_mesh_seq = 0;
+
+static mesh_appkey_para_t cmd_app_keys[CONFIG_BT_MESH_APP_KEY_COUNT] = {
+        [0 ... (CONFIG_BT_MESH_APP_KEY_COUNT - 1)] = {
+            .net_index = BT_MESH_KEY_UNUSED,
+			.key_index = BT_MESH_KEY_UNUSED,
+        }
+};
+
+static mesh_netkey_para_t cmd_subnet[CONFIG_BT_MESH_SUBNET_COUNT]= {
+        [0 ... (CONFIG_BT_MESH_SUBNET_COUNT - 1)] = {
+            .net_index = BT_MESH_KEY_UNUSED,
+        }
+};
+
+int cmd_netkey_info_sync(mesh_appkey_para_t *subnet, uint16_t count)
+{
+	if (subnet) {
+	    memcpy(cmd_subnet, subnet, sizeof(struct bt_mesh_subnet) * count);
+	}
+
+	return 0;
+}
+
+int cmd_appkey_info_sync(mesh_appkey_para_t *appkeys, uint16_t count)
+{
+	if (appkeys) {
+	    memcpy(cmd_app_keys, appkeys, sizeof(mesh_appkey_para_t) * count);
+	}
+
+	return 0;
+}
+
+static int cmd_net_key_add_local(int argc, char *argv[])
+{
+	u8_t key_val[16] = {0};
+	u16_t key_net_idx;
+	u8_t status;
+	mesh_netkey_para_t *sub = NULL;
+	int err;
+    int i;
+
+	if (argc < 3) {
+		printf("The parameter number should be more then 2.\n");
+		return -EINVAL;
+	}
+
+	key_net_idx = strtoul(argv[1], NULL, 0);
+
+	if (argc > 2) {
+		size_t len;
+
+		len = hex2bin(argv[2], key_val, sizeof(key_val));
+	} else {
+		memcpy(key_val, default_key, sizeof(key_val));
+	}
+
+	for (i = 0; i < CONFIG_BT_MESH_SUBNET_COUNT; i++) {
+		if (cmd_subnet[i].net_index == BT_MESH_KEY_UNUSED) {
+            sub = &cmd_subnet[i];
+			break;
+		}
+	}
+
+	if (sub) {
+		sub->net_index = key_net_idx;
+		memcpy(sub->key, key_val, sizeof(key_val));
+		printf("i: %d, sub->net_idx: %d, sub->keys[0].net: %s\n", i, sub->net_index, bt_hex(sub->key, sizeof(sub->key)));
+	} else {
+		printf("WARNING: The subnet buffer is full.\n");
+	}
+
+    genie_flash_write_netkey(cmd_subnet, CONFIG_BT_MESH_APP_KEY_COUNT);
+	printf("key_net_idx %d\n", key_net_idx);
+	printf("Net key val:%s\n", bt_hex(key_val, sizeof(key_val)));
+	return 0;
+}
+
+static int cmd_net_key_del_local(int argc, char *argv[])
+{
+	u16_t key_net_idx;
+	u8_t status;
+	mesh_netkey_para_t *sub = NULL;
+	int err;
+    int i;
+
+	if (argc < 2) {
+		printf("The parameter number should be more then 1.\n");
+		return -EINVAL;
+	}
+
+	key_net_idx = strtoul(argv[1], NULL, 0);
+
+	if (key_net_idx == BT_MESH_KEY_UNUSED) {
+		printf("Invalid key_net_idx(0x%x) value.\n", key_net_idx);
+		return -EINVAL;
+	}
+
+	for (i = 0; i < CONFIG_BT_MESH_SUBNET_COUNT; i++) {
+		if (cmd_subnet[i].net_index == key_net_idx) {
+			cmd_subnet[i].net_index = BT_MESH_KEY_UNUSED;
+			memset(cmd_subnet[i].key, 0, sizeof(cmd_subnet[i].key));
+			printf("Find the netkey and have delete it already.\n");
+			break;
+		}
+	}
+
+	if (i == CONFIG_BT_MESH_SUBNET_COUNT) {
+		printf("Didn't find the netkey in the queue for the given net_idx(%d)\n", key_net_idx);
+	}
+
+	return 0;
+}
+
+static int cmd_net_key_find_local(int argc, char *argv[])
+{
+    for (int i = 0; i < CONFIG_BT_MESH_SUBNET_COUNT; i++) {
+		if (cmd_subnet[i].net_index != BT_MESH_KEY_UNUSED) {
+			printf("i: %d, net_idx: %d, netkey: %s.\n", i, cmd_subnet[i].net_index, bt_hex(cmd_subnet[i].key, sizeof(cmd_subnet[i].key)));
+			break;
+		}
+	}
+
+	return 0;
+}
+
+static int cmd_app_key_add_local(int argc, char *argv[])
+{
+	u8_t key_val[16] = {0};
+	u16_t key_net_idx;
+	u16_t key_app_idx;
+	u8_t status;
+	mesh_appkey_para_t *app_key = NULL;
+	int err;
+    int i;
+
+	if (argc < 4) {
+		printf("The parameter number should be more then 3.\n");
+		return -EINVAL;
+	}
+
+	key_net_idx = strtoul(argv[1], NULL, 0);
+    key_app_idx = strtoul(argv[2], NULL, 0);
+	if (argc > 2) {
+		size_t len;
+
+		len = hex2bin(argv[3], key_val, sizeof(key_val));
+		//memset(key_val, 0, sizeof(key_val) - len);
+	} else {
+		memcpy(key_val, default_key, sizeof(key_val));
+	}
+
+	for (i = 0; i < CONFIG_BT_MESH_APP_KEY_COUNT; i++) {
+		if (cmd_app_keys[i].net_index == BT_MESH_KEY_UNUSED &&
+		    cmd_app_keys[i].key_index == BT_MESH_KEY_UNUSED) {
+            app_key = &cmd_app_keys[i];
+			break;
+		}
+	}
+
+	if (app_key) {
+		app_key->net_index = key_net_idx;
+		app_key->key_index = key_app_idx;
+		memcpy(app_key->key, key_val, sizeof(key_val));
+		printf("i: %d, app_key->net_idx: %d, app_key->app_idx: %d, sub->keys[0].net: %s\n", 
+		         i, app_key->net_index, app_key->key_index, bt_hex(app_key->key, sizeof(app_key->key)));
+	} else {
+		printf("WARNING: The appkey buffer is full.\n");
+	}
+
+    genie_flash_write_appkey(cmd_app_keys, CONFIG_BT_MESH_APP_KEY_COUNT);
+	printf("key_net_idx %d\n", key_net_idx);
+	printf("key_app_idx %d\n", key_app_idx);
+	printf("APP key val:%s\n", bt_hex(key_val, sizeof(key_val)));
+	return 0;
+}
+
+static int cmd_app_key_del_local(int argc, char *argv[])
+{
+	u8_t key_val[16] = {0};
+	u16_t key_net_idx;
+	u16_t key_app_idx;
+	u8_t status;
+	mesh_appkey_para_t *app_key = NULL;
+	int err;
+    int i;
+
+	if (argc < 3) {
+		printf("The parameter number should be more then 2.\n");
+		return -EINVAL;
+	}
+
+	key_net_idx = strtoul(argv[1], NULL, 0);
+    key_app_idx = strtoul(argv[2], NULL, 0);
+
+	if (key_net_idx == BT_MESH_KEY_UNUSED ||
+	    key_app_idx == BT_MESH_KEY_UNUSED) {
+		printf("Invalid key_net_idx(0x%x) or key_app_idx(0x%x) value.\n", key_net_idx, key_app_idx);
+		return -EINVAL;
+	}
+
+	for (i = 0; i < CONFIG_BT_MESH_APP_KEY_COUNT; i++) {
+		if (cmd_app_keys[i].net_index == key_net_idx &&
+		    cmd_app_keys[i].key_index == key_app_idx) {
+            app_key = &cmd_app_keys[i];
+		    app_key->net_index = BT_MESH_KEY_UNUSED;
+			app_key->key_index = BT_MESH_KEY_UNUSED;
+			memcpy(app_key->key, 0, sizeof(app_key->key));
+			printf("Find the netkey and have delete it already.\n");
+			break;
+		}
+	}
+
+	if (i == CONFIG_BT_MESH_APP_KEY_COUNT) {
+		printf("Didn't find the appkey in the queue for the given net_idx(%d) and app_idx(%d)\n", key_net_idx, key_app_idx);
+		return -EINVAL;
+	}
+
+	return 0;
+}
+
+static int cmd_app_key_find_local(int argc, char *argv[])
+{
+    for (int i = 0; i < CONFIG_BT_MESH_APP_KEY_COUNT; i++) {
+		if (cmd_app_keys[i].net_index != BT_MESH_KEY_UNUSED &&
+		    cmd_app_keys[i].key_index != BT_MESH_KEY_UNUSED) {
+			printf("i: %d, net_idx: %d, app_idx: %d, netkey: %s.\n", i, cmd_app_keys[i].net_index, 
+			       cmd_app_keys[i].key_index, bt_hex(cmd_app_keys[i].key, sizeof(cmd_app_keys[i].key)));
+		}
+	}
+
+	return 0;
+}
+
+static int cmd_dev_key_add_local(int argc, char *argv[])
+{
+	u8_t key_val[16] = {0};
+	u8_t status;
+	int err;
+
+	if (argc > 1) {
+		size_t len;
+
+		len = hex2bin(argv[1], key_val, sizeof(key_val));
+		//memset(key_val, 0, sizeof(key_val) - len);
+	} else {
+		memcpy(key_val, default_key, sizeof(key_val));
+	}
+
+    memcpy(cmd_mesh_devkey, key_val, sizeof(key_val));
+
+	genie_flash_write_devkey(cmd_mesh_devkey);
+	printf("Dev key val:%s\n", bt_hex(key_val, sizeof(key_val)));
+	return 0;
+}
+
+static int cmd_mesh_seq_add(int argc, char *argv[])
+{
+    u32_t seq;
+	u8_t status;
+	int err;
+
+	seq = strtoul(argv[1], NULL, 0);
+
+    cmd_mesh_seq = seq;
+	
+	E_GENIE_FLASH_ERRCODE errcode = genie_flash_write_seq(&seq);
+	printf("seq: 0x%x, err: %d\n", seq, errcode);
+	return 0;
+}
+
+static int cmd_mesh_prim_addr_add(int argc, char *argv[])
+{
+	cmd_mesh_prim_addr = strtoul(argv[1], NULL, 0);
+	printf("addr:0x%x\n", cmd_mesh_prim_addr);
+	genie_flash_write_addr(&cmd_mesh_prim_addr);
+	return 0;
+}
+
+static int cmd_mesh_prov_done(int argc, char *argv[])
+{
+	bool net_created = false;
+        for (int i = 0; i < CONFIG_BT_MESH_SUBNET_COUNT; i++) {
+            if (cmd_subnet[i].net_index != BT_MESH_KEY_UNUSED) {
+                if (!net_created) {
+                    net_created = true;
+                    bt_mesh_provision(cmd_subnet[i].key, cmd_subnet[i].net_index, cmd_subnet[i].flag, 0, 
+					                  cmd_mesh_seq, cmd_mesh_prim_addr, cmd_mesh_devkey);
+				    printf("%s, bt_mesh_provision\n", __func__);
+                } else {
+                    bt_mesh_net_key_add(cmd_subnet[i].net_index, cmd_subnet[i].key);
+					printf("%s, bt_mesh_net_key_add\n", __func__);
+                }
+            }
+        }
+        extern void genie_appkey_register(u16_t net_idx, u16_t app_idx, const u8_t val[16], bool update);
+
+        for (int j = 0; j < CONFIG_BT_MESH_APP_KEY_COUNT; j++) {
+            if (cmd_app_keys[j].net_index != BT_MESH_KEY_UNUSED &&
+			    cmd_app_keys[j].key_index != BT_MESH_KEY_UNUSED) {
+                genie_appkey_register(cmd_app_keys[j].net_index, cmd_app_keys[j].key_index, cmd_app_keys[j].key, 0);
+				printf("%s, genie_appkey_register\n", __func__);
+            }
+        }
+
+	return 0;
+}
+
 #ifdef CONFIG_BT_MESH_CFG_CLI
 
 static int cmd_get_comp(int argc, char *argv[])
@@ -2446,6 +2765,7 @@ static int cmd_provision(int argc, char *argv[])
 	return 0;
 }
 
+#ifdef CONFIG_BT_MESH_CFG_CLI
 int cmd_timeout(int argc, char *argv[])
 {
 	s32_t timeout;
@@ -2479,6 +2799,7 @@ int cmd_timeout(int argc, char *argv[])
 
 	return 0;
 }
+#endif //CONFIG_BT_MESH_CFG_CLI
 
 static int cmd_fault_get(int argc, char *argv[])
 {
@@ -2933,7 +3254,7 @@ static int cmd_conn(int argc, char *argv[])
 #endif
 
 
-
+#ifdef CONFIG_BT_MESH_GEN_ONOFF_CLI
 void gen_onoff_get(int argc, char **argv)
 {
 	struct bt_mesh_onoff_status status = {0};
@@ -2988,6 +3309,9 @@ void gen_onoff_set(int argc, char **argv)
 		printk("err=%d", err);
 	}
 }
+#endif //CONFIG_BT_MESH_GEN_ONOFF_CLI
+
+#ifdef CONFIG_BT_MESH_LIGHT_LIGHTNESS_CLI
 
 void light_lightness_get(int argc, char **argv)
 {
@@ -3429,7 +3753,9 @@ void light_ctl_temp_range_set(int argc, char **argv)
 		printk("err=%d", err);
 	}
 }
+#endif //CONFIG_BT_MESH_LIGHT_LIGHTNESS_CLI
 
+#ifdef CONFIG_BT_MESH_GEN_LEVEL_CLI
 void gen_lvl_get(int argc, char **argv)
 {
 	struct bt_mesh_lvl_status status = {0};
@@ -3561,9 +3887,13 @@ void gen_lvl_move_set(int argc, char **argv)
 	}
 }
 
+#endif //CONFIG_BT_MESH_GEN_LEVEL_CLI
+
 static const struct mesh_shell_cmd mesh_commands[] = {
 	{ "init", cmd_init, NULL },
+#if defined (CONFIG_BT_MESH_CFG_CLI)
 	{ "timeout", cmd_timeout, "[timeout in seconds]" },
+#endif //CONFIG_BT_MESH_CFG_CLI
 #if defined(CONFIG_BT_MESH_PB_ADV)
 	{ "pb-adv", cmd_pb_adv, "<val: off, on>" },
 #endif
@@ -3589,7 +3919,16 @@ static const struct mesh_shell_cmd mesh_commands[] = {
 	{ "dst", cmd_dst, "[destination address]" },
 	{ "netidx", cmd_netidx, "[NetIdx]" },
 	{ "appidx", cmd_appidx, "[AppIdx]" },
-
+    {"netkey-add-local", cmd_net_key_add_local, "[NetIdx] [NetKeyVal[16]]"},
+	{"netkey-del-local", cmd_net_key_del_local, "[NetIdx]"},
+	{"netkey-find-local", cmd_net_key_find_local, "[None]"},
+	{"appkey-add-local", cmd_app_key_add_local, "[NetIdx] [AppIdx] [APPKeyVal[16]]"},
+	{"appkey-del-local", cmd_app_key_del_local, "[NetIdx] [AppIdx]"},
+    {"appkey-find-local", cmd_app_key_find_local, "[None]"},
+	{"devkey-add-local", cmd_dev_key_add_local, "DevKeyVal[16]"},
+	{"seqnum-add", cmd_mesh_seq_add, "[seq number val]"},
+	{"primary-addr-add", cmd_mesh_prim_addr_add, "[primary addr val]"},
+	{"prov-done", cmd_mesh_prov_done, "[None]"},
 	/* Commands which access internal APIs, for testing only */
 	{ "net-send", cmd_net_send, "<hex string>" },
 #if defined(CONFIG_BT_MESH_IV_UPDATE_TEST)
@@ -3684,10 +4023,15 @@ static const struct mesh_shell_cmd mesh_commands[] = {
 	{ "wl", cmd_white_list, "cmd_white_list" },
 	{ "conn", cmd_conn, "cmd_conn" },
 #endif
+#if defined (CONFIG_BT_MESH_GEN_ONOFF_CLI)
 	{ "gen_onoff_get", gen_onoff_get,  "<addr>" },
 	{ "gen_onoff_set", gen_onoff_set,  "<addr> ..." },
+#endif //CONFIG_BT_MESH_GEN_ONOFF_CLI
+#if defined (CONFIG_BT_MESH_LIGHT_LIGHTNESS_CLI)
 	{ "light_lightness_get", light_lightness_get,  "<addr>" },
 	{ "light_lightness_set", light_lightness_set,  "<addr>" },
+#endif //CONFIG_BT_MESH_LIGHT_LIGHTNESS_CLI
+#if defined (CONFIG_BT_MESH_LIGHT_LIGHTNESS_CLI)
 	{ "light_lightness_linear_get", light_lightness_linear_get,  "<addr>" },
 	{ "light_lightness_linear_set", light_lightness_linear_set,  "<addr>" },
 	{ "light_lightness_last_get", light_lightness_last_get,  "<addr>" },
@@ -3703,11 +4047,13 @@ static const struct mesh_shell_cmd mesh_commands[] = {
 	{ "light_ctl_default_set", light_ctl_default_set,  "<addr>" },
 	{ "light_ctl_temp_range_get", light_ctl_temp_range_get,  "<addr>" },
 	{ "light_ctl_temp_range_set", light_ctl_temp_range_set,  "<addr>" },
+#endif //CONFIG_BT_MESH_LIGHT_LIGHTNESS_CLI
+#if defined (CONFIG_BT_MESH_GEN_LEVEL_CLI)
 	{ "gen_lvl_get", gen_lvl_get,  "<addr>" },
 	{ "gen_lvl_set", gen_lvl_set,  "<addr>" },
 	{ "gen_lvl_delta_set", gen_lvl_delta_set,  "<addr>" },
 	{ "gen_lvl_move_set", gen_lvl_move_set,  "<addr>" },
-	
+#endif //CONFIG_BT_MESH_GEN_LEVEL_CLI
 	{ NULL, NULL, NULL}
 };
 

@@ -25,6 +25,7 @@
 	.globl fiq_pre_proc
 	.globl fiq_end_proc
 	.globl print_exception_addr
+    .globl enrty_boot
 
 /* ========================================================================
  *                                Macros
@@ -138,7 +139,7 @@ boot_reset:
     MRS   R0, CPSR
     ORR   R0, R0, #0xC0
     MSR   CPSR_c, R0
-
+    BL    enrty_boot
     //Setup all stacks //Note: Abt and Usr mode are not used
 	BOOT_CHANGE_MODE BOOT_MODE_SYS BOOT_MODE_MASK
 	BOOT_SET_STACK   boot_stack_base_SYS boot_stack_len_SYS BOOT_COLOR_SYS

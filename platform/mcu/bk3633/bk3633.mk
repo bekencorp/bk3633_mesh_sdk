@@ -108,6 +108,10 @@ $(NAME)_SOURCES  +=  port/ota_port.c
 $(NAME)_SOURCES  +=  port/ota_crc.c
 endif
 
+ifeq ($(deep_sleep), 1)
+GLOBAL_DEFINES += __DEEP_SLEEP__
+endif
+
 ifneq ($(filter rhino.pwrmgmt,$(COMPONENTS)),)
 $(NAME)_SOURCES  +=  hal/pwrmgmt_hal/board_cpu_pwr.c
 $(NAME)_SOURCES  +=  hal/pwrmgmt_hal/board_cpu_pwr_systick.c

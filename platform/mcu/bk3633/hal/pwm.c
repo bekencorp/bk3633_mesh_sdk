@@ -25,7 +25,7 @@ int32_t hal_pwm_init(pwm_dev_t *pwm)
 
     /*init pwm*/
     param.channel         = pwm->port;
-    param.cfg.bits.en     = PWM_DISABLE;
+    param.cfg.bits.en     = PWM_ENABLE;
     param.cfg.bits.int_en = PWM_INT_DIS;
     param.cfg.bits.mode   = PMODE_PWM;
     param.p_Int_Handler   = pwm->p_Int_Handler;

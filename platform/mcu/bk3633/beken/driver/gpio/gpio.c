@@ -141,7 +141,6 @@ static void gpio_enable_second_function(UINT32 func_mode)
         case GFUNC_MODE_PWM4:
         case GFUNC_MODE_PWM5:
     	    gpio = GPIO_PWM_0+(func_mode-GFUNC_MODE_PWM0);
-    	    gpio_config(gpio, OUTPUT, PULL_HIGH);
     	    gpio_config_func(gpio);
             break;
 

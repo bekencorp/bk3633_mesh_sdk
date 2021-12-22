@@ -405,7 +405,10 @@ void soc_system_init(void)
     hal_init();
 }
 
-
+void enrty_boot(void)
+{
+    //GPIO detect level demo.
+}
 /**
  *******************************************************************************
  * @brief system entry function.

@@ -517,6 +517,71 @@ int bt_mesh_net_create(u16_t idx, u8_t flags, const u8_t key[16],
     return 0;
 }
 
+int bt_mesh_net_key_add(u16_t idx, const u8_t key[16])
+{
+    struct bt_mesh_subnet *sub;
+    int err;
+    if (idx > 0xfff) {
+        BT_ERR("Invalid NetKeyIndex 0x%04x.", idx);
+        return -1;
+    }
+
+    BT_DBG("idx 0x%04x", idx);
+
+    sub = bt_mesh_subnet_get(idx);
+    if (!sub) {
+        int i;
+
+        for (sub = NULL, i = 0; i < ARRAY_SIZE(bt_mesh.sub); i++) {
+            if (bt_mesh.sub[i].net_idx == BT_MESH_KEY_UNUSED) {
+                sub = &bt_mesh.sub[i];
+                break;
+            }
+        }
+
+        if (!sub) {
+            BT_ERR("No space to get the subnet buffer.\n");
+            return -1;
+        }
+    }
+
+    /* Check for already existing subnet */
+    if (sub->net_idx == idx) {
+        u8_t status;
+
+        if (memcmp(&key[0], sub->keys[0].net, 16)) {
+            status = STATUS_IDX_ALREADY_STORED;
+        } else {
+            status = STATUS_SUCCESS;
+        }
+#ifdef CONFIG_BT_MESH_ALI_TMALL_GENIE
+        genie_event(GENIE_EVT_SDK_NETKEY_ADD, &status);
+#endif  /* CONFIG_BT_MESH_ALI_TMALL_GENIE */
+        return -1;
+    }
+
+    err = bt_mesh_net_keys_create(&sub->keys[0], &key[0]);
+    if (err) {
+        BT_ERR("net key create fail, err %d, idx %d\n", err, idx);
+        return -1;
+    }
+
+    sub->net_idx = idx;
+
+    /* Make sure we have valid beacon data to be sent */
+    bt_mesh_net_beacon_update(sub);
+
+    if (IS_ENABLED(CONFIG_BT_MESH_GATT_PROXY)) {
+        sub->node_id = BT_MESH_NODE_IDENTITY_STOPPED;
+        bt_mesh_proxy_beacon_send(sub);
+        bt_mesh_adv_update();
+    } else {
+        sub->node_id = BT_MESH_NODE_IDENTITY_NOT_SUPPORTED;
+    }
+
+    return 0;
+}
+
 void bt_mesh_net_revoke_keys(struct bt_mesh_subnet *sub)
 {
     int i;

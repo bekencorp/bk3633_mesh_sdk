@@ -46,28 +46,28 @@ E_GENIE_FLASH_ERRCODE genie_flash_read_devkey(uint8_t *p_devkey)
     return genie_flash_read_reliable(GFI_MESH_DEVKEY, p_devkey, 16);
 }
 
-E_GENIE_FLASH_ERRCODE genie_flash_write_netkey(mesh_netkey_para_t *p_netkey)
+E_GENIE_FLASH_ERRCODE genie_flash_write_netkey(mesh_netkey_para_t *p_netkey, uint16_t sub_count)
 {
     BT_DBG("\r\n");
-    return genie_flash_write_reliable(GFI_MESH_NETKEY, (uint8_t *)p_netkey, sizeof(mesh_netkey_para_t));
+    return genie_flash_write_reliable(GFI_MESH_NETKEY, (uint8_t *)p_netkey, sizeof(mesh_netkey_para_t) * sub_count);
 }
 
-E_GENIE_FLASH_ERRCODE genie_flash_read_netkey(mesh_netkey_para_t *p_netkey)
+E_GENIE_FLASH_ERRCODE genie_flash_read_netkey(mesh_netkey_para_t *p_netkey, uint16_t sub_count)
 {
     BT_DBG("\r\n");
-    return genie_flash_read_reliable(GFI_MESH_NETKEY, (uint8_t *)p_netkey, sizeof(mesh_netkey_para_t));
+    return genie_flash_read_reliable(GFI_MESH_NETKEY, (uint8_t *)p_netkey, sizeof(mesh_netkey_para_t) * sub_count);
 }
 
-E_GENIE_FLASH_ERRCODE genie_flash_write_appkey(mesh_appkey_para_t *p_appkey)
+E_GENIE_FLASH_ERRCODE genie_flash_write_appkey(mesh_appkey_para_t *p_appkey, uint16_t appkey_count)
 {
     BT_DBG("\r\n");
-    return genie_flash_write_reliable(GFI_MESH_APPKEY, (uint8_t *)p_appkey, sizeof(mesh_appkey_para_t));
+    return genie_flash_write_reliable(GFI_MESH_APPKEY, (uint8_t *)p_appkey, sizeof(mesh_appkey_para_t) * appkey_count);
 }
 
-E_GENIE_FLASH_ERRCODE genie_flash_read_appkey(mesh_appkey_para_t *p_appkey)
+E_GENIE_FLASH_ERRCODE genie_flash_read_appkey(mesh_appkey_para_t *p_appkey, uint16_t appkey_count)
 {
     BT_DBG("\r\n");
-    return genie_flash_read_reliable(GFI_MESH_APPKEY, (uint8_t *)p_appkey, sizeof(mesh_appkey_para_t));
+    return genie_flash_read_reliable(GFI_MESH_APPKEY, (uint8_t *)p_appkey, sizeof(mesh_appkey_para_t) * appkey_count);
 }
 
 E_GENIE_FLASH_ERRCODE genie_flash_write_addr(uint16_t *p_addr)
@@ -93,6 +93,14 @@ E_GENIE_FLASH_ERRCODE genie_flash_read_hb(mesh_hb_para_t *p_para)
     return genie_flash_read_reliable(GFI_MESH_HB, (uint8_t *)p_para, sizeof(mesh_hb_para_t));
 }
 
+E_GENIE_FLASH_ERRCODE genie_flash_write_seq(uint32_t *p_seq)
+{
+    return genie_flash_write_reliable(GFI_MESH_SEQ, (uint8_t *)p_seq, sizeof(uint32_t));
+}
+E_GENIE_FLASH_ERRCODE genie_flash_read_seq(uint32_t *p_seq)
+{
+    return genie_flash_read_reliable(GFI_MESH_SEQ, (uint8_t *)p_seq, sizeof(uint32_t));
+}
 E_GENIE_FLASH_ERRCODE genie_flash_reset_system(void)
 {
     E_GENIE_FLASH_ERRCODE ret;

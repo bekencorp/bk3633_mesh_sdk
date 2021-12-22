@@ -108,28 +108,28 @@ E_GENIE_FLASH_ERRCODE genie_flash_read_devkey(uint8_t *p_devkey);
  * @param[in] status: net key
  * @return the status of operation, 0 means successed.
  */
-E_GENIE_FLASH_ERRCODE genie_flash_write_netkey(mesh_netkey_para_t *p_netkey);
+E_GENIE_FLASH_ERRCODE genie_flash_write_netkey(mesh_netkey_para_t *p_netkey, uint16_t sub_count);
 
 /**
  * @brief read the net key from flash
  * @param[out] status: net key
  * @return the status of operation, 0 means successed.
  */
-E_GENIE_FLASH_ERRCODE genie_flash_read_netkey(mesh_netkey_para_t *p_netkey);
+E_GENIE_FLASH_ERRCODE genie_flash_read_netkey(mesh_netkey_para_t *p_netkey, uint16_t sub_count);
 
 /**
  * @brief save the app key to flash
  * @param[in] status: app key
  * @return the status of operation, 0 means successed.
  */
-E_GENIE_FLASH_ERRCODE genie_flash_write_appkey(mesh_appkey_para_t *p_appkey);
+E_GENIE_FLASH_ERRCODE genie_flash_write_appkey(mesh_appkey_para_t *p_appkey, uint16_t appkey_count);
 
 /**
  * @brief read the app key from flash
  * @param[out] status: app key
  * @return the status of operation, 0 means successed.
  */
-E_GENIE_FLASH_ERRCODE genie_flash_read_appkey(mesh_appkey_para_t *p_appkey);
+E_GENIE_FLASH_ERRCODE genie_flash_read_appkey(mesh_appkey_para_t *p_appkey, uint16_t appkey_count);
 
 
 /**

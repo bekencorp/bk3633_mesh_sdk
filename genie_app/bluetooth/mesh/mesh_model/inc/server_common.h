@@ -140,7 +140,6 @@ struct bt_mesh_server_rsp_ctrl {
         .__buf = net_buf_data_##_name,      \
     }
 
-
 struct bt_mesh_gen_def_trans_time_state {
     uint8_t trans_time;
 };
