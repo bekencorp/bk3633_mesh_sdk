@@ -353,6 +353,7 @@ int uart_test_init(void)
     uart_tp = (struct uart_test_st *)aos_malloc(sizeof(struct uart_test_st));
 
     if (uart_tp == NULL) {
+		printf("%s, No memory!\n", __func__);
         return ENOMEM;
     }
 
@@ -360,7 +361,7 @@ int uart_test_init(void)
 
     ret = uart_test_task_create();
     if (ret != 0) {
-        UART_PRINTF("Error: Failed to create uart_test thread: %d\r\n", ret);
+        printf("Error: Failed to create uart_test thread: %d\r\n", ret);
     }
 
     return 0;

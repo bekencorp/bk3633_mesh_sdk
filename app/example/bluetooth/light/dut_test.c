@@ -158,8 +158,6 @@ int dut_test_start(int argc, char **argv)
 
 	uart_dut_init();
 
-    uart_test_init();
-
 	app_rf_power_init(); //set 0x40
 	app_xtal_cal_init();  // set 0x08 for 7db
     return 0;
