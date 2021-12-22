@@ -208,10 +208,12 @@ static E_GENIE_EVENT _genie_event_handle_mesh_init(void)
 #if CONFIG_MESH_SEQ_COUNT_INT
         seq += CONFIG_MESH_SEQ_COUNT_INT;
 #endif
+#if CONFIG_BT_MESH_SHELL
         int cmd_netkey_info_sync(mesh_netkey_para_t *subnet, uint16_t count);
         int cmd_appkey_info_sync(mesh_appkey_para_t *appkeys, uint16_t count);
         cmd_netkey_info_sync(netkey, CONFIG_BT_MESH_SUBNET_COUNT);
         cmd_appkey_info_sync(appkey, CONFIG_BT_MESH_APP_KEY_COUNT);
+#endif // CONFIG_BT_MESH_SHELL
         bool net_created = false;
         for (int i = 0; i < CONFIG_BT_MESH_SUBNET_COUNT; i++) {
             if (netkey[i].net_index != BT_MESH_KEY_UNUSED) {
