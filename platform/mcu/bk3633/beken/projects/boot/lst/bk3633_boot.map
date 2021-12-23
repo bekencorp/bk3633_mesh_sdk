@@ -1,0 +1,524 @@
+Component: ARM Compiler 5.06 update 6 (build 750) Tool: armlink [4d35ed]
+
+==============================================================================
+
+Section Cross References
+
+    bim_app.o(i.bim_main) refers to bim_wdt.o(i.wdt_disable) for wdt_disable
+    bim_app.o(i.bim_main) refers to bim_app.o(i.updata_memset32) for updata_memset32
+    bim_app.o(i.bim_main) refers to bim_uart2 .o(i.uart0_init) for uart0_init
+    bim_app.o(i.bim_main) refers to bim_flash.o(i.bim_flash_init) for bim_flash_init
+    bim_app.o(i.bim_main) refers to bim_updataimage.o(i.bim_select_sec) for bim_select_sec
+    bim_app.o(i.reset_register_dump) refers to bim_uart2 .o(i.bim_printf) for bim_printf
+    bim_intc.o(i.DataAbort_Exception) refers to bim_wdt.o(i.wdt_enable) for wdt_enable
+    bim_intc.o(i.Irq_Exception) refers to bim_uart2 .o(i.bim_printf) for bim_printf
+    bim_intc.o(i.Irq_Exception) refers to bim_intc.o(.constdata) for .constdata
+    bim_intc.o(i.PrefetchAbort_Exception) refers to bim_wdt.o(i.wdt_enable) for wdt_enable
+    bim_intc.o(i.Reserved_Exception) refers to bim_wdt.o(i.wdt_enable) for wdt_enable
+    bim_intc.o(i.SoftwareInterrupt_Exception) refers to bim_wdt.o(i.wdt_enable) for wdt_enable
+    bim_intc.o(i.Undefined_Exception) refers to bim_wdt.o(i.wdt_enable) for wdt_enable
+    bim_vectors.o(SYS_BOOT) refers to bim_handlers.o(SYS_BOOT) for sys_Reset
+    bim_vectors.o(SYS_BOOT) refers to bim_intc.o(i.SoftwareInterrupt_Exception) for SoftwareInterrupt_Exception
+    bim_vectors.o(SYS_BOOT) refers to bim_intc.o(i.PrefetchAbort_Exception) for PrefetchAbort_Exception
+    bim_vectors.o(SYS_BOOT) refers to bim_intc.o(i.DataAbort_Exception) for DataAbort_Exception
+    bim_vectors.o(SYS_BOOT) refers to bim_intc.o(i.Irq_Exception) for Irq_Exception
+    bim_handlers.o(SYS_BOOT) refers to bim_app.o(i.bim_main) for bim_main
+    bim_flash.o(i.bim_flash_erase_part_sector) refers to bim_flash.o(i.flash_erase_sector) for flash_erase_sector
+    bim_flash.o(i.bim_flash_erase_part_sector) refers to bim_flash.o(i.flash_read) for flash_read
+    bim_flash.o(i.bim_flash_erase_part_sector) refers to bim_flash.o(i.flash_write) for flash_write
+    bim_flash.o(i.bim_flash_init) refers to bim_flash.o(i.get_flash_ID) for get_flash_ID
+    bim_flash.o(i.bim_flash_init) refers to bim_flash.o(i.flash_set_dual_mode) for flash_set_dual_mode
+    bim_flash.o(i.bim_flash_init) refers to bim_flash.o(i.flash_wp_ALL) for flash_wp_ALL
+    bim_flash.o(i.bim_flash_init) refers to bim_flash.o(.data) for .data
+    bim_flash.o(i.clr_flash_qwfr) refers to bim_flash.o(.data) for .data
+    bim_flash.o(i.flash_erase) refers to bim_uart2 .o(i.bim_printf) for bim_printf
+    bim_flash.o(i.flash_erase) refers to bim_flash.o(i.bim_flash_erase_part_sector) for bim_flash_erase_part_sector
+    bim_flash.o(i.flash_erase) refers to bim_flash.o(i.flash_erase_sector) for flash_erase_sector
+    bim_flash.o(i.flash_erase_sector) refers to bim_flash.o(i.__ARM_common_disable_fiq) for __ARM_common_disable_fiq
+    bim_flash.o(i.flash_erase_sector) refers to bim_flash.o(i.__ARM_common_disable_irq) for __ARM_common_disable_irq
+    bim_flash.o(i.flash_erase_sector) refers to bim_flash.o(i.__ARM_common_enable_fiq) for __ARM_common_enable_fiq
+    bim_flash.o(i.flash_erase_sector) refers to bim_flash.o(i.__ARM_common_enable_irq) for __ARM_common_enable_irq
+    bim_flash.o(i.flash_read) refers to bim_flash.o(i.__ARM_common_disable_fiq) for __ARM_common_disable_fiq
+    bim_flash.o(i.flash_read) refers to bim_flash.o(i.__ARM_common_disable_irq) for __ARM_common_disable_irq
+    bim_flash.o(i.flash_read) refers to bim_flash.o(i.flash_read_data) for flash_read_data
+    bim_flash.o(i.flash_read) refers to bim_flash.o(i.__ARM_common_enable_fiq) for __ARM_common_enable_fiq
+    bim_flash.o(i.flash_read) refers to bim_flash.o(i.__ARM_common_enable_irq) for __ARM_common_enable_irq
+    bim_flash.o(i.flash_set_dual_mode) refers to bim_flash.o(i.clr_flash_qwfr) for clr_flash_qwfr
+    bim_flash.o(i.flash_wp_ALL) refers to bim_flash.o(i.flash_write_sr) for flash_write_sr
+    bim_flash.o(i.flash_wp_ALL) refers to bim_flash.o(.data) for .data
+    bim_flash.o(i.flash_wp_none) refers to bim_flash.o(i.flash_write_sr) for flash_write_sr
+    bim_flash.o(i.flash_write) refers to bim_flash.o(i.__ARM_common_disable_fiq) for __ARM_common_disable_fiq
+    bim_flash.o(i.flash_write) refers to bim_flash.o(i.__ARM_common_disable_irq) for __ARM_common_disable_irq
+    bim_flash.o(i.flash_write) refers to bim_flash.o(i.flash_write_data) for flash_write_data
+    bim_flash.o(i.flash_write) refers to bim_flash.o(i.__ARM_common_enable_fiq) for __ARM_common_enable_fiq
+    bim_flash.o(i.flash_write) refers to bim_flash.o(i.__ARM_common_enable_irq) for __ARM_common_enable_irq
+    bim_flash.o(i.flash_write_data) refers to bim_flash.o(i.flash_read_data) for flash_read_data
+    bim_flash.o(i.flash_write_data) refers to memseta.o(.text) for __aeabi_memset
+    bim_flash.o(i.flash_write_page_data) refers to bim_flash.o(i.flash_read_data) for flash_read_data
+    bim_flash.o(i.flash_write_page_data) refers to memseta.o(.text) for __aeabi_memset
+    bim_flash.o(i.flash_write_sr) refers to bim_flash.o(i.get_flash_ID) for get_flash_ID
+    bim_flash.o(i.flash_write_sr) refers to bim_flash.o(.data) for .data
+    bim_uart2 .o(i.bim_printf) refers to bim_uart2 .o(i.uart_send_byte) for uart_send_byte
+    bim_uart2 .o(i.bim_printf) refers to bim_uart2 .o(i.printf_string) for printf_string
+    bim_uart2 .o(i.bim_printf) refers to bim_uart2 .o(i.printf_hex) for printf_hex
+    bim_uart2 .o(i.printf_hex) refers to bim_uart2 .o(i.uart_send_byte) for uart_send_byte
+    bim_uart2 .o(i.printf_string) refers to bim_uart2 .o(i.uart_send_byte) for uart_send_byte
+    bim_uart2 .o(i.uart0_init) refers to uidiv.o(.text) for __aeabi_uidivmod
+    bim_uart2 .o(i.uart2_init) refers to uidiv.o(.text) for __aeabi_uidivmod
+    bim_gpio.o(i.bim_gpio_triger) refers to bim_gpio.o(i.bim_gpio_set) for bim_gpio_set
+    bim_updataimage.o(i.bim_check_backup_sec_status) refers to bim_updataimage.o(i.bim_get_psec_backup_header) for bim_get_psec_backup_header
+    bim_updataimage.o(i.bim_check_backup_sec_status) refers to uread4.o(.text) for __aeabi_uread4
+    bim_updataimage.o(i.bim_check_backup_sec_status) refers to bim_uart2 .o(i.bim_printf) for bim_printf
+    bim_updataimage.o(i.bim_check_backup_sec_status) refers to bim_updataimage.o(i.calc_backup_sec_crc) for calc_backup_sec_crc
+    bim_updataimage.o(i.bim_check_backup_sec_status) refers to bim_updataimage.o(.bss) for .bss
+    bim_updataimage.o(i.bim_clear_magic_num) refers to bim_flash.o(i.flash_write) for flash_write
+    bim_updataimage.o(i.bim_erase_image_sec) refers to uread4.o(.text) for __aeabi_uread4
+    bim_updataimage.o(i.bim_erase_image_sec) refers to bim_flash.o(i.flash_erase) for flash_erase
+    bim_updataimage.o(i.bim_erase_image_sec) refers to bim_updataimage.o(.bss) for .bss
+    bim_updataimage.o(i.bim_get_psec_backup_header) refers to bim_flash.o(i.flash_read) for flash_read
+    bim_updataimage.o(i.bim_get_psec_backup_header) refers to bim_updataimage.o(.bss) for .bss
+    bim_updataimage.o(i.bim_select_sec) refers to bim_updataimage.o(i.bim_check_backup_sec_status) for bim_check_backup_sec_status
+    bim_updataimage.o(i.bim_select_sec) refers to bim_flash.o(i.flash_wp_none) for flash_wp_none
+    bim_updataimage.o(i.bim_select_sec) refers to bim_updataimage.o(i.bim_erase_image_sec) for bim_erase_image_sec
+    bim_updataimage.o(i.bim_select_sec) refers to bim_updataimage.o(i.bim_updata_backup_to_image_sec) for bim_updata_backup_to_image_sec
+    bim_updataimage.o(i.bim_select_sec) refers to bim_updataimage.o(i.bim_clear_magic_num) for bim_clear_magic_num
+    bim_updataimage.o(i.bim_select_sec) refers to bim_flash.o(i.flash_wp_ALL) for flash_wp_ALL
+    bim_updataimage.o(i.bim_updata_backup_to_image_sec) refers to uread4.o(.text) for __aeabi_uread4
+    bim_updataimage.o(i.bim_updata_backup_to_image_sec) refers to bim_uart2 .o(i.bim_printf) for bim_printf
+    bim_updataimage.o(i.bim_updata_backup_to_image_sec) refers to bim_flash.o(i.flash_read) for flash_read
+    bim_updataimage.o(i.bim_updata_backup_to_image_sec) refers to bim_flash.o(i.flash_write) for flash_write
+    bim_updataimage.o(i.bim_updata_backup_to_image_sec) refers to bim_updataimage.o(.bss) for .bss
+    bim_updataimage.o(i.calc_backup_sec_crc) refers to uread4.o(.text) for __aeabi_uread4
+    bim_updataimage.o(i.calc_backup_sec_crc) refers to bim_updataimage.o(i.make_crc32_table) for make_crc32_table
+    bim_updataimage.o(i.calc_backup_sec_crc) refers to bim_flash.o(i.flash_read) for flash_read
+    bim_updataimage.o(i.calc_backup_sec_crc) refers to bim_updataimage.o(i.make_crc32) for make_crc32
+    bim_updataimage.o(i.calc_backup_sec_crc) refers to bim_updataimage.o(.bss) for .bss
+    bim_updataimage.o(i.make_crc32) refers to bim_updataimage.o(.bss) for .bss
+    bim_updataimage.o(i.make_crc32_table) refers to bim_updataimage.o(.bss) for .bss
+
+
+==============================================================================
+
+Adding Veneers to the image
+
+    Adding AT veneer (8 bytes, Inline) for call to 'DataAbort_Exception' from bim_vectors.o(SYS_BOOT).
+    Adding AT veneer (8 bytes, Inline) for call to 'PrefetchAbort_Exception' from bim_vectors.o(SYS_BOOT).
+    Adding AT veneer (8 bytes, Inline) for call to 'SoftwareInterrupt_Exception' from bim_vectors.o(SYS_BOOT).
+    Adding AT veneer (8 bytes, Inline) for call to 'bim_main' from bim_handlers.o(SYS_BOOT).
+    Adding AT veneer (8 bytes, Inline) for call to 'bim_printf' from bim_intc.o(i.Irq_Exception).
+
+5 Veneer(s) (total 40 bytes) added to the image.
+
+==============================================================================
+
+Image Symbol Table
+
+    Local Symbols
+
+    Symbol Name                              Value     Ov Type        Size  Object(Section)
+
+    SYS_BOOT                                 0x00000000   Section      188  bim_vectors.o(SYS_BOOT)
+    ../clib/microlib/division.c              0x00000000   Number         0  uidiv.o ABSOLUTE
+    ../clib/microlib/string/memset.c         0x00000000   Number         0  memseta.o ABSOLUTE
+    ../clib/microlib/unhosted.c              0x00000000   Number         0  uread4.o ABSOLUTE
+    app\bim_app.c                            0x00000000   Number         0  bim_app.o ABSOLUTE
+    app\bim_flash.c                          0x00000000   Number         0  bim_flash.o ABSOLUTE
+    app\bim_gpio.c                           0x00000000   Number         0  bim_gpio.o ABSOLUTE
+    app\bim_handlers.s                       0x00000000   Number         0  bim_handlers.o ABSOLUTE
+    app\bim_icu.c                            0x00000000   Number         0  bim_icu.o ABSOLUTE
+    app\bim_intc.c                           0x00000000   Number         0  bim_intc.o ABSOLUTE
+    app\bim_uart2 .c                         0x00000000   Number         0  bim_uart2 .o ABSOLUTE
+    app\bim_updataImage.c                    0x00000000   Number         0  bim_updataimage.o ABSOLUTE
+    app\bim_vectors.s                        0x00000000   Number         0  bim_vectors.o ABSOLUTE
+    app\bim_wdt.c                            0x00000000   Number         0  bim_wdt.o ABSOLUTE
+    dc.s                                     0x00000000   Number         0  dc.o ABSOLUTE
+    Undefined                                0x00000040   ARM Code       0  bim_vectors.o(SYS_BOOT)
+    SoftwareInterrupt                        0x00000044   ARM Code       0  bim_vectors.o(SYS_BOOT)
+    PrefetchAbort                            0x00000060   ARM Code       0  bim_vectors.o(SYS_BOOT)
+    DataAbort                                0x0000007c   ARM Code       0  bim_vectors.o(SYS_BOOT)
+    IRQ_Handler                              0x00000098   ARM Code       0  bim_vectors.o(SYS_BOOT)
+    FIQ_Handler                              0x000000b4   ARM Code       0  bim_vectors.o(SYS_BOOT)
+    sys_reserved                             0x000000b8   ARM Code       0  bim_vectors.o(SYS_BOOT)
+    .ARM.__AT_0x00000100                     0x00000100   Section        4  bim_app.o(.ARM.__AT_0x00000100)
+    .ARM.__AT_0x00000104                     0x00000104   Section        4  bim_app.o(.ARM.__AT_0x00000104)
+    SYS_BOOT                                 0x00000108   Section      524  bim_handlers.o(SYS_BOOT)
+    .text                                    0x00000314   Section        0  uidiv.o(.text)
+    .text                                    0x00000340   Section        0  memseta.o(.text)
+    .text                                    0x00000366   Section        0  uread4.o(.text)
+    i.DataAbort_Exception                    0x00000384   Section        0  bim_intc.o(i.DataAbort_Exception)
+    i.Irq_Exception                          0x0000038c   Section        0  bim_intc.o(i.Irq_Exception)
+    i.PrefetchAbort_Exception                0x000003b4   Section        0  bim_intc.o(i.PrefetchAbort_Exception)
+    i.Reserved_Exception                     0x000003bc   Section        0  bim_intc.o(i.Reserved_Exception)
+    i.SoftwareInterrupt_Exception            0x000003cc   Section        0  bim_intc.o(i.SoftwareInterrupt_Exception)
+    i.Undefined_Exception                    0x000003d4   Section        0  bim_intc.o(i.Undefined_Exception)
+    i.__ARM_common_disable_fiq               0x000003dc   Section        0  bim_flash.o(i.__ARM_common_disable_fiq)
+    i.__ARM_common_disable_irq               0x000003f0   Section        0  bim_flash.o(i.__ARM_common_disable_irq)
+    i.__ARM_common_enable_fiq                0x00000404   Section        0  bim_flash.o(i.__ARM_common_enable_fiq)
+    i.__ARM_common_enable_irq                0x00000414   Section        0  bim_flash.o(i.__ARM_common_enable_irq)
+    i.bim_check_backup_sec_status            0x00000424   Section        0  bim_updataimage.o(i.bim_check_backup_sec_status)
+    i.bim_clear_magic_num                    0x000004b8   Section        0  bim_updataimage.o(i.bim_clear_magic_num)
+    i.bim_erase_image_sec                    0x000004d0   Section        0  bim_updataimage.o(i.bim_erase_image_sec)
+    i.bim_flash_erase_part_sector            0x000004f0   Section        0  bim_flash.o(i.bim_flash_erase_part_sector)
+    i.bim_flash_init                         0x000005a8   Section        0  bim_flash.o(i.bim_flash_init)
+    i.bim_get_psec_backup_header             0x000005c0   Section        0  bim_updataimage.o(i.bim_get_psec_backup_header)
+    i.bim_gpio_config                        0x000005f4   Section        0  bim_gpio.o(i.bim_gpio_config)
+    i.bim_gpio_set                           0x00000644   Section        0  bim_gpio.o(i.bim_gpio_set)
+    i.bim_gpio_triger                        0x0000066c   Section        0  bim_gpio.o(i.bim_gpio_triger)
+    i.bim_main                               0x00000688   Section        0  bim_app.o(i.bim_main)
+    i.bim_printf                             0x000006cc   Section        0  bim_uart2 .o(i.bim_printf)
+    i.bim_select_sec                         0x00000738   Section        0  bim_updataimage.o(i.bim_select_sec)
+    i.bim_updata_backup_to_image_sec         0x0000075c   Section        0  bim_updataimage.o(i.bim_updata_backup_to_image_sec)
+    i.calc_backup_sec_crc                    0x000007c8   Section        0  bim_updataimage.o(i.calc_backup_sec_crc)
+    i.clr_flash_qwfr                         0x00000824   Section        0  bim_flash.o(i.clr_flash_qwfr)
+    i.flash_erase                            0x00000888   Section        0  bim_flash.o(i.flash_erase)
+    i.flash_erase_one_block                  0x00000934   Section        0  bim_flash.o(i.flash_erase_one_block)
+    i.flash_erase_sector                     0x00000958   Section        0  bim_flash.o(i.flash_erase_sector)
+    i.flash_read                             0x0000099c   Section        0  bim_flash.o(i.flash_read)
+    i.flash_read_data                        0x000009cc   Section        0  bim_flash.o(i.flash_read_data)
+    i.flash_read_sr                          0x00000a38   Section        0  bim_flash.o(i.flash_read_sr)
+    i.flash_set_dual_mode                    0x00000a5c   Section        0  bim_flash.o(i.flash_set_dual_mode)
+    i.flash_wp_ALL                           0x00000a80   Section        0  bim_flash.o(i.flash_wp_ALL)
+    i.flash_wp_none                          0x00000af0   Section        0  bim_flash.o(i.flash_wp_none)
+    i.flash_write                            0x00000afc   Section        0  bim_flash.o(i.flash_write)
+    i.flash_write_data                       0x00000b2c   Section        0  bim_flash.o(i.flash_write_data)
+    i.flash_write_page_data                  0x00000bdc   Section        0  bim_flash.o(i.flash_write_page_data)
+    i.flash_write_sr                         0x00000cb8   Section        0  bim_flash.o(i.flash_write_sr)
+    i.get_flash_ID                           0x00000d24   Section        0  bim_flash.o(i.get_flash_ID)
+    i.icu_init                               0x00000d50   Section        0  bim_icu.o(i.icu_init)
+    i.make_crc32                             0x00000d90   Section        0  bim_updataimage.o(i.make_crc32)
+    i.make_crc32_table                       0x00000db0   Section        0  bim_updataimage.o(i.make_crc32_table)
+    i.printf_hex                             0x00000de4   Section        0  bim_uart2 .o(i.printf_hex)
+    i.printf_string                          0x00000e24   Section        0  bim_uart2 .o(i.printf_string)
+    i.reset_register_dump                    0x00000e38   Section        0  bim_app.o(i.reset_register_dump)
+    i.set_flash_clk                          0x00000e70   Section        0  bim_flash.o(i.set_flash_clk)
+    i.uart0_init                             0x00000ea0   Section        0  bim_uart2 .o(i.uart0_init)
+    i.uart2_init                             0x00000ef8   Section        0  bim_uart2 .o(i.uart2_init)
+    i.uart_send_byte                         0x00000f50   Section        0  bim_uart2 .o(i.uart_send_byte)
+    uart_send_byte                           0x00000f51   Thumb Code    12  bim_uart2 .o(i.uart_send_byte)
+    i.updata_memset32                        0x00000f60   Section        0  bim_app.o(i.updata_memset32)
+    i.wdt_disable                            0x00000f70   Section        0  bim_wdt.o(i.wdt_disable)
+    i.wdt_enable                             0x00000f84   Section        0  bim_wdt.o(i.wdt_enable)
+    i.wdt_feed                               0x00000f9c   Section        0  bim_wdt.o(i.wdt_feed)
+    .constdata                               0x00000fac   Section       14  bim_intc.o(.constdata)
+    __func__                                 0x00000fac   Data          14  bim_intc.o(.constdata)
+    [Anonymous Symbol]                       0x00017a40   ARM Code       0  bim_vectors.o ABSOLUTE
+    [Anonymous Symbol]                       0x00017a60   ARM Code       0  bim_vectors.o ABSOLUTE
+    [Anonymous Symbol]                       0x00017a80   ARM Code       0  bim_vectors.o ABSOLUTE
+    [Anonymous Symbol]                       0x00017aa0   ARM Code       0  bim_vectors.o ABSOLUTE
+    [Anonymous Symbol]                       0x00017ac0   ARM Code       0  bim_vectors.o ABSOLUTE
+    [Anonymous Symbol]                       0x00017ae0   ARM Code       0  bim_vectors.o ABSOLUTE
+    [Anonymous Symbol]                       0x00017b00   ARM Code       0  bim_vectors.o ABSOLUTE
+    .data                                    0x00400080   Section        4  bim_flash.o(.data)
+    .bss                                     0x00400084   Section      128  bim_uart2 .o(.bss)
+    .bss                                     0x00400104   Section     1056  bim_updataimage.o(.bss)
+
+    Global Symbols
+
+    Symbol Name                              Value     Ov Type        Size  Object(Section)
+
+    BuildAttributes$$THM_ISAv2$ARM_ISAv5$E$P$S$PE$A:L22$X:L11$S22$IEEE1$IW$USESV6$~STKCKD$USESV7$~SHL$OSPACE$EBA8$MICROLIB$REQ8$PRES8$EABIv2 0x00000000   Number         0  anon$$obj.o ABSOLUTE
+    Image$$RAM_BSS$$Length                   0x00000000   Number         0  anon$$obj.o ABSOLUTE
+    vectors                                  0x00000000   ARM Code       0  bim_vectors.o(SYS_BOOT)
+    Image$$RAM_DATA$$Length                  0x00000004   Number         0  anon$$obj.o ABSOLUTE
+    Image$$RAM_STACK_FIQ$$ZI$$Length         0x00000010   Number         0  anon$$obj.o ABSOLUTE
+    Image$$RAM_STACK_IRQ$$ZI$$Length         0x00000010   Number         0  anon$$obj.o ABSOLUTE
+    Image$$RAM_STACK_SVC$$ZI$$Length         0x00000010   Number         0  anon$$obj.o ABSOLUTE
+    Image$$RAM_STACK_UNUSED$$ZI$$Length      0x00000010   Number         0  anon$$obj.o ABSOLUTE
+    BK36                                     0x00000100   Data           4  bim_app.o(.ARM.__AT_0x00000100)
+    BK33                                     0x00000104   Data           4  bim_app.o(.ARM.__AT_0x00000104)
+    boot_stack_base_UNUSED                   0x00000110   Data           4  bim_handlers.o(SYS_BOOT)
+    boot_stack_len_UNUSED                    0x00000114   Data           4  bim_handlers.o(SYS_BOOT)
+    boot_stack_base_IRQ                      0x00000118   Data           4  bim_handlers.o(SYS_BOOT)
+    boot_stack_len_IRQ                       0x0000011c   Data           4  bim_handlers.o(SYS_BOOT)
+    boot_stack_base_SVC                      0x00000120   Data           4  bim_handlers.o(SYS_BOOT)
+    boot_stack_len_SVC                       0x00000124   Data           4  bim_handlers.o(SYS_BOOT)
+    boot_stack_base_FIQ                      0x00000128   Data           4  bim_handlers.o(SYS_BOOT)
+    boot_stack_len_FIQ                       0x0000012c   Data           4  bim_handlers.o(SYS_BOOT)
+    sys_Reset                                0x00000130   ARM Code       0  bim_handlers.o(SYS_BOOT)
+    __aeabi_uidiv                            0x00000315   Thumb Code     0  uidiv.o(.text)
+    __aeabi_uidivmod                         0x00000315   Thumb Code    44  uidiv.o(.text)
+    __aeabi_memset                           0x00000341   Thumb Code    16  memseta.o(.text)
+    __aeabi_memset4                          0x00000341   Thumb Code     0  memseta.o(.text)
+    __aeabi_memset8                          0x00000341   Thumb Code     0  memseta.o(.text)
+    __aeabi_memclr                           0x00000351   Thumb Code     4  memseta.o(.text)
+    __aeabi_memclr4                          0x00000351   Thumb Code     0  memseta.o(.text)
+    __aeabi_memclr8                          0x00000351   Thumb Code     0  memseta.o(.text)
+    _memset$wrapper                          0x00000355   Thumb Code    18  memseta.o(.text)
+    __aeabi_uread4                           0x00000367   Thumb Code    20  uread4.o(.text)
+    __rt_uread4                              0x00000367   Thumb Code     0  uread4.o(.text)
+    _uread4                                  0x00000367   Thumb Code     0  uread4.o(.text)
+    Inline ARM to Thumb Veneer to DataAbort_Exception 0x0000037c   ARM Code       8  bim_intc.o(i.DataAbort_Exception)
+    DataAbort_Exception                      0x00000385   Thumb Code     8  bim_intc.o(i.DataAbort_Exception)
+    Irq_Exception                            0x0000038c   ARM Code      12  bim_intc.o(i.Irq_Exception)
+    Inline ARM to Thumb Veneer to PrefetchAbort_Exception 0x000003ac   ARM Code       8  bim_intc.o(i.PrefetchAbort_Exception)
+    PrefetchAbort_Exception                  0x000003b5   Thumb Code     8  bim_intc.o(i.PrefetchAbort_Exception)
+    Reserved_Exception                       0x000003bd   Thumb Code     8  bim_intc.o(i.Reserved_Exception)
+    Inline ARM to Thumb Veneer to SoftwareInterrupt_Exception 0x000003c4   ARM Code       8  bim_intc.o(i.SoftwareInterrupt_Exception)
+    SoftwareInterrupt_Exception              0x000003cd   Thumb Code     8  bim_intc.o(i.SoftwareInterrupt_Exception)
+    Undefined_Exception                      0x000003d5   Thumb Code     8  bim_intc.o(i.Undefined_Exception)
+    __ARM_common_disable_fiq                 0x000003dc   ARM Code      20  bim_flash.o(i.__ARM_common_disable_fiq)
+    __ARM_common_disable_irq                 0x000003f0   ARM Code      20  bim_flash.o(i.__ARM_common_disable_irq)
+    __ARM_common_enable_fiq                  0x00000404   ARM Code      16  bim_flash.o(i.__ARM_common_enable_fiq)
+    __ARM_common_enable_irq                  0x00000414   ARM Code      16  bim_flash.o(i.__ARM_common_enable_irq)
+    bim_check_backup_sec_status              0x00000425   Thumb Code   118  bim_updataimage.o(i.bim_check_backup_sec_status)
+    Image$$RAM_BSS$$ZI$$Length               0x000004a0   Number         0  anon$$obj.o ABSOLUTE
+    bim_clear_magic_num                      0x000004b9   Thumb Code    18  bim_updataimage.o(i.bim_clear_magic_num)
+    bim_erase_image_sec                      0x000004d1   Thumb Code    26  bim_updataimage.o(i.bim_erase_image_sec)
+    bim_flash_erase_part_sector              0x000004f1   Thumb Code   184  bim_flash.o(i.bim_flash_erase_part_sector)
+    bim_flash_init                           0x000005a9   Thumb Code    20  bim_flash.o(i.bim_flash_init)
+    bim_get_psec_backup_header               0x000005c1   Thumb Code    40  bim_updataimage.o(i.bim_get_psec_backup_header)
+    bim_gpio_config                          0x000005f5   Thumb Code    76  bim_gpio.o(i.bim_gpio_config)
+    bim_gpio_set                             0x00000645   Thumb Code    34  bim_gpio.o(i.bim_gpio_set)
+    bim_gpio_triger                          0x0000066d   Thumb Code    20  bim_gpio.o(i.bim_gpio_triger)
+    Inline ARM to Thumb Veneer to bim_main   0x00000680   ARM Code       8  bim_app.o(i.bim_main)
+    bim_main                                 0x00000689   Thumb Code    54  bim_app.o(i.bim_main)
+    Inline ARM to Thumb Veneer to bim_printf 0x000006c4   ARM Code       8  bim_uart2 .o(i.bim_printf)
+    bim_printf                               0x000006cd   Thumb Code   108  bim_uart2 .o(i.bim_printf)
+    bim_select_sec                           0x00000739   Thumb Code    34  bim_updataimage.o(i.bim_select_sec)
+    bim_updata_backup_to_image_sec           0x0000075d   Thumb Code    78  bim_updataimage.o(i.bim_updata_backup_to_image_sec)
+    calc_backup_sec_crc                      0x000007c9   Thumb Code    86  bim_updataimage.o(i.calc_backup_sec_crc)
+    clr_flash_qwfr                           0x00000825   Thumb Code    74  bim_flash.o(i.clr_flash_qwfr)
+    flash_erase                              0x00000889   Thumb Code   124  bim_flash.o(i.flash_erase)
+    flash_erase_one_block                    0x00000935   Thumb Code    32  bim_flash.o(i.flash_erase_one_block)
+    flash_erase_sector                       0x00000959   Thumb Code    64  bim_flash.o(i.flash_erase_sector)
+    flash_read                               0x0000099d   Thumb Code    48  bim_flash.o(i.flash_read)
+    flash_read_data                          0x000009cd   Thumb Code   102  bim_flash.o(i.flash_read_data)
+    flash_read_sr                            0x00000a39   Thumb Code    26  bim_flash.o(i.flash_read_sr)
+    flash_set_dual_mode                      0x00000a5d   Thumb Code    32  bim_flash.o(i.flash_set_dual_mode)
+    flash_wp_ALL                             0x00000a81   Thumb Code    86  bim_flash.o(i.flash_wp_ALL)
+    flash_wp_none                            0x00000af1   Thumb Code    12  bim_flash.o(i.flash_wp_none)
+    flash_write                              0x00000afd   Thumb Code    48  bim_flash.o(i.flash_write)
+    flash_write_data                         0x00000b2d   Thumb Code   170  bim_flash.o(i.flash_write_data)
+    flash_write_page_data                    0x00000bdd   Thumb Code   216  bim_flash.o(i.flash_write_page_data)
+    flash_write_sr                           0x00000cb9   Thumb Code    92  bim_flash.o(i.flash_write_sr)
+    get_flash_ID                             0x00000d25   Thumb Code    34  bim_flash.o(i.get_flash_ID)
+    icu_init                                 0x00000d51   Thumb Code    58  bim_icu.o(i.icu_init)
+    make_crc32                               0x00000d91   Thumb Code    28  bim_updataimage.o(i.make_crc32)
+    make_crc32_table                         0x00000db1   Thumb Code    44  bim_updataimage.o(i.make_crc32_table)
+    printf_hex                               0x00000de5   Thumb Code    64  bim_uart2 .o(i.printf_hex)
+    printf_string                            0x00000e25   Thumb Code    20  bim_uart2 .o(i.printf_string)
+    reset_register_dump                      0x00000e39   Thumb Code    22  bim_app.o(i.reset_register_dump)
+    set_flash_clk                            0x00000e71   Thumb Code    40  bim_flash.o(i.set_flash_clk)
+    uart0_init                               0x00000ea1   Thumb Code    66  bim_uart2 .o(i.uart0_init)
+    uart2_init                               0x00000ef9   Thumb Code    66  bim_uart2 .o(i.uart2_init)
+    updata_memset32                          0x00000f61   Thumb Code    14  bim_app.o(i.updata_memset32)
+    wdt_disable                              0x00000f71   Thumb Code    16  bim_wdt.o(i.wdt_disable)
+    wdt_enable                               0x00000f85   Thumb Code    18  bim_wdt.o(i.wdt_enable)
+    wdt_feed                                 0x00000f9d   Thumb Code    12  bim_wdt.o(i.wdt_feed)
+    Load$$RAM_DATA$$Base                     0x00000fbc   Number         0  anon$$obj.o ABSOLUTE
+    Image$$RAM_DATA$$Base                    0x00400080   Number         0  anon$$obj.o ABSOLUTE
+    flash_mid                                0x00400080   Data           4  bim_flash.o(.data)
+    Image$$RAM_BSS$$Base                     0x00400084   Number         0  anon$$obj.o ABSOLUTE
+    uart2_tx_buf                             0x00400084   Data         128  bim_uart2 .o(.bss)
+    hdr_ota_img                              0x00400104   Data          32  bim_updataimage.o(.bss)
+    crc32_table                              0x00400124   Data        1024  bim_updataimage.o(.bss)
+    Image$$RAM_STACK_UNUSED$$Base            0x0040ffbc   Number         0  anon$$obj.o ABSOLUTE
+    Image$$RAM_STACK_SVC$$Base               0x0040ffcc   Number         0  anon$$obj.o ABSOLUTE
+    Image$$RAM_STACK_IRQ$$Base               0x0040ffdc   Number         0  anon$$obj.o ABSOLUTE
+    Image$$RAM_STACK_FIQ$$Base               0x0040ffec   Number         0  anon$$obj.o ABSOLUTE
+
+
+
+==============================================================================
+
+Memory Map of the image
+
+  Image Entry point : 0x00000130
+
+  Load Region SECTIONS (Base: 0x00000000, Size: 0x00000fc0, Max: 0xffffffff, ABSOLUTE)
+
+    Execution Region ROM_SYS (Exec base: 0x00000000, Load base: 0x00000000, Size: 0x00000314, Max: 0xffffffff, ABSOLUTE)
+
+    Exec Addr    Load Addr    Size         Type   Attr      Idx    E Section Name        Object
+
+    0x00000000   0x00000000   0x000000bc   Code   RO           18  * SYS_BOOT            bim_vectors.o
+    0x000000bc   0x000000bc   0x00000044   PAD
+    0x00000100   0x00000100   0x00000004   Data   RO            9    .ARM.__AT_0x00000100  bim_app.o
+    0x00000104   0x00000104   0x00000004   Data   RO           10    .ARM.__AT_0x00000104  bim_app.o
+    0x00000108   0x00000108   0x0000020c   Code   RO           19  * SYS_BOOT            bim_handlers.o
+
+
+    Execution Region ROM (Exec base: 0x00000314, Load base: 0x00000314, Size: 0x00000ca8, Max: 0xffffffff, ABSOLUTE)
+
+    Exec Addr    Load Addr    Size         Type   Attr      Idx    E Section Name        Object
+
+    0x00000314   0x00000314   0x0000002c   Code   RO           70    .text               mc_5.l(uidiv.o)
+    0x00000340   0x00000340   0x00000026   Code   RO           71    .text               mc_5.l(memseta.o)
+    0x00000366   0x00000366   0x00000014   Code   RO           72    .text               mc_5.l(uread4.o)
+    0x0000037a   0x0000037a   0x00000002   PAD
+    0x0000037c   0x0000037c   0x00000008   Ven    RO           11    i.DataAbort_Exception  bim_intc.o
+    0x00000384   0x00000384   0x00000008   Code   RO           11    i.DataAbort_Exception  bim_intc.o
+    0x0000038c   0x0000038c   0x00000020   Code   RO           12    i.Irq_Exception     bim_intc.o
+    0x000003ac   0x000003ac   0x00000008   Ven    RO           13    i.PrefetchAbort_Exception  bim_intc.o
+    0x000003b4   0x000003b4   0x00000008   Code   RO           13    i.PrefetchAbort_Exception  bim_intc.o
+    0x000003bc   0x000003bc   0x00000008   Code   RO           14    i.Reserved_Exception  bim_intc.o
+    0x000003c4   0x000003c4   0x00000008   Ven    RO           15    i.SoftwareInterrupt_Exception  bim_intc.o
+    0x000003cc   0x000003cc   0x00000008   Code   RO           15    i.SoftwareInterrupt_Exception  bim_intc.o
+    0x000003d4   0x000003d4   0x00000008   Code   RO           16    i.Undefined_Exception  bim_intc.o
+    0x000003dc   0x000003dc   0x00000014   Code   RO           43    i.__ARM_common_disable_fiq  bim_flash.o
+    0x000003f0   0x000003f0   0x00000014   Code   RO           42    i.__ARM_common_disable_irq  bim_flash.o
+    0x00000404   0x00000404   0x00000010   Code   RO           41    i.__ARM_common_enable_fiq  bim_flash.o
+    0x00000414   0x00000414   0x00000010   Code   RO           40    i.__ARM_common_enable_irq  bim_flash.o
+    0x00000424   0x00000424   0x00000094   Code   RO           58    i.bim_check_backup_sec_status  bim_updataimage.o
+    0x000004b8   0x000004b8   0x00000018   Code   RO           59    i.bim_clear_magic_num  bim_updataimage.o
+    0x000004d0   0x000004d0   0x00000020   Code   RO           60    i.bim_erase_image_sec  bim_updataimage.o
+    0x000004f0   0x000004f0   0x000000b8   Code   RO           20    i.bim_flash_erase_part_sector  bim_flash.o
+    0x000005a8   0x000005a8   0x00000018   Code   RO           21    i.bim_flash_init    bim_flash.o
+    0x000005c0   0x000005c0   0x00000034   Code   RO           61    i.bim_get_psec_backup_header  bim_updataimage.o
+    0x000005f4   0x000005f4   0x00000050   Code   RO           55    i.bim_gpio_config   bim_gpio.o
+    0x00000644   0x00000644   0x00000028   Code   RO           56    i.bim_gpio_set      bim_gpio.o
+    0x0000066c   0x0000066c   0x00000014   Code   RO           57    i.bim_gpio_triger   bim_gpio.o
+    0x00000680   0x00000680   0x00000008   Ven    RO            6    i.bim_main          bim_app.o
+    0x00000688   0x00000688   0x0000003c   Code   RO            6    i.bim_main          bim_app.o
+    0x000006c4   0x000006c4   0x00000008   Ven    RO           44    i.bim_printf        bim_uart2 .o
+    0x000006cc   0x000006cc   0x0000006c   Code   RO           44    i.bim_printf        bim_uart2 .o
+    0x00000738   0x00000738   0x00000022   Code   RO           62    i.bim_select_sec    bim_updataimage.o
+    0x0000075a   0x0000075a   0x00000002   PAD
+    0x0000075c   0x0000075c   0x0000006c   Code   RO           63    i.bim_updata_backup_to_image_sec  bim_updataimage.o
+    0x000007c8   0x000007c8   0x0000005c   Code   RO           64    i.calc_backup_sec_crc  bim_updataimage.o
+    0x00000824   0x00000824   0x00000064   Code   RO           22    i.clr_flash_qwfr    bim_flash.o
+    0x00000888   0x00000888   0x000000ac   Code   RO           23    i.flash_erase       bim_flash.o
+    0x00000934   0x00000934   0x00000024   Code   RO           24    i.flash_erase_one_block  bim_flash.o
+    0x00000958   0x00000958   0x00000044   Code   RO           25    i.flash_erase_sector  bim_flash.o
+    0x0000099c   0x0000099c   0x00000030   Code   RO           26    i.flash_read        bim_flash.o
+    0x000009cc   0x000009cc   0x0000006c   Code   RO           27    i.flash_read_data   bim_flash.o
+    0x00000a38   0x00000a38   0x00000024   Code   RO           28    i.flash_read_sr     bim_flash.o
+    0x00000a5c   0x00000a5c   0x00000024   Code   RO           29    i.flash_set_dual_mode  bim_flash.o
+    0x00000a80   0x00000a80   0x00000070   Code   RO           30    i.flash_wp_ALL      bim_flash.o
+    0x00000af0   0x00000af0   0x0000000c   Code   RO           31    i.flash_wp_none     bim_flash.o
+    0x00000afc   0x00000afc   0x00000030   Code   RO           32    i.flash_write       bim_flash.o
+    0x00000b2c   0x00000b2c   0x000000b0   Code   RO           33    i.flash_write_data  bim_flash.o
+    0x00000bdc   0x00000bdc   0x000000dc   Code   RO           34    i.flash_write_page_data  bim_flash.o
+    0x00000cb8   0x00000cb8   0x0000006c   Code   RO           35    i.flash_write_sr    bim_flash.o
+    0x00000d24   0x00000d24   0x0000002c   Code   RO           36    i.get_flash_ID      bim_flash.o
+    0x00000d50   0x00000d50   0x00000040   Code   RO           51    i.icu_init          bim_icu.o
+    0x00000d90   0x00000d90   0x00000020   Code   RO           65    i.make_crc32        bim_updataimage.o
+    0x00000db0   0x00000db0   0x00000034   Code   RO           66    i.make_crc32_table  bim_updataimage.o
+    0x00000de4   0x00000de4   0x00000040   Code   RO           45    i.printf_hex        bim_uart2 .o
+    0x00000e24   0x00000e24   0x00000014   Code   RO           46    i.printf_string     bim_uart2 .o
+    0x00000e38   0x00000e38   0x00000038   Code   RO            7    i.reset_register_dump  bim_app.o
+    0x00000e70   0x00000e70   0x00000030   Code   RO           37    i.set_flash_clk     bim_flash.o
+    0x00000ea0   0x00000ea0   0x00000058   Code   RO           47    i.uart0_init        bim_uart2 .o
+    0x00000ef8   0x00000ef8   0x00000058   Code   RO           48    i.uart2_init        bim_uart2 .o
+    0x00000f50   0x00000f50   0x00000010   Code   RO           49    i.uart_send_byte    bim_uart2 .o
+    0x00000f60   0x00000f60   0x0000000e   Code   RO            8    i.updata_memset32   bim_app.o
+    0x00000f6e   0x00000f6e   0x00000002   PAD
+    0x00000f70   0x00000f70   0x00000014   Code   RO           52    i.wdt_disable       bim_wdt.o
+    0x00000f84   0x00000f84   0x00000018   Code   RO           53    i.wdt_enable        bim_wdt.o
+    0x00000f9c   0x00000f9c   0x00000010   Code   RO           54    i.wdt_feed          bim_wdt.o
+    0x00000fac   0x00000fac   0x0000000e   Data   RO           17    .constdata          bim_intc.o
+
+
+    Execution Region PEND_FOR_FLASH (Exec base: 0x00400000, Load base: 0x00000fbc, Size: 0x00000020, Max: 0x00000020, ABSOLUTE)
+
+    Exec Addr    Load Addr    Size         Type   Attr      Idx    E Section Name        Object
+
+    0x00400000        -       0x00000020   Zero   RW            1    PEND_FOR_FLASH.bss  anon$$obj.o
+
+
+    Execution Region RAM_DATA (Exec base: 0x00400080, Load base: 0x00000fbc, Size: 0x00000004, Max: 0xffffffff, ABSOLUTE)
+
+    Exec Addr    Load Addr    Size         Type   Attr      Idx    E Section Name        Object
+
+    0x00400080   0x00000fbc   0x00000004   Data   RW           38    .data               bim_flash.o
+
+
+    Execution Region RAM_BSS (Exec base: 0x00400084, Load base: 0x00000fc0, Size: 0x000004a0, Max: 0xffffffff, ABSOLUTE)
+
+    Exec Addr    Load Addr    Size         Type   Attr      Idx    E Section Name        Object
+
+    0x00400084        -       0x00000080   Zero   RW           50    .bss                bim_uart2 .o
+    0x00400104        -       0x00000420   Zero   RW           67    .bss                bim_updataimage.o
+
+
+    Execution Region RAM_STACK_UNUSED (Exec base: 0x0040ffbc, Load base: 0x00000fc0, Size: 0x00000010, Max: 0x00000010, ABSOLUTE)
+
+    Exec Addr    Load Addr    Size         Type   Attr      Idx    E Section Name        Object
+
+    0x0040ffbc        -       0x00000010   Zero   RW            2    RAM_STACK_UNUSED.bss  anon$$obj.o
+
+
+    Execution Region RAM_STACK_SVC (Exec base: 0x0040ffcc, Load base: 0x00000fc0, Size: 0x00000010, Max: 0x00000010, ABSOLUTE)
+
+    Exec Addr    Load Addr    Size         Type   Attr      Idx    E Section Name        Object
+
+    0x0040ffcc        -       0x00000010   Zero   RW            3    RAM_STACK_SVC.bss   anon$$obj.o
+
+
+    Execution Region RAM_STACK_IRQ (Exec base: 0x0040ffdc, Load base: 0x00000fc0, Size: 0x00000010, Max: 0x00000010, ABSOLUTE)
+
+    Exec Addr    Load Addr    Size         Type   Attr      Idx    E Section Name        Object
+
+    0x0040ffdc        -       0x00000010   Zero   RW            4    RAM_STACK_IRQ.bss   anon$$obj.o
+
+
+    Execution Region RAM_STACK_FIQ (Exec base: 0x0040ffec, Load base: 0x00000fc0, Size: 0x00000010, Max: 0x00000010, ABSOLUTE)
+
+    Exec Addr    Load Addr    Size         Type   Attr      Idx    E Section Name        Object
+
+    0x0040ffec        -       0x00000010   Zero   RW            5    RAM_STACK_FIQ.bss   anon$$obj.o
+
+
+==============================================================================
+
+Image component sizes
+
+
+      Code (inc. data)   RO Data    RW Data    ZI Data      Debug   Object Name
+
+       130         40          8          0          0          0   bim_app.o
+      1652        176          0          4          0          0   bim_flash.o
+       140         10          0          0          0          0   bim_gpio.o
+       524         80          0          0          0          0   bim_handlers.o
+        64          6          0          0          0          0   bim_icu.o
+        72         20         14          0          0          0   bim_intc.o
+       384         48          0          0        128          0   bim_uart2 .o
+       574        102          0          0       1056          0   bim_updataimage.o
+       188         32          0          0          0          0   bim_vectors.o
+        60         14          0          0          0          0   bim_wdt.o
+
+    ----------------------------------------------------------------------
+      3900        528         24          4       1280          0   Object Totals
+        40          0          0          0         96          0   (incl. Generated)
+        72          0          2          0          0          0   (incl. Padding)
+
+    ----------------------------------------------------------------------
+
+      Code (inc. data)   RO Data    RW Data    ZI Data      Debug   Library Member Name
+
+        38          0          0          0          0          0   memseta.o
+        44          0          0          0          0          0   uidiv.o
+        20          0          0          0          0          0   uread4.o
+
+    ----------------------------------------------------------------------
+       104          0          0          0          0          0   Library Totals
+         2          0          0          0          0          0   (incl. Padding)
+
+    ----------------------------------------------------------------------
+
+      Code (inc. data)   RO Data    RW Data    ZI Data      Debug   Library Name
+
+       102          0          0          0          0          0   mc_5.l
+
+    ----------------------------------------------------------------------
+       104          0          0          0          0          0   Library Totals
+
+    ----------------------------------------------------------------------
+
+==============================================================================
+
+
+      Code (inc. data)   RO Data    RW Data    ZI Data      Debug   
+
+      4004        528         24          4       1280          0   Grand Totals
+      4004        528         24          4       1280          0   ELF Image Totals
+      4004        528         24          4          0          0   ROM Totals
+
+==============================================================================
+
+    Total RO  Size (Code + RO Data)                 4028 (   3.93kB)
+    Total RW  Size (RW Data + ZI Data)              1284 (   1.25kB)
+    Total ROM Size (Code + RO Data + RW Data)       4032 (   3.94kB)
+
+==============================================================================
+

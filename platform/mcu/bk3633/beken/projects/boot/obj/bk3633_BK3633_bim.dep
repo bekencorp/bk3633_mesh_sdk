@@ -1,0 +1,63 @@
+Dependencies for Project 'bk3633', Target 'BK3633_bim': (DO NOT MODIFY !)
+F (.\app\bim_app.c)(0x61C2BBC1)(--thumb -c --cpu ARM9E -D__MICROLIB -O3 --apcs=interwork --split_sections -I .\app -I ..\..\arch --c99-ID:\Software\Keil_v5\ARM\RV31\INC-ID:\Software\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="526"-o .\obj\bim_app.o --depend .\obj\bim_app.d)
+I (app\bim_updataImage.h)(0x61C2BBC1)
+I (D:\Software\Keil_v5\ARM\ARMCC\include\stdint.h)(0x599EDB3E)
+I (app\bim_app.h)(0x60308218)
+I (app\bim_uart2.h)(0x60308218)
+I (D:\Software\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x599EDB3E)
+I (app\bim_flash.h)(0x614B12EE)
+I (app\bim_icu.h)(0x61246BF1)
+I (..\..\arch\BK3633_RegList.h)(0x609632D6)
+I (app\bim_wdt.h)(0x5ED0F122)
+F (.\app\bim_intc.c)(0x60308218)(--thumb -c --cpu ARM9E -D__MICROLIB -O3 --apcs=interwork --split_sections -I .\app -I ..\..\arch --c99-ID:\Software\Keil_v5\ARM\RV31\INC-ID:\Software\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="526"-o .\obj\bim_intc.o --depend .\obj\bim_intc.d)
+I (app\bim_intc.h)(0x60308218)
+I (D:\Software\Keil_v5\ARM\ARMCC\include\stdint.h)(0x599EDB3E)
+I (D:\Software\Keil_v5\ARM\ARMCC\include\string.h)(0x599EDB3C)
+I (app\bim_uart2.h)(0x60308218)
+I (D:\Software\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x599EDB3E)
+I (app\bim_wdt.h)(0x5ED0F122)
+F (.\app\bim_vectors.s)(0x61C2BBC1)(--cpu ARM9E --apcs=interwork --pd "__MICROLIB SETA 1" -I .\src\plf\refip\src\arch\ll-ID:\Software\Keil_v5\ARM\RV31\INC-ID:\Software\Keil_v5\ARM\CMSIS\Include--pd "__UVISION_VERSION SETA 526"--list .\lst\bim_vectors.lst --xref -o .\obj\bim_vectors.o --depend .\obj\bim_vectors.d)
+F (.\app\bim_handlers.s)(0x61246BF1)(--cpu ARM9E --apcs=interwork --pd "__MICROLIB SETA 1" -I .\src\plf\refip\src\arch\ll-ID:\Software\Keil_v5\ARM\RV31\INC-ID:\Software\Keil_v5\ARM\CMSIS\Include--pd "__UVISION_VERSION SETA 526"--list .\lst\bim_handlers.lst --xref -o .\obj\bim_handlers.o --depend .\obj\bim_handlers.d)
+F (.\app\bim_flash.c)(0x614B12EE)(--thumb -c --cpu ARM9E -D__MICROLIB -O3 --apcs=interwork --split_sections -I .\app -I ..\..\arch --c99-ID:\Software\Keil_v5\ARM\RV31\INC-ID:\Software\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="526"-o .\obj\bim_flash.o --depend .\obj\bim_flash.d)
+I (D:\Software\Keil_v5\ARM\ARMCC\include\stdint.h)(0x599EDB3E)
+I (D:\Software\Keil_v5\ARM\ARMCC\include\string.h)(0x599EDB3C)
+I (app\bim_flash.h)(0x614B12EE)
+I (app\bim_uart2.h)(0x60308218)
+I (D:\Software\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x599EDB3E)
+I (app\bim_updataImage.h)(0x61C2BBC1)
+F (.\app\bim_uart2 .c)(0x60308218)(--thumb -c --cpu ARM9E -D__MICROLIB -O3 --apcs=interwork --split_sections -I .\app -I ..\..\arch --c99-ID:\Software\Keil_v5\ARM\RV31\INC-ID:\Software\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="526"-o ".\obj\bim_uart2 .o" --depend ".\obj\bim_uart2 .d")
+I (D:\Software\Keil_v5\ARM\ARMCC\include\stdio.h)(0x599EDB3C)
+I (D:\Software\Keil_v5\ARM\ARMCC\include\stdarg.h)(0x599EDB3A)
+I (D:\Software\Keil_v5\ARM\ARMCC\include\string.h)(0x599EDB3C)
+I (app\bim_uart2.h)(0x60308218)
+I (D:\Software\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x599EDB3E)
+I (D:\Software\Keil_v5\ARM\ARMCC\include\stdint.h)(0x599EDB3E)
+I (app\bim_icu.h)(0x61246BF1)
+I (..\..\arch\BK3633_RegList.h)(0x609632D6)
+I (app\bim_gpio.h)(0x61C2BBC1)
+F (.\app\bim_icu.c)(0x60308218)(--thumb -c --cpu ARM9E -D__MICROLIB -O3 --apcs=interwork --split_sections -I .\app -I ..\..\arch --c99-ID:\Software\Keil_v5\ARM\RV31\INC-ID:\Software\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="526"-o .\obj\bim_icu.o --depend .\obj\bim_icu.d)
+I (D:\Software\Keil_v5\ARM\ARMCC\include\stddef.h)(0x599EDB3C)
+I (app\bim_icu.h)(0x61246BF1)
+I (..\..\arch\BK3633_RegList.h)(0x609632D6)
+I (app\bim_uart2.h)(0x60308218)
+I (D:\Software\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x599EDB3E)
+I (D:\Software\Keil_v5\ARM\ARMCC\include\stdint.h)(0x599EDB3E)
+F (.\app\bim_wdt.c)(0x5ED0F122)(--thumb -c --cpu ARM9E -D__MICROLIB -O3 --apcs=interwork --split_sections -I .\app -I ..\..\arch --c99-ID:\Software\Keil_v5\ARM\RV31\INC-ID:\Software\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="526"-o .\obj\bim_wdt.o --depend .\obj\bim_wdt.d)
+I (D:\Software\Keil_v5\ARM\ARMCC\include\stdint.h)(0x599EDB3E)
+I (D:\Software\Keil_v5\ARM\ARMCC\include\string.h)(0x599EDB3C)
+I (D:\Software\Keil_v5\ARM\ARMCC\include\stddef.h)(0x599EDB3C)
+I (app\bim_wdt.h)(0x5ED0F122)
+F (.\app\bim_gpio.c)(0x61C2BBC1)(--thumb -c --cpu ARM9E -D__MICROLIB -O3 --apcs=interwork --split_sections -I .\app -I ..\..\arch --c99-ID:\Software\Keil_v5\ARM\RV31\INC-ID:\Software\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="526"-o .\obj\bim_gpio.o --depend .\obj\bim_gpio.d)
+I (app\bim_gpio.h)(0x61C2BBC1)
+I (D:\Software\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x599EDB3E)
+I (D:\Software\Keil_v5\ARM\ARMCC\include\stdint.h)(0x599EDB3E)
+F (.\app\bim_updataImage.c)(0x61C2BBC1)(--thumb -c --cpu ARM9E -D__MICROLIB -O3 --apcs=interwork --split_sections -I .\app -I ..\..\arch --c99-ID:\Software\Keil_v5\ARM\RV31\INC-ID:\Software\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="526"-o .\obj\bim_updataimage.o --depend .\obj\bim_updataimage.d)
+I (app\bim_updataImage.h)(0x61C2BBC1)
+I (D:\Software\Keil_v5\ARM\ARMCC\include\stdint.h)(0x599EDB3E)
+I (app\bim_icu.h)(0x61246BF1)
+I (..\..\arch\BK3633_RegList.h)(0x609632D6)
+I (app\bim_uart2.h)(0x60308218)
+I (D:\Software\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x599EDB3E)
+I (app\bim_flash.h)(0x614B12EE)
+I (app\bim_wdt.h)(0x5ED0F122)
+I (D:\Software\Keil_v5\ARM\ARMCC\include\string.h)(0x599EDB3C)

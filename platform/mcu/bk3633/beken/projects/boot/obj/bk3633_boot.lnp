@@ -1,0 +1,15 @@
+--cpu ARM9E
+".\obj\bim_app.o"
+".\obj\bim_intc.o"
+".\obj\bim_vectors.o"
+".\obj\bim_handlers.o"
+".\obj\bim_flash.o"
+".\obj\bim_uart2 .o"
+".\obj\bim_icu.o"
+".\obj\bim_wdt.o"
+".\obj\bim_gpio.o"
+".\obj\bim_updataimage.o"
+--library_type=microlib --nodebug --scatter ".\lnk\link_bim.txt"
+--entry sys_Reset --symdefs=.\lnk\bim_rom_symbol.txt --noremove --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list ".\lst\bk3633_boot.map" -o .\obj\bk3633_boot.axf
