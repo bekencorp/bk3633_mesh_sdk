@@ -1,0 +1,1153 @@
+
+
+
+ARM Macro Assembler    Page 1 
+
+
+    1 00000000         ;/**
+    2 00000000         ; ******************************************************
+                       **********************************
+    3 00000000         ; *
+    4 00000000         ; * @file boot_handlers.s
+    5 00000000         ; *
+    6 00000000         ; * @brief ARM Exception Vector handler functions.
+    7 00000000         ; *
+    8 00000000         ; * Copyright (C) BEKEN 2009-2015
+    9 00000000         ; *
+   10 00000000         ; * $Rev:  $
+   11 00000000         ; *
+   12 00000000         ; ******************************************************
+                       **********************************
+   13 00000000         ; */
+   14 00000000         
+   15 00000000         
+   16 00000000                 PRESERVE8
+   17 00000000                 AREA             SYS_BOOT, CODE, READONLY
+   18 00000000         
+   19 00000000                 EXPORT           sys_Reset
+   20 00000000         
+   21 00000000         
+   22 00000000                 EXPORT           boot_stack_base_UNUSED
+   23 00000000                 EXPORT           boot_stack_len_UNUSED
+   24 00000000                 EXPORT           boot_stack_base_SVC
+   25 00000000                 EXPORT           boot_stack_len_SVC
+   26 00000000                 EXPORT           boot_stack_base_IRQ
+   27 00000000                 EXPORT           boot_stack_len_IRQ
+   28 00000000                 EXPORT           boot_stack_base_FIQ
+   29 00000000                 EXPORT           boot_stack_len_FIQ
+   30 00000000         ;EXPORT _sysboot_copy_data_to_ram
+   31 00000000         ;EXPORT _sysboot_zi_init
+   32 00000000         
+   33 00000000                 IMPORT           ||Load$$RAM_DATA$$Base||
+   34 00000000         
+   35 00000000                 IMPORT           ||Image$$RAM_DATA$$Base|| 
+                                                            ;//ram_data_base
+   36 00000000                 IMPORT           ||Image$$RAM_DATA$$Length|| 
+                                                            ;//ram_data_length
+   37 00000000         
+   38 00000000                 IMPORT           ||Image$$RAM_BSS$$Base|| 
+                                                            ;//bss_base
+   39 00000000                 IMPORT           ||Image$$RAM_BSS$$Length|| 
+                                                            ;//image_bss_length
+                                                            
+   40 00000000                 IMPORT           ||Image$$RAM_BSS$$ZI$$Length|| 
+                                                            ;//bss_length
+   41 00000000         
+   42 00000000                 IMPORT           ||Image$$RAM_STACK_UNUSED$$Base
+|| 
+                                                            ;//stack_base_unuse
+                                                            d
+   43 00000000                 IMPORT           ||Image$$RAM_STACK_UNUSED$$ZI$$
+Length|| 
+                                                            ;//stack_len_unused
+                                                             
+   44 00000000         
+   45 00000000                 IMPORT           ||Image$$RAM_STACK_IRQ$$Base|| 
+
+
+
+ARM Macro Assembler    Page 2 
+
+
+                                                            ;//stack_base_irq
+   46 00000000                 IMPORT           ||Image$$RAM_STACK_IRQ$$ZI$$Len
+gth|| 
+                                                            ;//stack_len_irq 
+   47 00000000         
+   48 00000000                 IMPORT           ||Image$$RAM_STACK_SVC$$Base|| 
+                                                            ;//stack_base_svc
+   49 00000000                 IMPORT           ||Image$$RAM_STACK_SVC$$ZI$$Len
+gth|| 
+                                                            ;//stack_len_svc 
+   50 00000000         
+   51 00000000                 IMPORT           ||Image$$RAM_STACK_FIQ$$Base|| 
+                                                            ;//stack_base_fiq
+   52 00000000                 IMPORT           ||Image$$RAM_STACK_FIQ$$ZI$$Len
+gth|| 
+                                                            ;//stack_len_fiq
+   53 00000000         
+   54 00000000                 IMPORT           bim_main
+   55 00000000         
+   56 00000000         
+   57 00000000         
+   58 00000000         
+   59 00000000 000001F0 
+                       _FIQ_STACK_SIZE_
+                               EQU              0x1F0
+   60 00000000 000001F0 
+                       _IRQ_STACK_SIZE_
+                               EQU              0x1F0
+   61 00000000 000002F0 
+                       _SVC_STACK_SIZE_
+                               EQU              0x2F0
+   62 00000000 00000200 
+                       _UNUSED_STACK_SIZE_
+                               EQU              0x200
+   63 00000000         ;/* ====================================================
+                       ====================
+   64 00000000         ; *                                Constants
+   65 00000000         ; * ====================================================
+                       ==================== */
+   66 00000000         
+   67 00000000 0000001F 
+                       BOOT_MODE_MASK
+                               EQU              0x1F
+   68 00000000         
+   69 00000000 00000010 
+                       BOOT_MODE_USR
+                               EQU              0x10
+   70 00000000 00000011 
+                       BOOT_MODE_FIQ
+                               EQU              0x11
+   71 00000000 00000012 
+                       BOOT_MODE_IRQ
+                               EQU              0x12
+   72 00000000 00000013 
+                       BOOT_MODE_SVC
+                               EQU              0x13
+   73 00000000 00000017 
+                       BOOT_MODE_ABT
+                               EQU              0x17
+
+
+
+ARM Macro Assembler    Page 3 
+
+
+   74 00000000 0000001B 
+                       BOOT_MODE_UND
+                               EQU              0x1B
+   75 00000000 0000001F 
+                       BOOT_MODE_SYS
+                               EQU              0x1F
+   76 00000000 00000080 
+                       I_BIT   EQU              0x80
+   77 00000000 00000040 
+                       F_BIT   EQU              0x40
+   78 00000000         
+   79 00000000 000000C0 
+                       BOOT_FIQ_IRQ_MASK
+                               EQU              0xC0
+   80 00000000 00000080 
+                       BOOT_IRQ_MASK
+                               EQU              0x80
+   81 00000000         
+   82 00000000         
+   83 00000000         
+   84 00000000 AAAAAAAA 
+                       BOOT_PATTERN_UNUSED
+                               EQU              0xAAAAAAAA  ;// Pattern to fill
+                                                             UNUSED stack
+   85 00000000 BBBBBBBB 
+                       BOOT_PATTERN_SVC
+                               EQU              0xBBBBBBBB  ;// Pattern to fill
+                                                             SVC stack
+   86 00000000 CCCCCCCC 
+                       BOOT_PATTERN_IRQ
+                               EQU              0xCCCCCCCC  ;// Pattern to fill
+                                                             IRQ stack
+   87 00000000 DDDDDDDD 
+                       BOOT_PATTERN_FIQ
+                               EQU              0xDDDDDDDD  ;// Pattern to fill
+                                                             FIQ stack
+   88 00000000         
+   89 00000000         
+   90 00000000         ;/* ====================================================
+                       ====================
+   91 00000000         ; *                                Macros
+   92 00000000         ; * ====================================================
+                       ==================== */
+   93 00000000         
+   94 00000000         ;/* ====================================================
+                       ====================
+   95 00000000         ;/**
+   96 00000000         ; * Macro for switching ARM mode
+   97 00000000         ; */
+   98 00000000                 MACRO
+   99 00000000                 BOOT_CHANGE_MODE $newmode
+  100 00000000         ;MRS   R0, CPSR
+  101 00000000         ;BIC   R0, R0, #BOOT_MODE_MASK
+  102 00000000         ;ORR   R0, R0, #BOOT_MODE_$newmode:OR:I_BIT:OR:F_BIT
+  103 00000000                 MOV              R0, #BOOT_MODE_$newmode:OR:I_BI
+T:OR:F_BIT
+  104 00000000                 MSR              CPSR_c, R0
+  105 00000000                 MEND
+  106 00000000         
+
+
+
+ARM Macro Assembler    Page 4 
+
+
+  107 00000000         ;/* ====================================================
+                       ====================
+  108 00000000         ;/**
+  109 00000000         ; * Macro for setting the stack
+  110 00000000         ; 
+  111 00000000                 MACRO
+  112 00000000                 BOOT_SET_STACK   $stackname
+  113 00000000         
+  114 00000000         
+  115 00000000                 LDR              R0, boot_stack_base_$stackname
+  116 00000000                 LDR              R1, boot_stack_len_$stackname
+  117 00000000                 ADD              R3, R1, R0
+  118 00000000                 MOV              R4, R0
+  119 00000000                 MOV              SP, R3
+  120 00000000                 LDR              R2, =BOOT_PATTERN_$stackname
+  121 00000000         
+  122 00000000         100
+  123 00000000                 CMP              R4, R3
+  124 00000000                 STRLO            R2, [R4], #4
+  125 00000000                 BLO              %b100
+  126 00000000         
+  127 00000000                 MEND
+  128 00000000         
+  129 00000000         
+  130 00000000         
+  131 00000000         
+  132 00000000         ;/* ====================================================
+                       ====================
+  133 00000000         ; *                                Globals
+  134 00000000         ; * ====================================================
+                       ==================== */
+  135 00000000         
+  136 00000000         ;/* ====================================================
+                       ====================
+  137 00000000         
+  138 00000000         
+  139 00000000         ;/* ====================================================
+                       ====================
+  140 00000000         ;/**
+  141 00000000         ; * RAM_BSS
+  142 00000000         ; */
+  143 00000000         
+  144 00000000 00000000 
+                       ram_bss_base
+                               DCD              ||Image$$RAM_BSS$$Base||
+  145 00000004         
+  146 00000004         
+  147 00000004 00000000 
+                       ram_bss_length
+                               DCD              ||Image$$RAM_BSS$$ZI$$Length||
+  148 00000008         
+  149 00000008         ;/* ====================================================
+                       ====================
+  150 00000008         ;/**
+  151 00000008         ; * Unused (ABT, UNDEFINED, SYSUSR) Mode
+  152 00000008         ; */
+  153 00000008         
+  154 00000008 00000000 
+                       boot_stack_base_UNUSED
+
+
+
+ARM Macro Assembler    Page 5 
+
+
+                               DCD              ||Image$$RAM_STACK_UNUSED$$Base
+||
+  155 0000000C         
+  156 0000000C         
+  157 0000000C 00000000 
+                       boot_stack_len_UNUSED
+                               DCD              ||Image$$RAM_STACK_UNUSED$$ZI$$
+Length||
+  158 00000010         
+  159 00000010         ;/* ====================================================
+                       ====================
+  160 00000010         ;/**
+  161 00000010         ; * IRQ Mode
+  162 00000010         ; */
+  163 00000010         
+  164 00000010 00000000 
+                       boot_stack_base_IRQ
+                               DCD              ||Image$$RAM_STACK_IRQ$$Base||
+  165 00000014         
+  166 00000014         
+  167 00000014 00000000 
+                       boot_stack_len_IRQ
+                               DCD              ||Image$$RAM_STACK_IRQ$$ZI$$Len
+gth||
+  168 00000018         
+  169 00000018         
+  170 00000018         
+  171 00000018         ;/* ====================================================
+                       ====================
+  172 00000018         ;/**
+  173 00000018         ; * Supervisor Mode
+  174 00000018         ; */
+  175 00000018         
+  176 00000018 00000000 
+                       boot_stack_base_SVC
+                               DCD              ||Image$$RAM_STACK_SVC$$Base||
+  177 0000001C         
+  178 0000001C 00000000 
+                       boot_stack_len_SVC
+                               DCD              ||Image$$RAM_STACK_SVC$$ZI$$Len
+gth||
+  179 00000020         
+  180 00000020         ;/* ====================================================
+                       ====================
+  181 00000020         ;/**
+  182 00000020         ; * FIQ Mode
+  183 00000020         ; */
+  184 00000020         
+  185 00000020 00000000 
+                       boot_stack_base_FIQ
+                               DCD              ||Image$$RAM_STACK_FIQ$$Base||
+  186 00000024         
+  187 00000024         
+  188 00000024 00000000 
+                       boot_stack_len_FIQ
+                               DCD              ||Image$$RAM_STACK_FIQ$$ZI$$Len
+gth||
+  189 00000028         
+  190 00000028         ;/* ====================================================
+
+
+
+ARM Macro Assembler    Page 6 
+
+
+                       ====================
+  191 00000028         ; *                                Functions
+  192 00000028         ; * ====================================================
+                       ====================
+  193 00000028         
+  194 00000028         ;/* ====================================================
+                       ====================
+  195 00000028         ;/**
+  196 00000028         ; * Function to handle reset vector
+  197 00000028         ; */
+  198 00000028         sys_Reset
+  199 00000028         ; Disable IRQ and FIQ before starting anything
+  200 00000028         ;  MRS   R0, CPSR
+  201 00000028         ;  ORR   R0, R0, #0xC0
+  202 00000028         ;  MSR   CPSR_c, R0
+  203 00000028         
+  204 00000028         ; ==================
+  205 00000028         ; Setup all stacks
+  206 00000028         
+  207 00000028         ; Note: Sys and Usr mode are not used
+  208 00000028 E1A0A003        MOV              R10, R3     ; backup R3 to R10.
+                                                            
+  209 0000002C E59F31B0        LDR              R3, =0x400060 ; get backup top.
+                                                            
+  210 00000030 E9237FF0        STMFD            R3!, {R4-R14} ; backup R4-R14
+  211 00000034 E9230400        STMFD            R3!, {R10}  ; backup R3
+  212 00000038 E9230007        STMFD            R3!, {R0-R2} ; backup R0-R2
+  213 0000003C         
+  214 0000003C                 BOOT_CHANGE_MODE SYS
+  100 0000003C         ;MRS   R0, CPSR
+  101 0000003C         ;BIC   R0, R0, #BOOT_MODE_MASK
+  102 0000003C         ;ORR   R0, R0, #BOOT_MODE_$newmode:OR:I_BIT:OR:F_BIT
+  103 0000003C E3A000DF        MOV              R0, #BOOT_MODE_SYS:OR:I_BIT:OR:
+F_BIT
+  104 00000040 E121F000        MSR              CPSR_c, R0
+  215 00000044                 BOOT_SET_STACK   UNUSED
+  113 00000044         
+  114 00000044         
+  115 00000044 E51F0044        LDR              R0, boot_stack_base_UNUSED
+  116 00000048 E51F1044        LDR              R1, boot_stack_len_UNUSED
+  117 0000004C E0813000        ADD              R3, R1, R0
+  118 00000050 E1A04000        MOV              R4, R0
+  119 00000054 E1A0D003        MOV              SP, R3
+  120 00000058 E59F2188        LDR              R2, =BOOT_PATTERN_UNUSED
+  121 0000005C         
+  122 0000005C         100
+  123 0000005C E1540003        CMP              R4, R3
+  124 00000060 34842004        STRLO            R2, [R4], #4
+  125 00000064 3AFFFFFC        BLO              %b100
+  126 00000068         
+  216 00000068                 BOOT_CHANGE_MODE ABT
+  100 00000068         ;MRS   R0, CPSR
+  101 00000068         ;BIC   R0, R0, #BOOT_MODE_MASK
+  102 00000068         ;ORR   R0, R0, #BOOT_MODE_$newmode:OR:I_BIT:OR:F_BIT
+  103 00000068 E3A000D7        MOV              R0, #BOOT_MODE_ABT:OR:I_BIT:OR:
+F_BIT
+  104 0000006C E121F000        MSR              CPSR_c, R0
+  217 00000070                 BOOT_SET_STACK   UNUSED
+  113 00000070         
+
+
+
+ARM Macro Assembler    Page 7 
+
+
+  114 00000070         
+  115 00000070 E51F0070        LDR              R0, boot_stack_base_UNUSED
+  116 00000074 E51F1070        LDR              R1, boot_stack_len_UNUSED
+  117 00000078 E0813000        ADD              R3, R1, R0
+  118 0000007C E1A04000        MOV              R4, R0
+  119 00000080 E1A0D003        MOV              SP, R3
+  120 00000084 E59F215C        LDR              R2, =BOOT_PATTERN_UNUSED
+  121 00000088         
+  122 00000088         100
+  123 00000088 E1540003        CMP              R4, R3
+  124 0000008C 34842004        STRLO            R2, [R4], #4
+  125 00000090 3AFFFFFC        BLO              %b100
+  126 00000094         
+  218 00000094                 BOOT_CHANGE_MODE UND
+  100 00000094         ;MRS   R0, CPSR
+  101 00000094         ;BIC   R0, R0, #BOOT_MODE_MASK
+  102 00000094         ;ORR   R0, R0, #BOOT_MODE_$newmode:OR:I_BIT:OR:F_BIT
+  103 00000094 E3A000DB        MOV              R0, #BOOT_MODE_UND:OR:I_BIT:OR:
+F_BIT
+  104 00000098 E121F000        MSR              CPSR_c, R0
+  219 0000009C                 BOOT_SET_STACK   UNUSED
+  113 0000009C         
+  114 0000009C         
+  115 0000009C E51F009C        LDR              R0, boot_stack_base_UNUSED
+  116 000000A0 E51F109C        LDR              R1, boot_stack_len_UNUSED
+  117 000000A4 E0813000        ADD              R3, R1, R0
+  118 000000A8 E1A04000        MOV              R4, R0
+  119 000000AC E1A0D003        MOV              SP, R3
+  120 000000B0 E59F2130        LDR              R2, =BOOT_PATTERN_UNUSED
+  121 000000B4         
+  122 000000B4         100
+  123 000000B4 E1540003        CMP              R4, R3
+  124 000000B8 34842004        STRLO            R2, [R4], #4
+  125 000000BC 3AFFFFFC        BLO              %b100
+  126 000000C0         
+  220 000000C0                 BOOT_CHANGE_MODE IRQ
+  100 000000C0         ;MRS   R0, CPSR
+  101 000000C0         ;BIC   R0, R0, #BOOT_MODE_MASK
+  102 000000C0         ;ORR   R0, R0, #BOOT_MODE_$newmode:OR:I_BIT:OR:F_BIT
+  103 000000C0 E3A000D2        MOV              R0, #BOOT_MODE_IRQ:OR:I_BIT:OR:
+F_BIT
+  104 000000C4 E121F000        MSR              CPSR_c, R0
+  221 000000C8                 BOOT_SET_STACK   IRQ
+  113 000000C8         
+  114 000000C8         
+  115 000000C8 E51F00C0        LDR              R0, boot_stack_base_IRQ
+  116 000000CC E51F10C0        LDR              R1, boot_stack_len_IRQ
+  117 000000D0 E0813000        ADD              R3, R1, R0
+  118 000000D4 E1A04000        MOV              R4, R0
+  119 000000D8 E1A0D003        MOV              SP, R3
+  120 000000DC E59F2108        LDR              R2, =BOOT_PATTERN_IRQ
+  121 000000E0         
+  122 000000E0         100
+  123 000000E0 E1540003        CMP              R4, R3
+  124 000000E4 34842004        STRLO            R2, [R4], #4
+  125 000000E8 3AFFFFFC        BLO              %b100
+  126 000000EC         
+  222 000000EC                 BOOT_CHANGE_MODE FIQ
+  100 000000EC         ;MRS   R0, CPSR
+
+
+
+ARM Macro Assembler    Page 8 
+
+
+  101 000000EC         ;BIC   R0, R0, #BOOT_MODE_MASK
+  102 000000EC         ;ORR   R0, R0, #BOOT_MODE_$newmode:OR:I_BIT:OR:F_BIT
+  103 000000EC E3A000D1        MOV              R0, #BOOT_MODE_FIQ:OR:I_BIT:OR:
+F_BIT
+  104 000000F0 E121F000        MSR              CPSR_c, R0
+  223 000000F4                 BOOT_SET_STACK   FIQ
+  113 000000F4         
+  114 000000F4         
+  115 000000F4 E51F00DC        LDR              R0, boot_stack_base_FIQ
+  116 000000F8 E51F10DC        LDR              R1, boot_stack_len_FIQ
+  117 000000FC E0813000        ADD              R3, R1, R0
+  118 00000100 E1A04000        MOV              R4, R0
+  119 00000104 E1A0D003        MOV              SP, R3
+  120 00000108 E59F20E0        LDR              R2, =BOOT_PATTERN_FIQ
+  121 0000010C         
+  122 0000010C         100
+  123 0000010C E1540003        CMP              R4, R3
+  124 00000110 34842004        STRLO            R2, [R4], #4
+  125 00000114 3AFFFFFC        BLO              %b100
+  126 00000118         
+  224 00000118         
+  225 00000118         ; Clear FIQ banked registers while in FIQ mode
+  226 00000118 E3A08000        MOV              R8, #0
+  227 0000011C E3A09000        MOV              R9, #0
+  228 00000120 E3A0A000        MOV              R10, #0
+  229 00000124 E3A0B000        MOV              R11, #0
+  230 00000128 E3A0C000        MOV              R12, #0
+  231 0000012C         
+  232 0000012C                 BOOT_CHANGE_MODE SVC
+  100 0000012C         ;MRS   R0, CPSR
+  101 0000012C         ;BIC   R0, R0, #BOOT_MODE_MASK
+  102 0000012C         ;ORR   R0, R0, #BOOT_MODE_$newmode:OR:I_BIT:OR:F_BIT
+  103 0000012C E3A000D3        MOV              R0, #BOOT_MODE_SVC:OR:I_BIT:OR:
+F_BIT
+  104 00000130 E121F000        MSR              CPSR_c, R0
+  233 00000134                 BOOT_SET_STACK   SVC
+  113 00000134         
+  114 00000134         
+  115 00000134 E51F0124        LDR              R0, boot_stack_base_SVC
+  116 00000138 E51F1124        LDR              R1, boot_stack_len_SVC
+  117 0000013C E0813000        ADD              R3, R1, R0
+  118 00000140 E1A04000        MOV              R4, R0
+  119 00000144 E1A0D003        MOV              SP, R3
+  120 00000148 E59F20A4        LDR              R2, =BOOT_PATTERN_SVC
+  121 0000014C         
+  122 0000014C         100
+  123 0000014C E1540003        CMP              R4, R3
+  124 00000150 34842004        STRLO            R2, [R4], #4
+  125 00000154 3AFFFFFC        BLO              %b100
+  126 00000158         
+  234 00000158         
+  235 00000158         
+  236 00000158         
+  237 00000158         ; Stay in Supervisor Mode
+  238 00000158         ;copy data from binary to ram
+  239 00000158 EB00000E        BL               _sysboot_copy_data_to_ram
+  240 0000015C         
+  241 0000015C         ; init bss section
+  242 0000015C EB000017        BL               _sysboot_zi_init
+
+
+
+ARM Macro Assembler    Page 9 
+
+
+  243 00000160         
+  244 00000160         ; Clear Registers
+  245 00000160 E3A00000        MOV              R0, #0
+  246 00000164 E3A01000        MOV              R1, #0
+  247 00000168 E3A02000        MOV              R2, #0
+  248 0000016C E3A03000        MOV              R3, #0
+  249 00000170 E3A04000        MOV              R4, #0
+  250 00000174 E3A05000        MOV              R5, #0
+  251 00000178 E3A06000        MOV              R6, #0
+  252 0000017C E3A07000        MOV              R7, #0
+  253 00000180 E3A08000        MOV              R8, #0
+  254 00000184 E3A09000        MOV              R9, #0
+  255 00000188 E3A0A000        MOV              R10, #0
+  256 0000018C E3A0B000        MOV              R11, #0
+  257 00000190 E3A0C000        MOV              R12, #0
+  258 00000194         
+  259 00000194         
+  260 00000194 EAFFFFFE        B                bim_main
+  261 00000198         
+  262 00000198         
+  263 00000198         ; /*FUNCTION:     _sysboot_copy_data_to_ram*/
+  264 00000198         ; /*DESCRIPTION:  copy main stack code from FLASH/ROM to
+                        SRAM*/
+  265 00000198         _sysboot_copy_data_to_ram
+  266 00000198 E59F0058        LDR              R0, =||Load$$RAM_DATA$$Base||
+  267 0000019C E59F1058        LDR              R1, =||Image$$RAM_DATA$$Base||
+  268 000001A0 E59F2058        LDR              R2, =||Image$$RAM_DATA$$Length|
+|
+  269 000001A4         
+  270 000001A4         
+  271 000001A4 E1A03001        MOV              R3, R1
+  272 000001A8 E0833002        ADD              R3, R3, R2
+  273 000001AC         _rw_copy
+  274 000001AC E1510003        CMP              R1, R3
+  275 000001B0 34904004        LDRLO            R4, [R0], #4
+  276 000001B4 34814004        STRLO            R4, [R1], #4
+  277 000001B8 3AFFFFFB        BLO              _rw_copy
+  278 000001BC E12FFF1E        BX               LR
+  279 000001C0         
+  280 000001C0         ; /*FUNCTION:     _sysboot_zi_init*/
+  281 000001C0         ; /*DESCRIPTION:  Initialise Zero-Init Data Segment*/;
+  282 000001C0         _sysboot_zi_init
+  283 000001C0 E59F003C        LDR              R0, =||Image$$RAM_BSS$$Base||
+  284 000001C4 E59F103C        LDR              R1, =||Image$$RAM_BSS$$ZI$$Leng
+th||
+  285 000001C8         
+  286 000001C8 E0813000        ADD              R3, R1, R0
+  287 000001CC E1A04000        MOV              R4, R0
+  288 000001D0 E3A02000        MOV              R2, #0
+  289 000001D4         _zi_loop
+  290 000001D4 E1540003        CMP              R4, R3
+  291 000001D8 34842004        STRLO            R2, [R4], #4
+  292 000001DC 3AFFFFFC        BLO              _zi_loop
+  293 000001E0 E12FFF1E        BX               LR
+  294 000001E4         
+  295 000001E4                 END
+              00400060 
+              AAAAAAAA 
+              CCCCCCCC 
+
+
+
+ARM Macro Assembler    Page 10 
+
+
+              DDDDDDDD 
+              BBBBBBBB 
+              00000000 
+              00000000 
+              00000000 
+              00000000 
+              00000000 
+Command Line: --xref --diag_suppress=9931 --cpu=ARM9E --apcs=interwork --depend
+=.\obj\bim_handlers.d -o.\obj\bim_handlers.o -I.\src\plf\refip\src\arch\ll -ID:
+\Software\Keil_v5\ARM\RV31\INC -ID:\Software\Keil_v5\ARM\CMSIS\Include --predef
+ine="__MICROLIB SETA 1" --predefine="__UVISION_VERSION SETA 526" --list=.\lst\b
+im_handlers.lst app\bim_handlers.s
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Relocatable symbols
+
+ 0000005C
+
+Symbol: 
+   Definitions
+      None
+   Uses
+      None
+Warning:  undefinedComment:  unused
+ 00000088
+
+Symbol: 
+   Definitions
+      None
+   Uses
+      None
+Warning:  undefinedComment:  unused
+ 000000B4
+
+Symbol: 
+   Definitions
+      None
+   Uses
+      None
+Warning:  undefinedComment:  unused
+ 000000E0
+
+Symbol: 
+   Definitions
+      None
+   Uses
+      None
+Warning:  undefinedComment:  unused
+ 0000010C
+
+Symbol: 
+   Definitions
+      None
+   Uses
+      None
+Warning:  undefinedComment:  unused
+ 0000014C
+
+Symbol: 
+   Definitions
+      None
+   Uses
+      None
+Warning:  undefinedComment:  unused
+SYS_BOOT 00000000
+
+Symbol: SYS_BOOT
+   Definitions
+      At line 17 in file app\bim_handlers.s
+   Uses
+      None
+Comment: SYS_BOOT unused
+_rw_copy 000001AC
+
+Symbol: _rw_copy
+
+
+
+ARM Macro Assembler    Page 2 Alphabetic symbol ordering
+Relocatable symbols
+
+   Definitions
+      At line 273 in file app\bim_handlers.s
+   Uses
+      At line 277 in file app\bim_handlers.s
+Comment: _rw_copy used once
+_sysboot_copy_data_to_ram 00000198
+
+Symbol: _sysboot_copy_data_to_ram
+   Definitions
+      At line 265 in file app\bim_handlers.s
+   Uses
+      At line 239 in file app\bim_handlers.s
+Comment: _sysboot_copy_data_to_ram used once
+_sysboot_zi_init 000001C0
+
+Symbol: _sysboot_zi_init
+   Definitions
+      At line 282 in file app\bim_handlers.s
+   Uses
+      At line 242 in file app\bim_handlers.s
+Comment: _sysboot_zi_init used once
+_zi_loop 000001D4
+
+Symbol: _zi_loop
+   Definitions
+      At line 289 in file app\bim_handlers.s
+   Uses
+      At line 292 in file app\bim_handlers.s
+Comment: _zi_loop used once
+boot_stack_base_FIQ 00000020
+
+Symbol: boot_stack_base_FIQ
+   Definitions
+      At line 185 in file app\bim_handlers.s
+   Uses
+      At line 28 in file app\bim_handlers.s
+      At line 115 in macro BOOT_SET_STACK
+      at line 223 in file app\bim_handlers.s
+
+boot_stack_base_IRQ 00000010
+
+Symbol: boot_stack_base_IRQ
+   Definitions
+      At line 164 in file app\bim_handlers.s
+   Uses
+      At line 26 in file app\bim_handlers.s
+      At line 115 in macro BOOT_SET_STACK
+      at line 221 in file app\bim_handlers.s
+
+boot_stack_base_SVC 00000018
+
+Symbol: boot_stack_base_SVC
+   Definitions
+      At line 176 in file app\bim_handlers.s
+   Uses
+      At line 24 in file app\bim_handlers.s
+      At line 115 in macro BOOT_SET_STACK
+      at line 233 in file app\bim_handlers.s
+
+
+
+
+ARM Macro Assembler    Page 3 Alphabetic symbol ordering
+Relocatable symbols
+
+boot_stack_base_UNUSED 00000008
+
+Symbol: boot_stack_base_UNUSED
+   Definitions
+      At line 154 in file app\bim_handlers.s
+   Uses
+      At line 22 in file app\bim_handlers.s
+      At line 115 in macro BOOT_SET_STACK
+      at line 215 in file app\bim_handlers.s
+
+boot_stack_len_FIQ 00000024
+
+Symbol: boot_stack_len_FIQ
+   Definitions
+      At line 188 in file app\bim_handlers.s
+   Uses
+      At line 29 in file app\bim_handlers.s
+      At line 116 in macro BOOT_SET_STACK
+      at line 223 in file app\bim_handlers.s
+
+boot_stack_len_IRQ 00000014
+
+Symbol: boot_stack_len_IRQ
+   Definitions
+      At line 167 in file app\bim_handlers.s
+   Uses
+      At line 27 in file app\bim_handlers.s
+      At line 116 in macro BOOT_SET_STACK
+      at line 221 in file app\bim_handlers.s
+
+boot_stack_len_SVC 0000001C
+
+Symbol: boot_stack_len_SVC
+   Definitions
+      At line 178 in file app\bim_handlers.s
+   Uses
+      At line 25 in file app\bim_handlers.s
+      At line 116 in macro BOOT_SET_STACK
+      at line 233 in file app\bim_handlers.s
+
+boot_stack_len_UNUSED 0000000C
+
+Symbol: boot_stack_len_UNUSED
+   Definitions
+      At line 157 in file app\bim_handlers.s
+   Uses
+      At line 23 in file app\bim_handlers.s
+      At line 116 in macro BOOT_SET_STACK
+      at line 215 in file app\bim_handlers.s
+
+ram_bss_base 00000000
+
+Symbol: ram_bss_base
+   Definitions
+      At line 144 in file app\bim_handlers.s
+   Uses
+      None
+Comment: ram_bss_base unused
+ram_bss_length 00000004
+
+
+
+ARM Macro Assembler    Page 4 Alphabetic symbol ordering
+Relocatable symbols
+
+
+Symbol: ram_bss_length
+   Definitions
+      At line 147 in file app\bim_handlers.s
+   Uses
+      None
+Comment: ram_bss_length unused
+sys_Reset 00000028
+
+Symbol: sys_Reset
+   Definitions
+      At line 198 in file app\bim_handlers.s
+   Uses
+      At line 19 in file app\bim_handlers.s
+Comment: sys_Reset used once
+22 symbols
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Absolute symbols
+
+BOOT_FIQ_IRQ_MASK 000000C0
+
+Symbol: BOOT_FIQ_IRQ_MASK
+   Definitions
+      At line 79 in file app\bim_handlers.s
+   Uses
+      None
+Comment: BOOT_FIQ_IRQ_MASK unused
+BOOT_IRQ_MASK 00000080
+
+Symbol: BOOT_IRQ_MASK
+   Definitions
+      At line 80 in file app\bim_handlers.s
+   Uses
+      None
+Comment: BOOT_IRQ_MASK unused
+BOOT_MODE_ABT 00000017
+
+Symbol: BOOT_MODE_ABT
+   Definitions
+      At line 73 in file app\bim_handlers.s
+   Uses
+      At line 103 in macro BOOT_CHANGE_MODE
+      at line 216 in file app\bim_handlers.s
+Comment: BOOT_MODE_ABT used once
+BOOT_MODE_FIQ 00000011
+
+Symbol: BOOT_MODE_FIQ
+   Definitions
+      At line 70 in file app\bim_handlers.s
+   Uses
+      At line 103 in macro BOOT_CHANGE_MODE
+      at line 222 in file app\bim_handlers.s
+Comment: BOOT_MODE_FIQ used once
+BOOT_MODE_IRQ 00000012
+
+Symbol: BOOT_MODE_IRQ
+   Definitions
+      At line 71 in file app\bim_handlers.s
+   Uses
+      At line 103 in macro BOOT_CHANGE_MODE
+      at line 220 in file app\bim_handlers.s
+Comment: BOOT_MODE_IRQ used once
+BOOT_MODE_MASK 0000001F
+
+Symbol: BOOT_MODE_MASK
+   Definitions
+      At line 67 in file app\bim_handlers.s
+   Uses
+      None
+Comment: BOOT_MODE_MASK unused
+BOOT_MODE_SVC 00000013
+
+Symbol: BOOT_MODE_SVC
+   Definitions
+      At line 72 in file app\bim_handlers.s
+   Uses
+      At line 103 in macro BOOT_CHANGE_MODE
+      at line 232 in file app\bim_handlers.s
+
+
+
+ARM Macro Assembler    Page 2 Alphabetic symbol ordering
+Absolute symbols
+
+Comment: BOOT_MODE_SVC used once
+BOOT_MODE_SYS 0000001F
+
+Symbol: BOOT_MODE_SYS
+   Definitions
+      At line 75 in file app\bim_handlers.s
+   Uses
+      At line 103 in macro BOOT_CHANGE_MODE
+      at line 214 in file app\bim_handlers.s
+Comment: BOOT_MODE_SYS used once
+BOOT_MODE_UND 0000001B
+
+Symbol: BOOT_MODE_UND
+   Definitions
+      At line 74 in file app\bim_handlers.s
+   Uses
+      At line 103 in macro BOOT_CHANGE_MODE
+      at line 218 in file app\bim_handlers.s
+Comment: BOOT_MODE_UND used once
+BOOT_MODE_USR 00000010
+
+Symbol: BOOT_MODE_USR
+   Definitions
+      At line 69 in file app\bim_handlers.s
+   Uses
+      None
+Comment: BOOT_MODE_USR unused
+BOOT_PATTERN_FIQ DDDDDDDD
+
+Symbol: BOOT_PATTERN_FIQ
+   Definitions
+      At line 87 in file app\bim_handlers.s
+   Uses
+      At line 120 in macro BOOT_SET_STACK
+      at line 223 in file app\bim_handlers.s
+Comment: BOOT_PATTERN_FIQ used once
+BOOT_PATTERN_IRQ CCCCCCCC
+
+Symbol: BOOT_PATTERN_IRQ
+   Definitions
+      At line 86 in file app\bim_handlers.s
+   Uses
+      At line 120 in macro BOOT_SET_STACK
+      at line 221 in file app\bim_handlers.s
+Comment: BOOT_PATTERN_IRQ used once
+BOOT_PATTERN_SVC BBBBBBBB
+
+Symbol: BOOT_PATTERN_SVC
+   Definitions
+      At line 85 in file app\bim_handlers.s
+   Uses
+      At line 120 in macro BOOT_SET_STACK
+      at line 233 in file app\bim_handlers.s
+Comment: BOOT_PATTERN_SVC used once
+BOOT_PATTERN_UNUSED AAAAAAAA
+
+Symbol: BOOT_PATTERN_UNUSED
+   Definitions
+      At line 84 in file app\bim_handlers.s
+
+
+
+ARM Macro Assembler    Page 3 Alphabetic symbol ordering
+Absolute symbols
+
+   Uses
+      At line 120 in macro BOOT_SET_STACK
+      at line 215 in file app\bim_handlers.s
+Comment: BOOT_PATTERN_UNUSED used once
+F_BIT 00000040
+
+Symbol: F_BIT
+   Definitions
+      At line 77 in file app\bim_handlers.s
+   Uses
+      At line 103 in macro BOOT_CHANGE_MODE
+      at line 214 in file app\bim_handlers.s
+Comment: F_BIT used once
+I_BIT 00000080
+
+Symbol: I_BIT
+   Definitions
+      At line 76 in file app\bim_handlers.s
+   Uses
+      At line 103 in macro BOOT_CHANGE_MODE
+      at line 214 in file app\bim_handlers.s
+Comment: I_BIT used once
+_FIQ_STACK_SIZE_ 000001F0
+
+Symbol: _FIQ_STACK_SIZE_
+   Definitions
+      At line 59 in file app\bim_handlers.s
+   Uses
+      None
+Comment: _FIQ_STACK_SIZE_ unused
+_IRQ_STACK_SIZE_ 000001F0
+
+Symbol: _IRQ_STACK_SIZE_
+   Definitions
+      At line 60 in file app\bim_handlers.s
+   Uses
+      None
+Comment: _IRQ_STACK_SIZE_ unused
+_SVC_STACK_SIZE_ 000002F0
+
+Symbol: _SVC_STACK_SIZE_
+   Definitions
+      At line 61 in file app\bim_handlers.s
+   Uses
+      None
+Comment: _SVC_STACK_SIZE_ unused
+_UNUSED_STACK_SIZE_ 00000200
+
+Symbol: _UNUSED_STACK_SIZE_
+   Definitions
+      At line 62 in file app\bim_handlers.s
+   Uses
+      None
+Comment: _UNUSED_STACK_SIZE_ unused
+20 symbols
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+External symbols
+
+bim_main 00000000
+
+Symbol: bim_main
+   Definitions
+      At line 54 in file app\bim_handlers.s
+   Uses
+      At line 260 in file app\bim_handlers.s
+Comment: bim_main used once
+|Image$$RAM_BSS$$Base| 00000000
+
+Symbol: |Image$$RAM_BSS$$Base|
+   Definitions
+      At line 38 in file app\bim_handlers.s
+   Uses
+      At line 144 in file app\bim_handlers.s
+      At line 283 in file app\bim_handlers.s
+
+|Image$$RAM_BSS$$Length| 00000000
+
+Symbol: |Image$$RAM_BSS$$Length|
+   Definitions
+      At line 39 in file app\bim_handlers.s
+   Uses
+      None
+Comment: |Image$$RAM_BSS$$Length| unused
+|Image$$RAM_BSS$$ZI$$Length| 00000000
+
+Symbol: |Image$$RAM_BSS$$ZI$$Length|
+   Definitions
+      At line 40 in file app\bim_handlers.s
+   Uses
+      At line 147 in file app\bim_handlers.s
+      At line 284 in file app\bim_handlers.s
+
+|Image$$RAM_DATA$$Base| 00000000
+
+Symbol: |Image$$RAM_DATA$$Base|
+   Definitions
+      At line 35 in file app\bim_handlers.s
+   Uses
+      At line 267 in file app\bim_handlers.s
+Comment: |Image$$RAM_DATA$$Base| used once
+|Image$$RAM_DATA$$Length| 00000000
+
+Symbol: |Image$$RAM_DATA$$Length|
+   Definitions
+      At line 36 in file app\bim_handlers.s
+   Uses
+      At line 268 in file app\bim_handlers.s
+Comment: |Image$$RAM_DATA$$Length| used once
+|Image$$RAM_STACK_FIQ$$Base| 00000000
+
+Symbol: |Image$$RAM_STACK_FIQ$$Base|
+   Definitions
+      At line 51 in file app\bim_handlers.s
+   Uses
+      At line 185 in file app\bim_handlers.s
+Comment: |Image$$RAM_STACK_FIQ$$Base| used once
+|Image$$RAM_STACK_FIQ$$ZI$$Length| 00000000
+
+
+
+ARM Macro Assembler    Page 2 Alphabetic symbol ordering
+External symbols
+
+
+Symbol: |Image$$RAM_STACK_FIQ$$ZI$$Length|
+   Definitions
+      At line 52 in file app\bim_handlers.s
+   Uses
+      At line 188 in file app\bim_handlers.s
+Comment: |Image$$RAM_STACK_FIQ$$ZI$$Length| used once
+|Image$$RAM_STACK_IRQ$$Base| 00000000
+
+Symbol: |Image$$RAM_STACK_IRQ$$Base|
+   Definitions
+      At line 45 in file app\bim_handlers.s
+   Uses
+      At line 164 in file app\bim_handlers.s
+Comment: |Image$$RAM_STACK_IRQ$$Base| used once
+|Image$$RAM_STACK_IRQ$$ZI$$Length| 00000000
+
+Symbol: |Image$$RAM_STACK_IRQ$$ZI$$Length|
+   Definitions
+      At line 46 in file app\bim_handlers.s
+   Uses
+      At line 167 in file app\bim_handlers.s
+Comment: |Image$$RAM_STACK_IRQ$$ZI$$Length| used once
+|Image$$RAM_STACK_SVC$$Base| 00000000
+
+Symbol: |Image$$RAM_STACK_SVC$$Base|
+   Definitions
+      At line 48 in file app\bim_handlers.s
+   Uses
+      At line 176 in file app\bim_handlers.s
+Comment: |Image$$RAM_STACK_SVC$$Base| used once
+|Image$$RAM_STACK_SVC$$ZI$$Length| 00000000
+
+Symbol: |Image$$RAM_STACK_SVC$$ZI$$Length|
+   Definitions
+      At line 49 in file app\bim_handlers.s
+   Uses
+      At line 178 in file app\bim_handlers.s
+Comment: |Image$$RAM_STACK_SVC$$ZI$$Length| used once
+|Image$$RAM_STACK_UNUSED$$Base| 00000000
+
+Symbol: |Image$$RAM_STACK_UNUSED$$Base|
+   Definitions
+      At line 42 in file app\bim_handlers.s
+   Uses
+      At line 154 in file app\bim_handlers.s
+Comment: |Image$$RAM_STACK_UNUSED$$Base| used once
+|Image$$RAM_STACK_UNUSED$$ZI$$Length| 00000000
+
+Symbol: |Image$$RAM_STACK_UNUSED$$ZI$$Length|
+   Definitions
+      At line 43 in file app\bim_handlers.s
+   Uses
+      At line 157 in file app\bim_handlers.s
+Comment: |Image$$RAM_STACK_UNUSED$$ZI$$Length| used once
+|Load$$RAM_DATA$$Base| 00000000
+
+Symbol: |Load$$RAM_DATA$$Base|
+   Definitions
+
+
+
+ARM Macro Assembler    Page 3 Alphabetic symbol ordering
+External symbols
+
+      At line 33 in file app\bim_handlers.s
+   Uses
+      At line 266 in file app\bim_handlers.s
+Comment: |Load$$RAM_DATA$$Base| used once
+15 symbols
+391 symbols in table

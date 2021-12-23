@@ -1,0 +1,47 @@
+<html>
+<body>
+<pre>
+<h1>礦ision Build Log</h1>
+<h2>Tool Versions:</h2>
+IDE-Version: μVision V5.26.2.0
+Copyright (C) 2018 ARM Ltd and ARM Germany GmbH. All rights reserved.
+License Information: Huang Yulong, Beken, LIC=IK156-DMTQ6-CWT2K-ZEH0Q-BYKS0-F2VNR
+ 
+Tool Versions:
+Toolchain:       MDK-ARM Plus  Version: 5.26.2.0
+Toolchain Path:  D:\Software\Keil_v5\ARM\ARMCC\Bin
+C Compiler:      Armcc.exe V5.06 update 6 (build 750)
+Assembler:       Armasm.exe V5.06 update 6 (build 750)
+Linker/Locator:  ArmLink.exe V5.06 update 6 (build 750)
+Library Manager: ArmAr.exe V5.06 update 6 (build 750)
+Hex Converter:   FromElf.exe V5.06 update 6 (build 750)
+CPU DLL:         SARM.DLL V5.26.2.0
+Dialog DLL:      DARMP3.DLL
+Target DLL:      Segger\JLTAgdi.dll V1.61.0.0
+Dialog DLL:      TARMP3.DLL V1.4.0.0
+ 
+<h2>Project:</h2>
+D:\YL_Work\BK3633\bk3633_aliOS\alios_3633_full_git\bk3633_alios_master\bk3633_alios\platform\mcu\bk3633\beken\projects\boot\bk3633.uvproj
+Project File Date:  12/23/2021
+
+<h2>Output:</h2>
+*** Using Compiler 'V5.06 update 6 (build 750)', folder: 'D:\Software\Keil_v5\ARM\ARMCC\Bin'
+Build target 'BK3633_bim'
+linking...
+Program Size: Code=4004 RO-data=24 RW-data=4 ZI-data=1280  
+FromELF: creating hex file...
+After Build - User command #1: fromelf --bin --output .\output\bk3633_boot.bin .\obj\bk3633_boot.axf
+After Build - User command #2: .\output\encrypt_bim.bat
+D:\YL_Work\BK3633\bk3633_aliOS\alios_3633_full_git\bk3633_alios_master\bk3633_alios\platform\mcu\bk3633\beken\projects\boot>D:\Software\Keil_v5\ARM\ARMCC\bin\fromelf .\obj\bk3633_boot.axf --output .\output\bk3633_boot.bin --bin 
+D:\YL_Work\BK3633\bk3633_aliOS\alios_3633_full_git\bk3633_alios_master\bk3633_alios\platform\mcu\bk3633\beken\projects\boot>.\output\encrypt.exe .\output\bk3633_boot.bin 00000000 
+/**< @author <luoyao@bekencorp.com> */
+/**< @version v0.2 */
+ Encrypt Seccessfully!
+ -FileSize: 0x10bc
+D:\YL_Work\BK3633\bk3633_aliOS\alios_3633_full_git\bk3633_alios_master\bk3633_alios\platform\mcu\bk3633\beken\projects\boot>copy .\output\bk3633_boot.bin ..\..\..\bin\ 
+已复制         1 个文件。
+".\obj\bk3633_boot.axf" - 0 Error(s), 0 Warning(s).
+Build Time Elapsed:  00:00:01
+</pre>
+</body>
+</html>
