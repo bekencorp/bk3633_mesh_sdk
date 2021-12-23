@@ -8,6 +8,10 @@ SECTIONS 0x00000000 ALIGN 32
         *bim_vectors.o(SYS_BOOT, +First)		
         *bim_handlers.o(SYS_BOOT)
     }
+	ROM_FUNC +0 ALIGN 0x80
+    {
+        *(BOOT_FLASH)
+    }
 	ROM + 0
 	{
 	 
@@ -29,6 +33,10 @@ SECTIONS 0x00000000 ALIGN 32
         *(+ZI)
     } 
 	
+	RAM_GPIO_VAL 0x00400060
+	{
+	    *(BOOT_RAM)
+	}
 	
     RAM_STACK_UNUSED 0x0040FFFC - 0x10 - 0x10 - 0x10 - 0x10  EMPTY 0x10 ;
     {

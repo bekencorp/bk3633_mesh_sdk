@@ -37,4 +37,5 @@ typedef enum
 
 void bim_gpio_config(uint8_t gpio, Dir_Type dir, Pull_Type pull);
 void bim_gpio_triger(uint8_t gpio);
+uint8_t bim_gpio_get_input(uint8_t gpio);
 #endif

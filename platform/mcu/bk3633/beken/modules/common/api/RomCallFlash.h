@@ -53,5 +53,11 @@ void rom_env_init(struct rom_env_tag *api);
 
 extern struct rom_env_tag rom_env;
 
+struct boot_func_tag
+{
+	uint32_t (*get_gpio_value)(void);
+};
+extern const struct boot_func_tag boot_func;
+
 #endif // __ROM_CALL_FLASH_H_
 

@@ -4,9 +4,53 @@
 #include "bim_flash.h"
 #include "bim_icu.h"
 #include "bim_wdt.h"
+#include "bim_gpio.h"
 const  unsigned int BK36 __attribute__((at(0x100)))= {0x36334B42};
 const  unsigned int BK33 __attribute__((at(0x104)))= {0x00103333};
 typedef void (*FUNCPTR)(void);
+
+__attribute__((section("BOOT_FLASH")))
+const struct boot_func_tag boot_func = {get_gpio_value};
+
+__attribute__((section("BOOT_RAM"))) uint32_t gpio_value;
+
+uint32_t get_gpio_value(void)
+{
+    return gpio_value;
+}
+
+uint8_t bim_gpio_idx_transform_bit(uint8_t idx)
+{
+    uint8_t val;
+    uint8_t val_h;
+    uint8_t val_l;
+
+    val_h = (idx & 0xF0) >> 4;
+    val_l = idx & 0x0F;
+    val = val_h * 8 + val_l;
+
+    return val;
+}
+
+void bim_gpio_val_get_handler(uint8_t idx)
+{
+    uint8_t val;
+    uint8_t bit;
+
+    bim_gpio_config(idx, INPUT, PULL_NONE);
+
+    val = bim_gpio_get_input(idx);
+    bit = bim_gpio_idx_transform_bit(idx);
+
+    if(val == 1)
+    {
+        gpio_value |= BIT(bit);
+    }
+    else
+    {
+        gpio_value &= ~BIT(bit);
+    }
+}
 
 void  updata_memset32(void * dest, uint32 value, uint8 size)
 {
