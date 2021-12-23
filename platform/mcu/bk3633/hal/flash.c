@@ -219,27 +219,27 @@ int32_t hal_flash_write(hal_partition_t in_partition, uint32_t *off_set, const v
         return -1;
     }
     do {
-    if(flash_secure_sector == true)
-    {
-        PROTECT_TYPE sec = secure_sector_switch(start_addr);
-        hal_flash_secure_sector(sec);
-    }
+        if(flash_secure_sector == true)
+        {
+            PROTECT_TYPE sec = secure_sector_switch(start_addr);
+            hal_flash_secure_sector(sec);
+        }
 
-	flash_hdl = ddev_open(FLASH_DEV_NAME, &status, 0);
-    //hal_wdg_reload(&wdg);
-    hal_aon_wdt_feed();
-    hal_flash_lock();
-        // printf("%s, par_in_buf %p, par_buf_len %d, len %d, in_buf_len %d start_addr 0x%x\n",\
+        flash_hdl = ddev_open(FLASH_DEV_NAME, &status, 0);
+        //hal_wdg_reload(&wdg);
+        hal_aon_wdt_feed();
+        hal_flash_lock();
+
         ddev_write(flash_hdl, par_in_buf, (par_buf_len > HAL_FLASH_SEGMENTED_LEN) ? (HAL_FLASH_SEGMENTED_LEN) : par_buf_len, start_addr);
-    hal_flash_unlock();
-    //hal_wdg_reload(&wdg);
-    hal_aon_wdt_feed();
-	ddev_close(flash_hdl);
+        hal_flash_unlock();
+        //hal_wdg_reload(&wdg);
+        hal_aon_wdt_feed();
+        ddev_close(flash_hdl);
 
-    if(flash_secure_sector == true)
-    {
-        hal_flash_secure_sector(FLASH_PROTECT_ALL);
-    }
+        if(flash_secure_sector == true)
+        {
+            hal_flash_secure_sector(FLASH_PROTECT_ALL);
+        }
 
         if (par_buf_len < HAL_FLASH_SEGMENTED_LEN) {
             break;

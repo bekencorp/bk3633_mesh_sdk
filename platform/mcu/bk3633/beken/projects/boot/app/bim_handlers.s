@@ -50,6 +50,9 @@
 	
 	IMPORT ||Image$$RAM_STACK_FIQ$$Base||          ;//stack_base_fiq
 	IMPORT ||Image$$RAM_STACK_FIQ$$ZI$$Length||    ;//stack_len_fiq
+		
+	IMPORT ||Image$$RAM_GPIO_VAL$$Base||               ;//ram_gpio_val_base
+	IMPORT ||Image$$RAM_GPIO_VAL$$Length||             ;//ram_gpio_val_length
 	
 	IMPORT bim_main
 		
@@ -237,7 +240,7 @@ sys_Reset
     ; Stay in Supervisor Mode
     ;copy data from binary to ram
     BL _sysboot_copy_data_to_ram
-    
+    BL _sysboot_copy_data_to_gpio_val_ram
 	; init bss section
     BL _sysboot_zi_init
 	 
@@ -275,6 +278,19 @@ _rw_copy
         LDRLO   R4, [R0], #4
         STRLO   R4, [R1], #4
         BLO     _rw_copy
+        BX LR
+
+_sysboot_copy_data_to_gpio_val_ram
+        LDR     R0, =||Image$$RAM_GPIO_VAL$$Base||
+        LDR     R1, =||Image$$RAM_GPIO_VAL$$Length||
+        
+        ADD R3, R1, R0
+        MOV R4, R0
+        MOV R2, #0
+_rw_gpio_val_copy
+        CMP R4, R3
+        STRLO R2, [R4], #4
+        BLO _rw_gpio_val_copy
         BX LR
         
 ; /*FUNCTION:     _sysboot_zi_init*/

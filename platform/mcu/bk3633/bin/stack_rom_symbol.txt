@@ -1,3 +1,4 @@
+boot_func = 0x00000380;
 stack_support_flash = 0x00002180;
 rwip_func = 0x00002184;
 ke_msg_func = 0x000021b4;

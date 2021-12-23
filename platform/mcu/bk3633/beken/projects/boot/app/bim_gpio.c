@@ -77,3 +77,14 @@ void bim_gpio_triger(uint8_t gpio)
 	bim_gpio_set(gpio, 1);
 	bim_gpio_set(gpio, 0);
 }
+
+uint8_t bim_gpio_get_input(uint8_t gpio)
+{
+    uint32_t temp = 0;
+    uint8_t port = ((gpio&0xf0)>>4);
+    uint8_t pin = (gpio&0xf);
+
+    temp = *((volatile unsigned long *) (BASEADDR_GPIO+4*(port*8+pin)));
+	
+    return (temp&(1<<GPIO_INPUT_VA));
+}
