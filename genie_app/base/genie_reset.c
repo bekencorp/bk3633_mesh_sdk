@@ -70,6 +70,7 @@ void genie_reset_clean_count(void)
     _genie_reset_set_flag(0);
 }
 
+#if CONFIG_GENIE_RESET_BY_REPEAT
 void genie_reset_by_repeat_init(void)
 {
     uint8_t count;
@@ -99,4 +100,4 @@ void genie_reset_by_repeat_init(void)
         _genie_reset_set_flag(1);
     }
 }
-
+#endif
