@@ -797,9 +797,10 @@ void rf_init(struct rwip_rf_api *api)
 		ip_radiocntl1_forceiq_setf(1);
     #endif //CFG_BLE
     
-
+#ifdef CONFIG_RF_GPIO_DEBUG
     void  rf_debug_gpio_init(uint8_t GPIO_C_D);
     rf_debug_gpio_init(1);
+#endif
 }
 
 void rf_set_bulk_mode(void)
@@ -849,7 +850,7 @@ void Delay_ms(int num) //sync from svn revision 18
 volatile uint32_t XVR_ANALOG_REG_BAK[32] = {0};
 
 
-
+#ifdef CONFIG_RF_GPIO_DEBUG
 void  rf_debug_gpio_init(uint8_t GPIO_C_D)
 {
     
@@ -922,9 +923,9 @@ void  rf_debug_gpio_init(uint8_t GPIO_C_D)
             set_AON_GPIO_Reg0x17_GPIO23_Config(0X40);
         }break;
     }
-          
-    
-#define RF_ANA_OUT   
+
+
+#define RF_ANA_OUT
    
 #ifdef RF_ANA_OUT
     addPMU_Reg0x10 = 0x840100;
@@ -933,7 +934,7 @@ void  rf_debug_gpio_init(uint8_t GPIO_C_D)
 #endif // RF_ANA_OUT
 
 }
-
+#endif // CONFIG_RF_GPIO_DEBUG
 
 
 void kmod_calibration(void) 
