@@ -19,6 +19,7 @@ en_bt_smp = 0
 
 bt_host_tinycrypt = 1
 
+#GLOBAL_DEFINES += CONFIG_RF_GPIO_DEBUG
 #GLOBAL_DEFINES += CONFIG_AOS_CLI
 # Host configurations
 GLOBAL_DEFINES += CONFIG_BLUETOOTH
