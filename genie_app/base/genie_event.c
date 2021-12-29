@@ -214,6 +214,9 @@ static E_GENIE_EVENT _genie_event_handle_mesh_init(void)
         cmd_netkey_info_sync(netkey, CONFIG_BT_MESH_SUBNET_COUNT);
         cmd_appkey_info_sync(appkey, CONFIG_BT_MESH_APP_KEY_COUNT);
 #endif // CONFIG_BT_MESH_SHELL
+#if (defined CONFIG_BT_MESH_TELINK) || (defined CONFIG_BT_MESH_JINGXUN)
+        bt_mesh_proved_reset_flag_set(1);
+#endif /* CONFIG_BT_MESH_TELINK||CONFIG_BT_MESH_JINGXUN */
         bool net_created = false;
         for (int i = 0; i < CONFIG_BT_MESH_SUBNET_COUNT; i++) {
             if (netkey[i].net_index != BT_MESH_KEY_UNUSED) {

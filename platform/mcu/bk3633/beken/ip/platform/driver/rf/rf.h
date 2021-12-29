@@ -57,6 +57,10 @@ void Delay_us(int num);
 void Delay_ms(int num);
 void rf_set_bulk_mode(void);
 void rf_set_ldo_mode(void);
+
+#define RF_POWER_LEVE_DEF 8
+#define RF_XTAL_CAL_DEF 80
+
 /// @} RF
 
 #endif // RF_H_

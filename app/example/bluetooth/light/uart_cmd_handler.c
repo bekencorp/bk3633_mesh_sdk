@@ -1,5 +1,6 @@
 #include "genie_flash.h"
 #include "uart_pub.h"
+#include "rf.h"
 
 #define ARRAY_LEN(array)   (sizeof((array))/sizeof((array)[0]))
 
@@ -164,9 +165,9 @@ void app_xtal_cal_init(void)
 
 	if(g_cal_data==0)
 	{
-		g_cal_data =80;
+		g_cal_data = RF_XTAL_CAL_DEF;
 	}
-//	g_cal_data =80;
+
 	xtal_cal_set(g_cal_data);
 
 	// UART_PRINTF("[%s] g_cal_data = %02X\r\n" ,__func__, g_cal_data);
@@ -196,7 +197,7 @@ void app_rf_power_init(void)
 	// UART_PRINTF("[%s] g_rf_power_level = %02X\r\n" ,__func__, g_rf_power_level);
 	if(g_rf_power_level==0)
 	{
-		g_rf_power_level =8;
+		g_rf_power_level = RF_POWER_LEVE_DEF;
 	}
 //	g_rf_power_level =2;
 

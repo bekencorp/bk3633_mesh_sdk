@@ -39,6 +39,7 @@
 #define DEFAULT_TTL 7
 
 static struct bt_mesh_cfg_srv *conf;
+static ktimer_t g_bt_mesh_reset_timer;
 
 static struct label {
     u16_t addr;
@@ -2570,6 +2571,15 @@ send_list:
     }
 }
 
+static void bt_mesh_node_reset(void *timer, void *arg)
+{
+    BT_DBG(">>>Start reset mesh");
+    bt_mesh_reset();
+#ifdef CONFIG_BT_MESH_ALI_TMALL_GENIE
+    genie_event(GENIE_EVT_SW_RESET, NULL);
+#endif /* CONFIG_BT_MESH_ALI_TMALL_GENIE */
+    BT_DBG("Reset mesh complete<<<");
+}
 static void node_reset(struct bt_mesh_model *model,
                struct bt_mesh_msg_ctx *ctx,
                struct net_buf_simple *buf)
@@ -2597,11 +2607,10 @@ static void node_reset(struct bt_mesh_model *model,
     }
 #endif /* CONFIG_BT_MESH_ALI_TMALL_GENIE */
 
-    bt_mesh_reset();
+    BT_DBG("Wait gatt proxy sync...");
 
-#ifdef CONFIG_BT_MESH_ALI_TMALL_GENIE
-    genie_event(GENIE_EVT_SW_RESET, NULL);
-#endif /* CONFIG_BT_MESH_ALI_TMALL_GENIE */
+    k_timer_init(&g_bt_mesh_reset_timer, bt_mesh_node_reset, NULL);
+    k_timer_start(&g_bt_mesh_reset_timer, BT_MESH_NODE_RESET_TIME);
 
 }
 

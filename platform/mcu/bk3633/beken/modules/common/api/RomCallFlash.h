@@ -56,6 +56,7 @@ extern struct rom_env_tag rom_env;
 struct boot_func_tag
 {
 	uint32_t (*get_gpio_value)(void);
+	void (*clear_gpio_value)(void);
 };
 extern const struct boot_func_tag boot_func;
 
