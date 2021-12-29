@@ -593,6 +593,9 @@ int application_start(int argc, char **argv)
 {
     /* genie initilize */
     genie_init();
+	
+	app_rf_power_init(); //set 0x40
+	app_xtal_cal_init();  // set 0x08 for 7db
 
     led_startup();
 

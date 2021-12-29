@@ -8,7 +8,8 @@ $(NAME)_INCLUDES += ../ \
 					../../../../genie_app/base \
 					../../../../genie_app/bluetooth/host \
 					../../../../genie_app/bluetooth/mesh \
-					../../../../genie_app/bluetooth/mesh/mesh_model
+					../../../../genie_app/bluetooth/mesh/mesh_model \
+					../../../../platform/mcu/bk3633/beken/ip/platform/driver/rf
 
 $(NAME)_SOURCES  := light.c	\
 					light_board.c \
@@ -68,10 +69,11 @@ MESH_MODEL_CTL_SRV = 1
 MESH_MODEL_VENDOR_SRV = 1
 MESH_MODEL_HSL_SRV = 1
 #BLE_MESH_TIME_SCENE_SERVER = 1
-GLOBAL_DEFINES += CONFIG_BT_DEVICE_NAME=\"BK_MESH_light\"
 
+GLOBAL_DEFINES += CONFIG_BT_DEVICE_NAME=\"BK_MESH_light\"
 GLOBAL_DEFINES += PROJECT_SW_VERSION=0x00010104
 #GLOBAL_DEFINES += PROJECT_SECRET_KEY=\"00112233445566770011223344556677\"
+GLOBAL_DEFINES += BT_MESH_NODE_RESET_TIME=2000
 
 # Feature configurations
 #GLOBAL_DEFINES += GENIE_OLD_AUTH
@@ -89,8 +91,8 @@ beken_ota = 1
 uart_test_cmd = 1
 dut_test_cmd = 1
 #dut_test_com = 2
-button = 1
 hw_timer = 1
+button = 0
 spi_driver = 0
 deep_sleep = 0
 

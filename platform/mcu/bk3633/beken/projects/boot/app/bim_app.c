@@ -10,13 +10,18 @@ const  unsigned int BK33 __attribute__((at(0x104)))= {0x00103333};
 typedef void (*FUNCPTR)(void);
 
 __attribute__((section("BOOT_FLASH")))
-const struct boot_func_tag boot_func = {get_gpio_value};
+const struct boot_func_tag boot_func = {get_gpio_value, clear_gpio_value};
 
 __attribute__((section("BOOT_RAM"))) uint32_t gpio_value;
 
 uint32_t get_gpio_value(void)
 {
     return gpio_value;
+}
+
+void clear_gpio_value(void)
+{
+    gpio_value = 0;
 }
 
 uint8_t bim_gpio_idx_transform_bit(uint8_t idx)
@@ -93,7 +98,7 @@ void reset_register_dump(void)
 
 void bim_main(void)	
 {
-    //icu_init();
+    icu_init();
     wdt_disable();
     updata_memset32((uint8 *)0x00400000, 1, 1);
     //uart2_init(1000000);

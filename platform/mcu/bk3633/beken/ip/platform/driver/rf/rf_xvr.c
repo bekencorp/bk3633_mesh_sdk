@@ -800,7 +800,12 @@ void rf_init(struct rwip_rf_api *api)
 #ifdef CONFIG_RF_GPIO_DEBUG
     void  rf_debug_gpio_init(uint8_t GPIO_C_D);
     rf_debug_gpio_init(1);
-#endif
+#endif // CONFIG_RF_GPIO_DEBUG
+
+	//set the rf power and xtal defualt  
+	xtal_cal_set(RF_XTAL_CAL_DEF);
+	rf_power_set(RF_POWER_LEVE_DEF);
+
 }
 
 void rf_set_bulk_mode(void)
@@ -923,9 +928,9 @@ void  rf_debug_gpio_init(uint8_t GPIO_C_D)
             set_AON_GPIO_Reg0x17_GPIO23_Config(0X40);
         }break;
     }
-
-
-#define RF_ANA_OUT
+          
+    
+#define RF_ANA_OUT   
    
 #ifdef RF_ANA_OUT
     addPMU_Reg0x10 = 0x840100;
@@ -934,7 +939,7 @@ void  rf_debug_gpio_init(uint8_t GPIO_C_D)
 #endif // RF_ANA_OUT
 
 }
-#endif // CONFIG_RF_GPIO_DEBUG
+#endif //CONFIG_RF_GPIO_DEBUG
 
 
 void kmod_calibration(void) 
