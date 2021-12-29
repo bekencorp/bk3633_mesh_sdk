@@ -64,14 +64,12 @@ typedef enum
     PULL_HIGH,
     PULL_LOW,
     PULL_NONE
-}Pull_Type;
- 
+} Pull_Type;
 
-#define	BlueLedPort		0x11
-#define	BlueLedOn()		REG_APB5_GPIOB_DATA |= 0x02
-#define	BlueLedOff()	REG_APB5_GPIOB_DATA &= (~0x02)
-#define	BlueLedToggle()	REG_APB5_GPIOB_DATA ^= 0x02
-
+#define	BlueLedPort     0x11
+#define	BlueLedOn()     REG_APB5_GPIOB_DATA |= 0x02
+#define	BlueLedOff()    REG_APB5_GPIOB_DATA &= (~0x02)
+#define	BlueLedToggle() REG_APB5_GPIOB_DATA ^= 0x02
 
 #define	RedLedPort		0x27
 #define	RedLedOn()		REG_APB5_GPIOC_DATA |= 0x80
@@ -98,13 +96,13 @@ void gpio_wakeup(void);
  
 #if GPIO_DBG_MSG
  void gpio_debug_msg_init(void);
-#endif 
+#endif
 
 void gpio_triger(uint8_t gpio);
 
 typedef void (*GPIO_INT_CALLBACK_T)(uint8_t idx);
 
 void gpio_cb_register(GPIO_INT_CALLBACK_T cb);
- 
- 
+
+
 #endif // _GPIO_H_

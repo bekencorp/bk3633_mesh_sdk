@@ -264,12 +264,11 @@ void flash_read_data(UINT8 *buffer, UINT32 address, UINT32 len)
     {
         return;
     }
-	GLOBAL_INT_DISABLE();
+
     while(flash_sw_busy());
-    GLOBAL_INT_RESTORE();
+
     while(len)
     {
-	    GLOBAL_INT_DISABLE();
         value = REG_READ(REG_FLASH_OPERATE_SW);
         value &= (~SET_ADDRESS_SW);
         value &= (~SET_OP_TYPE_SW);
@@ -296,7 +295,6 @@ void flash_read_data(UINT8 *buffer, UINT32 address, UINT32 len)
                 break;
             }
         }
-        GLOBAL_INT_RESTORE();
     }
     
 }
@@ -307,7 +305,6 @@ void flash_write_data(UINT8 *buffer, UINT32 address, UINT32 len)
     UINT32 addr = address & (~0x1F);
     UINT32 buf[8];
     UINT8 *pb = (UINT8 *)&buf[0];
-
 
     if (len == 0)
         return;
@@ -322,12 +319,12 @@ void flash_write_data(UINT8 *buffer, UINT32 address, UINT32 len)
     {
         memset(pb, 0xFF, 32);
     }
-    GLOBAL_INT_DISABLE();
+
     while(flash_sw_busy());
-    GLOBAL_INT_RESTORE();
+
     while(len)
     {
-        GLOBAL_INT_DISABLE();
+        
         if(len < 32)
         {
             flash_read_data(pb, addr, 32);
@@ -360,7 +357,6 @@ void flash_write_data(UINT8 *buffer, UINT32 address, UINT32 len)
 
         addr += 32;
         memset(pb, 0xFF, 32);
-        GLOBAL_INT_RESTORE();
     }
 }
 
@@ -368,7 +364,7 @@ void flash_write_page_data(UINT8 *buffer, UINT32 address, UINT32 len)
 {
     UINT32 i, value;
     UINT32 addr = address & (~0xFF);
-    
+
     if (len == 0)
         return;
 
@@ -378,7 +374,7 @@ void flash_write_page_data(UINT8 *buffer, UINT32 address, UINT32 len)
     }
 
     UINT8 *pb = (UINT8 *)&buf[0];
-    GLOBAL_INT_DISABLE();
+
     if(address % 256)
     {
         flash_read_data(pb, addr, 256);
@@ -394,7 +390,6 @@ void flash_write_page_data(UINT8 *buffer, UINT32 address, UINT32 len)
     GLOBAL_INT_RESTORE();
     while(len)
     {
-        GLOBAL_INT_DISABLE();
         if(len < 256)
         {
             flash_read_data(pb, addr, 256);
@@ -429,9 +424,8 @@ void flash_write_page_data(UINT8 *buffer, UINT32 address, UINT32 len)
         while(flash_sw_busy());
         addr += 256;
         memset(pb, 0xFF, 256);
-        GLOBAL_INT_RESTORE();
     }
-    GLOBAL_INT_DISABLE();
+
     set_FLASH_Reg0x5_pw_write(0);
     GLOBAL_INT_RESTORE();
     os_free(buf);
@@ -492,7 +486,7 @@ void set_flash_clk(unsigned char clk_conf)
 
 static void flash_protection_op_GD_MD25D40(PROTECT_TYPE type)
 {
-    //GLOBAL_INT_DISABLE();
+    GLOBAL_INT_DISABLE();
     UINT8 bp2, bp1, bp0;
     if(FLASH_PROTECT_SEC_112 <= type)
     {
@@ -524,13 +518,18 @@ static void flash_protection_op_GD_MD25D40(PROTECT_TYPE type)
     }
 
     flash_write_sr((1 << 6) | (1 << 5) | (bp2 << 4) | (bp1 << 3) | (bp0 << 2));
+    GLOBAL_INT_RESTORE();
 }
 
 static void flash_protection_op_P25Q40U(PROTECT_TYPE type)
 {
     UINT8 bp;
+    GLOBAL_INT_DISABLE();
     switch(type)
     {
+        case FLASH_PROTECT_NONE:
+            bp = 0x1f;
+            break;
         case FLASH_PROTECT_SEC_126:            //504K     0x7DFFF
             bp = 0x12;
             break;
@@ -557,11 +556,12 @@ static void flash_protection_op_P25Q40U(PROTECT_TYPE type)
     }
 
     flash_write_sr((1 << 14) | (bp << 2));
+    GLOBAL_INT_RESTORE();
 }
 
 static void flash_protection_op_GD_FLASH_1(PROTECT_TYPE type)
 {
-    //GLOBAL_INT_DISABLE();
+    GLOBAL_INT_DISABLE();
     UINT8 bp2, bp1, bp0, sr;
     if(FLASH_PROTECT_SEC_112 <= type)
     {
@@ -595,7 +595,7 @@ static void flash_protection_op_GD_FLASH_1(PROTECT_TYPE type)
     sr = (1 << 6) | (1 << 5) | (bp2 << 4) | (bp1 << 3) | (bp0 << 2);
 
     flash_write_sr(sr);
-    //GLOBAL_INT_RESTORE();
+    GLOBAL_INT_RESTORE();
 }
 
 static void flash_protection_op(PROTECT_TYPE type)
@@ -658,17 +658,20 @@ UINT32 flash_read(char *user_buf, UINT32 count, UINT32 address)
 
 UINT32 flash_write(char *user_buf, UINT32 count, UINT32 address)
 {
-    flash_write_data((UINT8 *)user_buf, address, count);
-    //flash_write_page_data((UINT8 *)user_buf, address, count);
+    GLOBAL_INT_DISABLE();
+    //flash_write_data((UINT8 *)user_buf, address, count);
+    flash_write_page_data((UINT8 *)user_buf, address, count);
+    GLOBAL_INT_RESTORE();
 
     return DRIV_SUCCESS;
 }
 
 UINT32 flash_write_normal(char *user_buf, UINT32 count, UINT32 address)
 {
+    GLOBAL_INT_DISABLE();
     flash_write_data((UINT8 *)user_buf, address, count);
     //flash_write_page_data((UINT8 *)user_buf, address, count)
-
+    GLOBAL_INT_RESTORE();
     return DRIV_SUCCESS;
 }
 
@@ -679,7 +682,7 @@ UINT32 flash_ctrl(UINT32 cmd, void *parm)
     UINT32 address;
     PROTECT_TYPE type;
     UINT32 ret = DRIV_SUCCESS;
-    
+
     switch(cmd)
     {
         case CMD_FLASH_SET_CLK:
@@ -746,9 +749,9 @@ UINT32 flash_ctrl(UINT32 cmd, void *parm)
 }
 
 #define AHB_FLASH_BASE			         0x00802000
-#define REG_FLASH_CONF_1                  (*((volatile unsigned long *)   (AHB_FLASH_BASE+7*4)))
-#define REG_FLASH_OPERATE_SW_1            (*((volatile unsigned long *)   (AHB_FLASH_BASE+0*4)))
-#define REG_FLASH_CON_1                  (*((volatile unsigned long *)   (AHB_FLASH_BASE+7*4)))
+#define REG_FLASH_CONF_1                 (*((volatile unsigned long *)   (AHB_FLASH_BASE + 7*4)))
+#define REG_FLASH_OPERATE_SW_1           (*((volatile unsigned long *)   (AHB_FLASH_BASE + 0*4)))
+#define REG_FLASH_CON_1                  (*((volatile unsigned long *)   (AHB_FLASH_BASE + 7*4)))
 #define BIT_FLASH_CLK_CONF_1              0
 #define BIT_MODE_SEL_1                    4
 #define BIT_FWREN_FLASH_CPU_1             9

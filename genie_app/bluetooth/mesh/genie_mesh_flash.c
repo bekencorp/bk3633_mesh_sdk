@@ -93,6 +93,16 @@ E_GENIE_FLASH_ERRCODE genie_flash_read_hb(mesh_hb_para_t *p_para)
     return genie_flash_read_reliable(GFI_MESH_HB, (uint8_t *)p_para, sizeof(mesh_hb_para_t));
 }
 
+E_GENIE_FLASH_ERRCODE genie_flash_write_seq(uint32_t *p_seq)
+{
+    return genie_flash_write_reliable(GFI_MESH_SEQ, (uint8_t *)p_seq, sizeof(uint32_t));
+}
+
+E_GENIE_FLASH_ERRCODE genie_flash_read_seq(uint32_t *p_seq)
+{
+    return genie_flash_read_reliable(GFI_MESH_SEQ, (uint8_t *)p_seq, sizeof(uint32_t));
+}
+
 E_GENIE_FLASH_ERRCODE genie_flash_reset_system(void)
 {
     E_GENIE_FLASH_ERRCODE ret;

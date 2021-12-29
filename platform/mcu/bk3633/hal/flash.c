@@ -202,7 +202,8 @@ int32_t hal_flash_write(hal_partition_t in_partition, uint32_t *off_set, const v
     hal_logic_partition_t *partition_info;
 	uint32_t status;
     DD_HANDLE flash_hdl;
-
+    uint32_t par_buf_len = in_buf_len;
+    uint8_t *par_in_buf = (uint8_t *)in_buf;
 #ifdef CONFIG_AOS_KV_MULTIPTN_MODE
     if (in_partition == CONFIG_AOS_KV_PTN) {
         if ((*off_set) >= CONFIG_AOS_KV_PTN_SIZE) {
@@ -215,6 +216,7 @@ int32_t hal_flash_write(hal_partition_t in_partition, uint32_t *off_set, const v
     partition_info = hal_flash_get_info( in_partition );
 
     if(off_set == NULL || in_buf == NULL || *off_set + in_buf_len > partition_info->partition_length) {
+        os_printf("%s, L, Invalid params.\n", __func__, __LINE__);
         return -1;
     }
 
@@ -236,29 +238,45 @@ int32_t hal_flash_write(hal_partition_t in_partition, uint32_t *off_set, const v
         return -1;
     }
 #endif
-    if(flash_secure_sector == true)
-    {
-        PROTECT_TYPE sec = secure_sector_switch(start_addr);
-        hal_flash_secure_sector(sec);
-    }
+    do {
+        //gpio_triger(0x07);
+        if(flash_secure_sector == true)
+        {
+            PROTECT_TYPE sec = secure_sector_switch(start_addr);
+            hal_flash_secure_sector(sec);
+        }
 
-	flash_hdl = ddev_open(FLASH_DEV_NAME, &status, 0);
-    //hal_wdg_reload(&wdg);
-    hal_aon_wdt_feed();
-    hal_flash_lock();
-    ddev_write(flash_hdl, in_buf, in_buf_len, start_addr);
-    hal_flash_unlock();
-    //hal_wdg_reload(&wdg);
-    hal_aon_wdt_feed();
-	ddev_close(flash_hdl);
+        flash_hdl = ddev_open(FLASH_DEV_NAME, &status, 0);
+        //hal_wdg_reload(&wdg);
+        hal_aon_wdt_feed();
+        hal_flash_lock();
+        // printf("%s, par_in_buf %p, par_buf_len %d, len %d, in_buf_len %d start_addr 0x%x\n",\
+        //        __func__, par_in_buf, par_buf_len,\
+        //        (par_buf_len > HAL_FLASH_SEGMENTED_LEN) ? (HAL_FLASH_SEGMENTED_LEN) : par_buf_len, in_buf_len, start_addr);
+        ddev_write(flash_hdl, par_in_buf, (par_buf_len > HAL_FLASH_SEGMENTED_LEN) ? (HAL_FLASH_SEGMENTED_LEN) : par_buf_len, start_addr);
+        hal_flash_unlock();
+        //hal_wdg_reload(&wdg);
+        hal_aon_wdt_feed();
+        ddev_close(flash_hdl);
+
+        if(flash_secure_sector == true)
+        {
+            hal_flash_secure_sector(FLASH_PROTECT_ALL);
+        }
+        //gpio_triger(0x07);
+
+        if (par_buf_len < HAL_FLASH_SEGMENTED_LEN) {
+            break;
+        }
+
+        par_in_buf += HAL_FLASH_SEGMENTED_LEN;
+        start_addr += HAL_FLASH_SEGMENTED_LEN;
+        par_buf_len -= HAL_FLASH_SEGMENTED_LEN;//(par_buf_len > HAL_FLASH_SEGMENTED_LEN) ? (par_buf_len - HAL_FLASH_SEGMENTED_LEN) : par_buf_len;
+
+        k_sleep(3);
+    } while (true);
 
     *off_set += in_buf_len;
-
-    if(flash_secure_sector == true)
-    {
-        hal_flash_secure_sector(FLASH_PROTECT_ALL);
-    }
-
     return 0;
 }
 
