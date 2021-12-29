@@ -6,7 +6,7 @@
 #include "genie_app.h"
 #include <aos/aos.h>
 #include "crc16.h"
-
+ 
 #define BT_DBG_ENABLED IS_ENABLED(CONFIG_BT_MESH_DEBUG_FLASH)
 #include "common/log.h"
 
@@ -391,7 +391,7 @@ E_GENIE_FLASH_ERRCODE genie_flash_init(void)
     RETURN_WHEN_ERR(ret, GENIE_FLASH_INIT_FAIL);
 #if 0
     ret = genie_flash_seq_init();
-    RETURN_WHEN_ERR(ret, GENIE_FLASH_INIT_FAIL);
+    RETURN_WHEN_ERR(ret, GENIE_FLASH_INIT_FAIL); 
 #endif
 
     ret = _genie_flash_check_remain();
@@ -599,7 +599,7 @@ static E_GENIE_FLASH_ERRCODE _genie_flash_copy(genie_flash_cell_t *p_src, genie_
     }
 
     if (p_src->pno == GENIE_FLASH_PARTITION_RECYCLE) {
-        /* Here, means data recovery finished , so erase recycle flag only */
+        /* Here, means data recovery finished, so erase recycle flag only */
         part_offset = 0;
         part_flag = GENIE_FLASH_FLAG_INITED_BASE;
         ret = hal_flash_write(p_src->pno, &part_offset, &part_flag, sizeof(part_flag), true);
@@ -1130,6 +1130,7 @@ static E_GENIE_FLASH_ERRCODE _genie_flash_read_seqcount(uint16_t *p_count)
     return GENIE_FLASH_SUCCESS;
 }
 
+#if 0
 E_GENIE_FLASH_ERRCODE genie_flash_read_seq(uint32_t *p_seq)
 {
     E_GENIE_FLASH_ERRCODE ret = GENIE_FLASH_SUCCESS;
@@ -1149,7 +1150,7 @@ E_GENIE_FLASH_ERRCODE genie_flash_read_seq(uint32_t *p_seq)
     *p_seq = base + count;
     return GENIE_FLASH_SUCCESS;
 }
-
+#endif
 static E_GENIE_FLASH_ERRCODE _genie_flash_write_seqbase(uint32_t base)
 {
     int32_t ret = 0;
@@ -1182,7 +1183,6 @@ static E_GENIE_FLASH_ERRCODE _genie_flash_write_seqcount(uint16_t count)
 
     BT_DBG("offset(0x%04X) byte(0x%02X)", offset, write_byte);
 
-    hal_flash_secure_sector(FLASH_PROTECT_SEC_120);
     //TODO
     //clear all bytes before offset
     while(start < offset) {
@@ -1201,6 +1201,7 @@ static E_GENIE_FLASH_ERRCODE _genie_flash_write_seqcount(uint16_t count)
     return GENIE_FLASH_SUCCESS;
 }
 
+#if 0
 E_GENIE_FLASH_ERRCODE genie_flash_write_seq(uint32_t *p_seq)
 {
     E_GENIE_FLASH_ERRCODE ret = GENIE_FLASH_SUCCESS;
@@ -1253,7 +1254,7 @@ CLEAN:
 WRITE_BASE:
     return _genie_flash_write_seqbase(seq);
 }
-
+#endif
 #endif
 E_GENIE_FLASH_ERRCODE genie_flash_delete_seq(void)
 {

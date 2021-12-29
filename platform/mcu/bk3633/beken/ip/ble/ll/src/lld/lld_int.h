@@ -51,7 +51,7 @@
 #define LLD_INIT_EVT(evt, data_struct)       memset(evt , 0, sizeof(struct data_struct));
 
 /// Programming delay in half-slots
-#define LLD_PROG_DELAY          5
+#define LLD_PROG_DELAY          5 
 #define LLD_PROG_DELAY_MIN      2
 
 #if 0 //(RW_BLE_WLAN_COEX) || (RW_BLE_MWS_COEX)
