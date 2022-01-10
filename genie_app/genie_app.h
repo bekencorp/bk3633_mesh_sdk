@@ -14,13 +14,14 @@
 
 #ifdef CONFIG_BEKEN_OTA
 #include "bluetooth/host/profile/ota_srv/ota_service.h"
-
 #endif
 
 #include "bluetooth/mesh/genie_mesh.h"
 #include "mesh_model.h"
-#include "light_board.h"
 
+#ifdef CONFIG_BT_MESH_LIGHT_BOARD
+#include "light_board.h"
+#endif
 /**
  * @brief The initialization api for genie sdk. The application always
  *        involks this api to initialize AIS/Mesh procedure for bussiness.

@@ -353,7 +353,7 @@ static void _provisioner_ready(int err)
     bt_mesh_provisioner_enable(BT_MESH_PROV_GATT | BT_MESH_PROV_ADV);
 	BT_DBG(">>> provisioner enable <<<");   
 	//create provisioner config thread.
-    k_thread_create(&provisioner_config_thread_data, provisioner_config_thread_stack,
+    k_thread_create(&provisioner_config_thread_data, "Mesh provisioner thread", provisioner_config_thread_stack,
                     K_THREAD_STACK_SIZEOF(provisioner_config_thread_stack), provisioner_config_thread,
                     NULL, NULL, NULL, CONFIG_BT_MESH_PROVISIONER_CONFIG_PRIO, 0, K_NO_WAIT);
 }
@@ -363,7 +363,10 @@ static void provisioner_mac_init(void)
     uint32_t off_set = 0x000;
     uint8_t addr[6] = {0};
     uint8_t dummy_addr[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
-    if((hal_flash_read(STATIC_SECTION_MAC, &off_set, addr, sizeof(addr)) == 0) &&
+
+	static_partition_write_addr_head(STATIC_SECTION_MAC);
+
+    if((static_partition_read(STATIC_SECTION_MAC, addr, sizeof(addr)) == 0) &&
        memcmp(addr, dummy_addr, sizeof(addr)) != 0) {
         memcpy(g_mac, addr, 6);
     }

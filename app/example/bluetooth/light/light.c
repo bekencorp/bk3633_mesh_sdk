@@ -192,8 +192,10 @@ void mesh_sub_init(u16_t *p_sub)
 {
     memset(p_sub, 0, CONFIG_BT_MESH_MODEL_GROUP_COUNT<<1);
 
+#ifdef CONFIG_DEAULT_MESH_GROUP
     p_sub[0] = DEFAULT_MESH_GROUP1;
     p_sub[1] = DEFAULT_MESH_GROUP2;
+#endif //CONFIG_DEAULT_MESH_GROUP
 }
 
 void _init_light_para(void)

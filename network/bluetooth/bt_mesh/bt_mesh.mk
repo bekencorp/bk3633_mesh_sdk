@@ -23,6 +23,7 @@ $(NAME)_INCLUDES += ../../../network/bluetooth/bt_mesh/inc \
 					../../../network/bluetooth/bt_mesh/mesh_model \
 					../../../network/bluetooth/bt_mesh/mesh_model/inc \
 					../../../network/bluetooth/bt_mesh/vendor_model \
+                    ../../../network/bluetooth/bt_mesh/mod_inc \
                     ../../../genie_app/ \
                     ../../../genie_app/bluetooth/mesh/mesh_model	\
 					../../../genie_app/bluetooth/mesh/mesh_model/inc	\

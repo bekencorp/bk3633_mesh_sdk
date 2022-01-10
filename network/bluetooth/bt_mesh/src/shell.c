@@ -31,6 +31,8 @@
 #include "gen_lvl_cli.h"
 #include "light_ctl_cli.h"
 
+#include "genie_mesh_flash.h"	//for mesh_appkey_para_t & mesh_netkey_para_t used in shell.c.
+
 #define CID_NVAL   0xffff
 #define CID_LOCAL  0x01a8
 
@@ -1082,8 +1084,9 @@ static int cmd_net_key_add_local(int argc, char *argv[])
 	} else {
 		printf("WARNING: The subnet buffer is full.\n");
 	}
-
+#ifdef CONFIG_BT_MESH_ALI_TMALL_GENIE
     genie_flash_write_netkey(cmd_subnet, CONFIG_BT_MESH_APP_KEY_COUNT);
+#endif
 	printf("key_net_idx %d\n", key_net_idx);
 	printf("Net key val:%s\n", bt_hex(key_val, sizeof(key_val)));
 	return 0;
@@ -1180,8 +1183,9 @@ static int cmd_app_key_add_local(int argc, char *argv[])
 	} else {
 		printf("WARNING: The appkey buffer is full.\n");
 	}
-
+#ifdef CONFIG_BT_MESH_ALI_TMALL_GENIE
     genie_flash_write_appkey(cmd_app_keys, CONFIG_BT_MESH_APP_KEY_COUNT);
+#endif
 	printf("key_net_idx %d\n", key_net_idx);
 	printf("key_app_idx %d\n", key_app_idx);
 	printf("APP key val:%s\n", bt_hex(key_val, sizeof(key_val)));
@@ -1261,8 +1265,9 @@ static int cmd_dev_key_add_local(int argc, char *argv[])
 	}
 
     memcpy(cmd_mesh_devkey, key_val, sizeof(key_val));
-
+#ifdef CONFIG_BT_MESH_ALI_TMALL_GENIE	
 	genie_flash_write_devkey(cmd_mesh_devkey);
+#endif
 	printf("Dev key val:%s\n", bt_hex(key_val, sizeof(key_val)));
 	return 0;
 }
@@ -1276,9 +1281,10 @@ static int cmd_mesh_seq_add(int argc, char *argv[])
 	seq = strtoul(argv[1], NULL, 0);
 
     cmd_mesh_seq = seq;
-	
+#ifdef CONFIG_BT_MESH_ALI_TMALL_GENIE	
 	E_GENIE_FLASH_ERRCODE errcode = genie_flash_write_seq(&seq);
 	printf("seq: 0x%x, err: %d\n", seq, errcode);
+#endif
 	return 0;
 }
 
@@ -1286,7 +1292,9 @@ static int cmd_mesh_prim_addr_add(int argc, char *argv[])
 {
 	cmd_mesh_prim_addr = strtoul(argv[1], NULL, 0);
 	printf("addr:0x%x\n", cmd_mesh_prim_addr);
+#ifdef CONFIG_BT_MESH_ALI_TMALL_GENIE
 	genie_flash_write_addr(&cmd_mesh_prim_addr);
+#endif
 	return 0;
 }
 

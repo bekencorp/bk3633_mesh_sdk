@@ -553,7 +553,9 @@ static void app_key_add(struct bt_mesh_model *model,
 void genie_appkey_register(u16_t net_idx, u16_t app_idx, const u8_t val[16], bool update)
 {
     app_key_set(net_idx, app_idx, val, update);
+#ifdef CONFIG_BT_MESH_ALI_TMALL_GENIE
     genie_sub_list_init();
+#endif
     genie_mesh_setup();
 }
 
@@ -2586,11 +2588,11 @@ static void node_reset(struct bt_mesh_model *model,
 {
     /* Needed size: opcode (2 bytes) + msg + MIC */
     struct net_buf_simple *msg = NET_BUF_SIMPLE(2 + 0 + 4);
-
+#ifdef CONFIG_BT_MESH_ALI_TMALL_GENIE
     BT_DBG("net_idx 0x%04x app_idx 0x%04x src 0x%04x len %u: %s, reset_flag %d\n",
            ctx->net_idx, ctx->app_idx, ctx->addr, buf->len,
            bt_hex(buf->data, buf->len), genie_reset_get_flag());
-
+#endif
 
     bt_mesh_model_msg_init(msg, OP_NODE_RESET_STATUS);
 

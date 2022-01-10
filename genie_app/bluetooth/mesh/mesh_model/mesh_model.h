@@ -25,55 +25,55 @@
 #endif
 
 #if defined(CONFIG_BT_MESH_GEN_ONOFF_CLI)
-#include "inc/gen_onoff_cli.h"
+#include "mod_inc/gen_onoff_cli.h"
 #endif
 #if defined(CONFIG_BT_MESH_GEN_BATTERY_CLI)
-#include "inc/gen_battery_cli.h"
+#include "mod_inc/gen_battery_cli.h"
 #endif
 #if defined(CONFIG_BT_MESH_GEN_LEVEL_CLI)
-#include "inc/gen_level_cli.h"
+#include "mod_inc/gen_lvl_cli.h"
 #endif
 #if defined(CONFIG_BT_MESH_GEN_DEF_TRANS_TIME_CLI)
-#include "inc/gen_def_trans_time_cli.h"
+#include "mod_inc/gen_dtt_cli.h"
 #endif
 #if defined(CONFIG_BT_MESH_GEN_POWER_ONOFF_CLI)
-#include "inc/gen_power_onoff_cli.h"
+#include "mod_inc/gen_ponoff_cli.h"
 #endif
 #if defined(CONFIG_BT_MESH_GEN_POWER_LEVEL_CLI)
-#include "inc/gen_power_level_cli.h"
+#include "mod_inc/gen_plvl_cli.h"
 #endif
 #if defined(CONFIG_BT_MESH_GEN_LOCATION_CLI)
-#include "inc/gen_location_cli.h"
+#include "mod_inc/gen_loc_cli.h"
 #endif
 #if defined(CONFIG_BT_MESH_GEN_PROP_CLI)
-#include "inc/gen_prop_cli.h"
+#include "mod_inc/gen_prop_cli.h"
 #endif
 #if defined(CONFIG_BT_MESH_SENSOR_CLI)
-#include "inc/sensor_cli.h"
+#include "mod_inc/sensor_cli.h"
 #endif
 #if defined(CONFIG_BT_MESH_TIME_CLI)
-#include "inc/time_cli.h"
+#include "mod_inc/time_cli.h"
 #endif
 #if defined(CONFIG_BT_MESH_SCENE_CLI)
-#include "inc/scene_cli.h"
+#include "mod_inc/scene_cli.h"
 #endif
 #if defined(CONFIG_BT_MESH_SCHEDULER_CLI)
-#include "inc/scheduler_cli.h"
+#include "mod_inc/scheduler_cli.h"
 #endif
 #if defined(CONFIG_BT_MESH_LIGHT_LIGHTNESS_CLI)
-#include "inc/light_lightness_cli.h"
+#include "mod_inc/light_lightness_cli.h"
 #endif
 #if defined(CONFIG_BT_MESH_LIGHT_CTL_CLI)
-#include "inc/light_ctl_cli.h"
+#include "mod_inc/light_ctl_cli.h"
 #endif
 #if defined(CONFIG_BT_MESH_LIGHT_HSL_CLI)
-#include "inc/light_hsl_cli.h"
+#include "mod_inc/light_hsl_cli.h"
 #endif
 #if defined(CONFIG_BT_MESH_LIGHT_XYL_CLI)
-#include "inc/light_xyl_cli.h"
+#include "mod_inc/light_xyl_cli.h"
 #endif
 #if defined(CONFIG_BT_MESH_LIGHT_LC_CLI)
-#include "inc/light_lc_cli.h"
+#include "mod_inc/light_lc_cli.h"
 #endif
 
 #if defined(CONFIG_MESH_MODEL_VENDOR_SRV)

@@ -300,9 +300,9 @@ int32_t hal_flash_secure_sector(PROTECT_TYPE sector_type)
 {
 	DD_HANDLE flash_hdl;
     UINT32 status;
-	PROTECT_TYPE param = sector_type;
+    PROTECT_TYPE param = sector_type;
 
-	flash_hdl = ddev_open(FLASH_DEV_NAME, &status, 0);
+    flash_hdl = ddev_open(FLASH_DEV_NAME, &status, 0);
     ASSERT(DD_HANDLE_UNVALID != flash_hdl);
     ddev_control(flash_hdl, CMD_FLASH_SET_PROTECT, (void *)&param);
     ddev_close(flash_hdl);
