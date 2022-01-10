@@ -205,8 +205,9 @@ static E_GENIE_EVENT _genie_event_handle_mesh_init(void)
     if((read_flag & 0x1F) == 0x1D) {            ////(0x1F)
 #endif
         BT_INFO(">>>proved<<<");
-#if CONFIG_MESH_SEQ_COUNT_INT
-        seq += CONFIG_MESH_SEQ_COUNT_INT;
+#if (CONFIG_MESH_SEQ_COUNT_INT != 0 && CONFIG_MESH_SEQ_COUNT_INT != 1)
+        //seq += CONFIG_MESH_SEQ_COUNT_INT;
+        seq = seq + CONFIG_MESH_SEQ_COUNT_INT - (seq % CONFIG_MESH_SEQ_COUNT_INT);
 #endif
 #if CONFIG_BT_MESH_SHELL
         int cmd_netkey_info_sync(mesh_netkey_para_t *subnet, uint16_t count);
@@ -425,8 +426,10 @@ static E_GENIE_EVENT _genie_event_handle_hb_set(mesh_hb_para_t *p_para)
 static E_GENIE_EVENT _genie_event_handle_seq_update(void)
 {
     uint32_t seq = bt_mesh.seq;
-#if CONFIG_MESH_SEQ_COUNT_INT
-    if ((seq % CONFIG_MESH_SEQ_COUNT_INT == 0) || (seq == 1)) {
+#if (CONFIG_MESH_SEQ_COUNT_INT != 0 && CONFIG_MESH_SEQ_COUNT_INT != 1)
+    //if ((seq % CONFIG_MESH_SEQ_COUNT_INT == 0) || (seq == 1)) {
+    if (seq % CONFIG_MESH_SEQ_COUNT_INT == 1)  
+	{
         genie_flash_write_seq(&seq);
     }
 #else

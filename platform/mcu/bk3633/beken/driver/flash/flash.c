@@ -612,6 +612,10 @@ static void flash_protection_op(PROTECT_TYPE type)
     {
         flash_protection_op_GD_FLASH_1(type);
     }
+    else
+    {
+        flash_protection_op_GD_MD25D40(type);
+    }
 
     return;
 }

@@ -956,8 +956,10 @@ static void pub_key_ready(const u8_t *pkey)
     BT_DBG("Local public key ready\n");
 
     if (!atomic_test_and_clear_bit(link.flags, GET_KEY_FROM_FLASH)) {
+#ifdef CONFIG_BT_MESH_ALI_TMALL_GENIE
         genie_flash_write_userdata(GFI_MESH_PUB_KEY, pkey, 64);
-        genie_flash_write_userdata(GFI_MESH_PRIVATE_KEY, bt_ecc_private_key_get(), 32); 
+        genie_flash_write_userdata(GFI_MESH_PRIVATE_KEY, bt_ecc_private_key_get(), 32);
+#endif 
     }
 
     BT_DBG("%s, pkey: %s\n", __func__, bt_hex(pkey, 64));
@@ -1603,6 +1605,7 @@ int bt_mesh_prov_init(const struct bt_mesh_prov *prov_info)
 
     u8_t pub_key[64];
     u8_t private_key[32];
+#ifdef CONFIG_BT_MESH_ALI_TMALL_GENIE
     if ((genie_flash_read_userdata(GFI_MESH_PUB_KEY, pub_key, sizeof(pub_key)) == GENIE_FLASH_SUCCESS) &&
         genie_flash_read_userdata(GFI_MESH_PRIVATE_KEY, private_key, sizeof(private_key)) == GENIE_FLASH_SUCCESS) {
         BT_DBG("Get Publish key from flash. pub (0x %s) \n", bt_hex(pub_key, sizeof(pub_key)));
@@ -1611,7 +1614,10 @@ int bt_mesh_prov_init(const struct bt_mesh_prov *prov_info)
         bt_pub_key_set(pub_key);
         bt_ecc_private_key_set(private_key);
         pub_key_cb.func(pub_key);
-    } else {
+    }    
+    else
+#endif 
+    {
         BT_DBG("%s, Start gen pub key.\n", __func__);
         err = bt_mesh_pub_key_gen(&pub_key_cb);
         if (err) {
