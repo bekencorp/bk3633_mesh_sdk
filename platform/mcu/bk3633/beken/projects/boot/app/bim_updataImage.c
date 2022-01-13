@@ -90,7 +90,7 @@ uint8_t bim_check_backup_sec_status(void)//NOT WRITE INFO TO FLASH
         return SSTATUS_SECT_BREAKPOINT;
     }
 
-    if(hdr_ota_img.dst_adr < 0x1000)
+    if(hdr_ota_img.dst_adr < PARTITION_STACK_CPU_ADDR)
     {
         //Can not erase Boot section
         return SSTATUS_SECT_ABNORMAL;
@@ -105,6 +105,18 @@ uint8_t bim_check_backup_sec_status(void)//NOT WRITE INFO TO FLASH
     }
 
     return SSTATUS_SECT_NORMAL;
+}
+
+uint8_t bim_check_up_mode(void)
+{
+    if(hdr_ota_img.magic_num == DUAL_SWITCH_MAGIC_NUM)
+    {
+        return OTA_DUAL_SWITCH;
+    }
+    else
+    {
+        return OTA_NORMAL;
+    }
 }
 
 void bim_erase_image_sec(void)
@@ -140,35 +152,57 @@ void bim_updata_backup_to_image_sec(void)
     bim_printf("update end\n");
 }
 
-uint8_t bim_select_sec(void)
+uint32_t bim_select_sec(void)
 {
-    uint8_t bsec_status;
+    uint8_t bsec_status, up_mode;
+    uint32_t addr_crc;
     
     bsec_status = bim_check_backup_sec_status();
-    // bim_printf("bsec_status = 0x%x \n", bsec_status);
+    bim_printf("bsec_status = 0x%x \n", bsec_status);
+    up_mode = bim_check_up_mode();
+    bim_printf("up_mode = 0x%x \n", up_mode);
     
     switch(bsec_status)
     {
         case SSTATUS_SECT_NORMAL: // 1:I NORMAL ,B NORMAL,updata B -> I,RUN I
         {
-            flash_wp_none();
-            bim_erase_image_sec();
-            bim_updata_backup_to_image_sec();
-            bim_clear_magic_num();
-            flash_wp_ALL();
+            if(up_mode == OTA_DUAL_SWITCH)
+            {
+                flash_wp_ALL();
+                addr_crc = hdr_ota_img.src_adr;
+                return (addr_crc*0x20/0x22);
+            }
+            else
+            {
+                flash_wp_none();
+                bim_erase_image_sec();
+                bim_updata_backup_to_image_sec();
+                bim_clear_magic_num();
+                flash_wp_ALL();
+                return PARTITION_APP_CPU_ADDR;
+            }
+
         }
-        break;
         case SSTATUS_SECT_ERASED://://3:I NORMAL,B ERASED,RUN I
         case SSTATUS_SECT_BREAKPOINT:
         case SSTATUS_SECT_ABNORMAL:
         case SSTATUS_SECT_DIFF_ROM_VER:////4:I DIFF_ROM,B ERASED,NOT HAPPEN
         default:
         {
-            flash_wp_ALL();
+            if(up_mode == OTA_DUAL_SWITCH)
+            {
+                flash_wp_ALL();
+                addr_crc = hdr_ota_img.dst_adr;
+                return (addr_crc*0x20/0x22);
+            }
+            else
+            {
+                flash_wp_ALL();
+                return PARTITION_APP_CPU_ADDR;
+            }
         }
-        break;
+
     }
-    return 1 ;
 }
 
 uint32_t crc32_table[256];

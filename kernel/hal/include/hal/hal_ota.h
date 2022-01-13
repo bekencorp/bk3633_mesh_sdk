@@ -56,7 +56,7 @@ struct hal_ota_module_s {
     int (*ota_read)(volatile uint32_t *off_set, uint8_t *out_buf , uint32_t out_buf_len);
     int (*ota_set_boot)(void *something);
     int (*ota_rollback)(void *something);
-    int (*ota_tag_check)(uint32_t ota_type, uint16_t ver, uint16_t rom_ver, uint32_t size);
+    int (*ota_tag_check)(uint32_t ota_type, uint16_t ver, uint16_t rom_ver, uint32_t size, uint32_t crc);
     int (*ota_tag_get)(void *something);
     int (*ota_tag_init)(uint16_t ver, uint16_t rom_ver);
 };
@@ -64,7 +64,7 @@ struct hal_ota_module_s {
 /**
  * Arch register a new module before HAL startup
  */
-void hal_ota_register_module(hal_ota_module_t *module);
+hal_stat_t hal_ota_register_module(hal_ota_module_t *module);
 
 /**
  * init ota partition
@@ -145,7 +145,7 @@ hal_stat_t hal_ota_set_boot(hal_ota_module_t *m, void *something);
  *
  * @return  kNoErr : On success. kGeneralErr : If an error occurred with any step
  */
-hal_stat_t hal_ota_tag_check(hal_ota_module_t *m, uint32_t ota_type, uint16_t ver, uint16_t rom_ver, uint32_t size);
+hal_stat_t hal_ota_tag_check(hal_ota_module_t *m, uint32_t ota_type, uint16_t ver, uint16_t rom_ver, uint32_t size, uint32_t crc);
 
 hal_stat_t hal_ota_tag_get(hal_ota_module_t *m, void *something);
 

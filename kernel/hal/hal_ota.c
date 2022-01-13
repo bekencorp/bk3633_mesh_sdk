@@ -12,46 +12,62 @@ hal_ota_module_t *hal_ota_get_default_module(void)
     return ota_module;
 }
 
-void hal_ota_register_module(hal_ota_module_t *module)
+static void hal_ota_set_module(hal_ota_module_t* module)
 {
-    if(ota_module)
-    {
-        return -1;
-    }
-
     ota_module = module;
 }
 
-void hal_ota_unregister_module(void)
+hal_stat_t hal_ota_register_module(hal_ota_module_t *module)
 {
-    if(!ota_module)
+    hal_ota_module_t* m = hal_ota_get_default_module();
+
+    if(m != NULL)
     {
         return -1;
     }
 
-    ota_module = NULL;
+    hal_ota_set_module(module);
+
+    return 0;
+}
+
+hal_stat_t hal_ota_unregister_module(void)
+{
+    hal_ota_module_t* m = hal_ota_get_default_module();
+
+    if(m == NULL)
+    {
+        return -1;
+    }
+
+    hal_ota_set_module(NULL);
+
+    return 0;
 }
 
 hal_stat_t hal_ota_init(void *something)
 {
-    if(!ota_module)
-    {
-        return -1;
-    }
+    hal_ota_module_t* m = hal_ota_get_default_module();
 
-    return ota_module->init(something);
+    if (m != NULL && m->init != NULL)
+    {
+        return m->init(something);
+    }
+	
+	return 0;
 }
 
 hal_stat_t hal_ota_deinit(void *something)
 {
-    int ret = ota_module->deinit(something);
+    hal_ota_module_t* m = hal_ota_get_default_module();
 
-    if(!ret)
+    if (m != NULL && m->deinit != NULL)
     {
+        m->deinit(something);
         hal_ota_unregister_module();
     }
 
-    return ret;
+    return 0;
 }
 
 hal_stat_t hal_ota_save(hal_ota_module_t *m, uint8_t *in_buf , uint32_t in_buf_len)
@@ -93,14 +109,14 @@ hal_stat_t hal_ota_set_boot(hal_ota_module_t *m, void *something)
     return 0;
 }
 
-hal_stat_t hal_ota_tag_check(hal_ota_module_t *m, uint32_t ota_type, uint16_t ver, uint16_t rom_ver, uint32_t size)
+hal_stat_t hal_ota_tag_check(hal_ota_module_t *m, uint32_t ota_type, uint16_t ver, uint16_t rom_ver, uint32_t size, uint32_t crc)
 {
     if (m == NULL) {
         m = hal_ota_get_default_module();
     }
 
     if (m != NULL && m->ota_tag_check != NULL) {
-        return m->ota_tag_check(ota_type, ver, rom_ver, size);
+        return m->ota_tag_check(ota_type, ver, rom_ver, size, crc);
     }
 
     return 0;
