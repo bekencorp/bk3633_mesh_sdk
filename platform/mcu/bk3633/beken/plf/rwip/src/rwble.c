@@ -170,6 +170,7 @@ __BLEIRQ void rwble_isr(void)
             // Clear the interrupt
             ble_intack0_errorintack_clearf(1);
             //UART_PRINTF("err:%x \r\n",ble_errortypestat_get());  
+            rom_env.os_print("%s err:%x \r\n",__func__, ble_errortypestat_get());
             ASSERT_INFO(0, ble_errortypestat_get(), (ble_errortypestat_get()>>16));
         }
     }

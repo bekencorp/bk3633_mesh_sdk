@@ -573,8 +573,8 @@ void rwip_driver_init(bool reset)
     }
 
     // Enable default common interrupts
-    ip_intcntl1_set(IP_FIFOINTMSK_BIT | IP_CRYPTINTMSK_BIT | IP_ERRORINTMSK_BIT | IP_SWINTMSK_BIT);
-
+    ip_intcntl1_set(IP_FIFOINTMSK_BIT | IP_CRYPTINTMSK_BIT  | IP_SWINTMSK_BIT);
+    ip_intcntl0_set(IP_ERRORINTMSK_BIT);
     #if (BT_DUAL_MODE)
     // Read diagport configuration from NVDS
     length = PARAM_LEN_DIAG_DM_HW;

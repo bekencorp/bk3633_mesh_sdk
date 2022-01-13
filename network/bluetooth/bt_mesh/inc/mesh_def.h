@@ -546,6 +546,8 @@ enum {
 #define BT_MESH_GAP_ADV_FAST_INT_MAX_1               0x0060  /* 60 ms    */
 #define BT_MESH_GAP_ADV_FAST_INT_MIN_2               0x00a0  /* 100 ms   */
 #define BT_MESH_GAP_ADV_FAST_INT_MAX_2               0x00f0  /* 150 ms   */
+#define BT_MESH_GAP_ADV_FAST_INT_MIN_3               0x0050  /* 50 ms   */
+#define BT_MESH_GAP_ADV_FAST_INT_MAX_3               0x0050  /* 50 ms   */
 #define BT_MESH_GAP_ADV_SLOW_INT_MIN                 0x0640  /* 1 s      */
 #define BT_MESH_GAP_ADV_SLOW_INT_MAX                 0x0780  /* 1.2 s    */
 

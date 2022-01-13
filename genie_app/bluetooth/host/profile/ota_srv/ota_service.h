@@ -49,6 +49,7 @@ typedef struct
     uint8_t ota_firmware_type;
     uint8_t update_comp : 1;
     uint8_t update_start : 1;
+    uint8_t sys_power_on : 1;
 } ota_config_t;
 
 struct otas_env_tag

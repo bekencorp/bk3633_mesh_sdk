@@ -15,7 +15,7 @@ static struct otas_env_tag* otas_env;
 
 static struct bt_gatt_ccc_cfg beken_ota_ffc1_ccc_cfg[BT_GATT_CCC_MAX] = {};
 static struct bt_gatt_ccc_cfg beken_ota_ffc2_ccc_cfg[BT_GATT_CCC_MAX] = {};
-
+static bool sys_power_on = false;
 
 uint8_t ota_get_firmware_type(void)
 {
@@ -48,9 +48,20 @@ bool ota_update_abort(void)
     otas_env->config_para.update_start = 0;
 }
 
+bool ota_is_sys_power_on(void)
+{
+
+    return sys_power_on;
+}
+
+void ota_set_sys_power(bool power_on)
+{
+    sys_power_on = power_on;
+}
+
 bool ota_update_in_progress(void)
 {
-    return otas_env->config_para.update_start;
+    return otas_env ? otas_env->config_para.update_start : 0;
 }
 
 /*********************************************************************
@@ -449,7 +460,7 @@ void ota_srv_disconnect(void)
         otas_env = NULL;
     }
 
-    hal_flash_secure_sector(FLASH_PROTECT_SEC_120);
+    hal_flash_secure_sector(FLASH_PROTECT_ALL);
 }
 
 int ota_service_register(void)
@@ -460,7 +471,7 @@ int ota_service_register(void)
     bt_gatt_adv_init();
 
     bt_gatt_service_register(&_ota_srv);
-
+    ota_set_sys_power(true);
     ota_init(offset);
 
     return 0;
@@ -478,6 +489,6 @@ void ota_reset(uint32_t p_offset, struct bt_conn *p_conn)
     bt_conn_disconnect(p_conn, BT_HCI_ERR_UNSPECIFIED);
 
     hal_ota_deinit(NULL);
-
+    ota_set_sys_power(false);
     ota_init(p_offset);
 }

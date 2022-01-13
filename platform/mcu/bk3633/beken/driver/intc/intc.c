@@ -341,10 +341,14 @@ void intc_fiq(void)
     reg |= fiq_status; ///write 1 to clear interrupt status
     REG_WRITE(REG_ICU_INT_FLAG, reg);
     if(fiq_status & BIT(22))  //BIT
-	{
-		rwip_func.rwip_isr();
-	}
-    //printf("%s\n", __func__);
+    {
+        rwip_func.rwip_isr();
+    }
+    
+    if(fiq_status & BIT(20))  
+    {
+        rwip_func.rwble_isr();
+    }
 }
 
 void intc_init(void)
