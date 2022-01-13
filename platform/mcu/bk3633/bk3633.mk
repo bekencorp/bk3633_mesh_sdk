@@ -104,8 +104,10 @@ GLOBAL_DEFINES += __SPI_DRIVER__
 endif
 
 ifeq ($(ble), 1)
+ifeq ($(beken_ota),1)
 $(NAME)_SOURCES  +=  port/ota_port.c
 $(NAME)_SOURCES  +=  port/ota_crc.c
+endif
 endif
 
 ifeq ($(deep_sleep), 1)

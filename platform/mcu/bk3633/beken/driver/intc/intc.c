@@ -357,7 +357,6 @@ void intc_init(void)
     INTC_PRT("%s\r\n", __func__);
 
 #if CFG_SUPPORT_ALIOS
-    *((volatile uint32_t *)0x400000) = 0;
     *((volatile uint32_t *)0x400004) = &do_irq;
     *((volatile uint32_t *)0x400008) = &do_fiq;
     *((volatile uint32_t *)0x40000C) = &do_swi;

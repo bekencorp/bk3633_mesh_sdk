@@ -63,15 +63,13 @@ intc_fiq            DCD     FIQ_Handler
 
 I_SEL               EQU     0x00400000
 
-PARTITION_APP_CPU_ADDR 	EQU    0x17A00
-SYSirq_reset 		EQU     PARTITION_APP_CPU_ADDR
-SYSirq_undefined 	EQU     PARTITION_APP_CPU_ADDR+0x40
-SYSirq_SWI_Handler 	EQU     PARTITION_APP_CPU_ADDR+0x60
-SYSirq_pabort 		EQU     PARTITION_APP_CPU_ADDR+0x80
-SYSirq_dabort 		EQU     PARTITION_APP_CPU_ADDR+0xa0
-SYSirq_reserved		EQU     PARTITION_APP_CPU_ADDR+0xc0
-SYSirq_IRQ_Handler 	EQU     PARTITION_APP_CPU_ADDR+0xe0
-SYSirq_FIQ_Handler 	EQU     PARTITION_APP_CPU_ADDR+0x100
+OFFSET_ndefined     EQU     0x40
+OFFSET_SWI_Handler  EQU     0x60
+OFFSET_pabort       EQU     0x80
+OFFSET_dabort       EQU     0xa0
+OFFSET_reserved     EQU     0xc0
+OFFSET_IRQ_Handler  EQU     0xe0
+OFFSET_FIQ_Handler  EQU     0x100
 
 
 
@@ -83,8 +81,18 @@ SYSirq_FIQ_Handler 	EQU     PARTITION_APP_CPU_ADDR+0x100
 ;* Output         : none
 ;*******************************************************************************
 Undefined
-        B       SYSirq_undefined
-        ;;B       Undefined_Exception
+;		STMFD SP!,{R0,R1}
+;		LDR R0,=I_SEL
+;		LDR R1,[R0]
+;		CMP R1,#0X00	
+;		BEQ    Undefined_Exception
+
+;        LDR R0,=OFFSET_ndefined	
+    ;    ADD	 R1, R0
+  ;      BX R1
+
+  B Undefined_Exception
+
 
 ;*******************************************************************************
 ;* Function Name  : SWIHandler
@@ -96,19 +104,23 @@ SoftwareInterrupt
 		STMFD SP!,{R0,R1}
 		LDR R0,=I_SEL
 		LDR R1,[R0]
-		CMP R1,#0X01
-		LDMFD SP!,{R0,R1}		
+		CMP R1,#0X00	
 		BEQ    SoftwareInterrupt_Exception
-        B      SYSirq_SWI_Handler
+
+        LDR R0,=OFFSET_SWI_Handler	
+        ADD	 R1, R0
+        BX R1
 
 PrefetchAbort
 		STMFD SP!,{R0,R1}
 		LDR R0,=I_SEL
 		LDR R1,[R0]
-		CMP R1,#0X01
-		LDMFD SP!,{R0,R1}		
+		CMP R1,#0X00		
 		BEQ    PrefetchAbort_Exception
-        B      SYSirq_pabort
+
+        LDR R0,=OFFSET_pabort	
+        ADD	 R1, R0
+        BX R1
 
 ;*******************************************************************************
 ;* Function Name  : DataAbortHandler
@@ -120,10 +132,12 @@ DataAbort
 		STMFD SP!,{R0,R1}
 		LDR R0,=I_SEL
 		LDR R1,[R0]
-		CMP R1,#0X01
-		LDMFD SP!,{R0,R1}		
+		CMP R1,#0X00	
 		BEQ    DataAbort_Exception
-        B      SYSirq_dabort
+
+        LDR R0,=OFFSET_dabort	
+        ADD	 R1, R0
+        BX R1
 
 ;*******************************************************************************
 ;* Function Name  : IRQHandler
@@ -132,13 +146,16 @@ DataAbort
 ;* Output         : none
 ;*******************************************************************************
 IRQ_Handler
-		STMFD SP!,{R0,R1}
-		LDR R0,=I_SEL
-		LDR R1,[R0]
-		CMP R1,#0X01
-		LDMFD SP!,{R0,R1}		
-		BEQ    Irq_Exception		
-        B      SYSirq_IRQ_Handler
+	STMFD SP!,{R0,R1}
+	;LDR R0,=I_SEL
+	;LDR R1,[R0]
+	;CMP R1,#0X01
+	;LDMFD SP!,{R0,R1}		
+	;BEQ    Irq_Exception
+        LDR    R1, =0x400004
+	LDR    r0, [R1]
+	BX     r0		
+        ;B      SYSirq_IRQ_Handler
 
 ;*******************************************************************************
 ;* Function Name  : FIQHandler
@@ -147,10 +164,14 @@ IRQ_Handler
 ;* Output         : none
 ;*******************************************************************************
 FIQ_Handler
-        B      SYSirq_FIQ_Handler
+        STMFD SP!,{R0,R1}
+        LDR    R1, =0x400008
+	LDR    r0, [R1]
+	BX     r0
+        ;B      SYSirq_FIQ_Handler
         
 sys_reserved
-		B	   SYSirq_reserved
+		;B	   SYSirq_reserved
 		;;B	   Reserved_Exception
 
 	

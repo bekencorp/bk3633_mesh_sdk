@@ -99,20 +99,26 @@ void reset_register_dump(void)
 void bim_main(void)	
 {
     icu_init();
+    updata_memset32((uint8 *)0x00400000, 0, 1);
     wdt_disable();
-    updata_memset32((uint8 *)0x00400000, 1, 1);
     //uart2_init(1000000);
     uart0_init(1000000);
 	//reset_register_dump();
     bim_flash_init();
 
-    if(1 == bim_select_sec())
+    uint32_t app_cpu_addr = bim_select_sec();
+
+    if(app_cpu_addr < PARTITION_APP_CPU_ADDR)
     {
-        // bim_printf("run stack, %x\r\n", PARTITION_STACK_CPU_ADDR);
+        bim_printf("WRONG addr 0x%x .\r\n", app_cpu_addr);
+        while(1);
+    }
+    else
+    {
+        updata_memset32((uint8 *)0x00400000, app_cpu_addr, 1);
+        bim_printf("run stack, 0%x, APP 0x%x .\r\n", PARTITION_STACK_CPU_ADDR, app_cpu_addr);
         (*(FUNCPTR)PARTITION_STACK_CPU_ADDR)();
     }
-
-    updata_memset32((uint8 *)0x00400000, 0, 1);
     
 }
 

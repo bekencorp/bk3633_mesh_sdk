@@ -33,7 +33,7 @@
 
 typedef struct
 {
-    //uint32_t crc;       // CRC must not be 0x0000 or 0xFFFF.
+    uint32_t crc;       // CRC must not be 0x0000 or 0xFFFF.
     uint32_t uid;       // User-defined Image Identification bytes.
     // User-defined Image Version Number - default logic uses simple a '!=' comparison to start an OAD.
     uint16_t ver;

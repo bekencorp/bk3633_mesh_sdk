@@ -3,6 +3,7 @@
 #define OTA_HEADER_BACKUP_FADDR         (0x07F000) //HAL_PARTITION_STATIC_PARA
 
 #define PARTITION_STACK_CPU_ADDR                  (0x1F00)
+#define PARTITION_APP_CPU_ADDR                     (0x17A00)
 
 /*********************************************************************
  * TYPEDEFS
@@ -10,6 +11,9 @@
 // The Image Header will not be encrypted, but it will be included in a Signature.
 
 #define STATIC_PARTITION_HEADER_CODE    0xABCDEF01
+
+#define DUAL_SWITCH_MAGIC_NUM       0xaabbccdd
+
 typedef struct
 {
     uint32_t    hearder_code;
@@ -44,6 +48,7 @@ typedef enum  {
 enum
 {
     SSTATUS_SECT_NORMAL = 0,
+    SSTATUS_SECT_FRESH_NEW,
     SSTATUS_SECT_ERASED,
     SSTATUS_SECT_ABNORMAL,
     SSTATUS_SECT_UNKOWN ,
@@ -51,4 +56,11 @@ enum
     SSTATUS_SECT_BREAKPOINT,
 };
 
-uint8_t bim_select_sec(void);
+enum
+{
+    OTA_NORMAL = 0,
+    OTA_DUAL_SWITCH,
+
+};
+
+uint32_t bim_select_sec(void);

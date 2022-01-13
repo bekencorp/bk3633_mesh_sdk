@@ -248,6 +248,7 @@ uint8_t otaImgIdentifyWrite( const struct bt_gatt_attr *p_attr, uint16_t length,
 
     saved_tag = *(beken_image_hdr*)pValue;
 
+    img_hdr->crc = saved_tag.crc;
     img_hdr->ver = saved_tag.ver;
     img_hdr->len = saved_tag.len;
     img_hdr->uid = saved_tag.uid;
@@ -270,7 +271,7 @@ uint8_t otaImgIdentifyWrite( const struct bt_gatt_attr *p_attr, uint16_t length,
         ota_set_firmware_type(OTA_FM_TYPE_NONE);
     }
 
-    ota_check_res = hal_ota_tag_check(NULL, ota_get_firmware_type(), img_hdr->ver, img_hdr->rom_ver, (uint32_t)img_hdr->len * HAL_FLASH_WORD_SIZE - 16);
+    ota_check_res = hal_ota_tag_check(NULL, ota_get_firmware_type(), img_hdr->ver, img_hdr->rom_ver, (uint32_t)img_hdr->len * HAL_FLASH_WORD_SIZE - 16, img_hdr->crc);
 
     if (!ota_check_res && !ota_update_in_progress())
     {
