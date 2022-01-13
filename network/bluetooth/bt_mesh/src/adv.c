@@ -318,7 +318,8 @@ static void adv_thread(void *p1, void *p2, void *p3)
                 while (buf == NULL) {
                     buf = net_buf_get(&adv_queue, timeout);
                     if (buf || timeout == K_NO_WAIT ||
-                        (timeout != -1 && (k_uptime_get_32() - time_start) >= timeout)) {
+                        ((timeout != -1 && (k_uptime_get_32() - time_start) >= timeout)) || 
+                          bt_mesh_proxy_adv_get_start_soon()) {
                         break;
                     } else {
                         k_sleep(1);

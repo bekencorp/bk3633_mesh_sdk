@@ -28,6 +28,8 @@
  */
 int bt_mesh_proxy_identity_enable(void);
 
+void bt_mesh_proxy_adv_set_start_soon(bool start_soon);
+bool bt_mesh_proxy_adv_get_start_soon(void);
 /**
  * @}
  */

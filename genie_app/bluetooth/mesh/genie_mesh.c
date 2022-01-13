@@ -1165,7 +1165,7 @@ E_MESH_ERROR_TYPE mesh_check_tid(u16_t src_addr, uint8_t tid)
     static uint8_t cur_index = 0;
     uint8_t i = cur_index;
     uint8_t ri = 0;
-    u32_t cur_time = k_uptime_get();
+    u32_t cur_time = k_uptime_get_32();
     u32_t end_time = 0;
 
     if(src_addr >= TMALL_GENIE_UADDR_START && src_addr <= TMALL_GENIE_UADDR_END) {
@@ -1175,7 +1175,7 @@ E_MESH_ERROR_TYPE mesh_check_tid(u16_t src_addr, uint8_t tid)
     while(i < cur_index + RECV_MSG_TID_QUEUE_SIZE) {
         ri = i % RECV_MSG_TID_QUEUE_SIZE;
         if(tid_queue[ri].tid == tid && tid_queue[ri].addr == src_addr) {
-            end_time = tid_queue[ri].time + 6000;
+            end_time = tid_queue[ri].time + 500;
             if(cur_time < end_time) {
                 break;
             }

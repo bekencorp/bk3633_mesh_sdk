@@ -52,18 +52,19 @@
 
 static const struct bt_mesh_le_adv_param slow_adv_param = {
     .options = (BT_MESH_LE_ADV_OPT_CONNECTABLE | BT_MESH_LE_ADV_OPT_ONE_TIME),
-    .interval_min = BT_MESH_GAP_ADV_FAST_INT_MIN_2,
-    .interval_max = BT_MESH_GAP_ADV_FAST_INT_MIN_2,
+    .interval_min = BT_MESH_GAP_ADV_FAST_INT_MIN_3,
+    .interval_max = BT_MESH_GAP_ADV_FAST_INT_MIN_3,
 };
 
 static const struct bt_mesh_le_adv_param fast_adv_param = {
     .options = (BT_MESH_LE_ADV_OPT_CONNECTABLE | BT_MESH_LE_ADV_OPT_ONE_TIME),
-    .interval_min = BT_MESH_GAP_ADV_FAST_INT_MIN_2,
-    .interval_max = BT_MESH_GAP_ADV_FAST_INT_MIN_2,
+    .interval_min = BT_MESH_GAP_ADV_FAST_INT_MIN_3,
+    .interval_max = BT_MESH_GAP_ADV_FAST_INT_MIN_3,
 };
 
 static bool proxy_adv_enabled;
 static bool proxy_adv_stoped;
+static bool adv_start_soon = false;
 
 void bt_mesh_proxy_adv_enabled(void)
 {
@@ -601,6 +602,7 @@ static void proxy_disconnected(bt_mesh_conn_t conn, u8_t reason)
     }
 
     bt_mesh_adv_update();
+    bt_mesh_proxy_adv_set_start_soon(true);
 }
 
 struct net_buf_simple *bt_mesh_proxy_get_buf(void)
@@ -1323,6 +1325,8 @@ s32_t bt_mesh_proxy_adv_start(void)
 {
     BT_DBG("");
 
+    bt_mesh_proxy_adv_set_start_soon(false);
+
     if (proxy_adv_stoped) {
         return K_FOREVER;
     }
@@ -1388,6 +1392,16 @@ void bt_mesh_proxy_adv_stop(void)
     } else {
         proxy_adv_enabled = false;
     }
+}
+
+void bt_mesh_proxy_adv_set_start_soon(bool start_soon)
+{
+    adv_start_soon = start_soon;
+}
+
+bool bt_mesh_proxy_adv_get_start_soon(void)
+{
+    return adv_start_soon;
 }
 
 #ifdef CONFIG_BT_MESH_CUSTOM_ADV

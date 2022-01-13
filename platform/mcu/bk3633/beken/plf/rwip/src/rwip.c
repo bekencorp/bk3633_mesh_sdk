@@ -145,9 +145,9 @@
     
     
 #endif // (BLE_EMB_PRESENT || BT_EMB_PRESENT)
-
+extern __BLEIRQ void rwble_isr(void);
 __attribute__((section("STACK_FUNC")))
-const struct rwip_func_tag rwip_func = {rwip_isr, rwip_init, rwip_schedule, \
+const struct rwip_func_tag rwip_func = {rwip_isr, rwble_isr, rwip_init, rwip_schedule, \
                                         rwip_set_bd_address, rwip_sleep,    \ 
 										rwip_sleep_flag, rwip_time_get, rwip_set_dut_mode, \
 										rwip_get_dut_mode};

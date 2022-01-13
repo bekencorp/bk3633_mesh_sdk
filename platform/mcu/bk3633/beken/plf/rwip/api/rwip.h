@@ -347,15 +347,16 @@ struct rwip_eif_api
 
 struct rwip_func_tag
 {
-	__BLEIRQ void (*rwip_isr)(void);
-	void (*rwip_init)(uint32_t error);
-	void (*rwip_schedule)(void);
-	void (*rwip_set_bd_address)(struct bd_addr *bd_addr);
+    __BLEIRQ void (*rwip_isr)(void);
+    __BLEIRQ void (*rwble_isr)(void);
+    void (*rwip_init)(uint32_t error);
+    void (*rwip_schedule)(void);
+    void (*rwip_set_bd_address)(struct bd_addr *bd_addr);
     uint8_t (*rwip_sleep)(int32_t * dur, int32_t max_slots);
     uint16_t (*rwip_sleep_flag)(void);
     rwip_time_t (*rwip_time_get)(void);
-	void (*rwip_set_dut_mode)(uint8_t flg);
-	uint8_t (*rwip_get_dut_mode)(void);
+    void (*rwip_set_dut_mode)(uint8_t flg);
+    uint8_t (*rwip_get_dut_mode)(void);
 };
 extern const struct rwip_func_tag rwip_func;
 
