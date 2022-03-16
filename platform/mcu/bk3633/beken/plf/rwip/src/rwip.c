@@ -986,7 +986,7 @@ void rwip_assert(const char * file, int line, int param0, int param1, uint8_t ty
 }
 #endif //RW_DEBUG
 
-void rwip_isr(void)
+__ATTR_ARM void rwip_isr(void)
 {
     DBG_SWDIAG(ISR, RWIP, 1);
 

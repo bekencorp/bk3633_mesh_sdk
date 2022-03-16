@@ -177,6 +177,8 @@ struct sch_prog_params
 };
 
 
+#define PUSH_LIMIT 30
+#define PUSH_LIMIT_RIGHT 80
 /*
  * FUNCTIONS DECLARATION
  ****************************************************************************************
@@ -215,6 +217,10 @@ void sch_prog_fifo_isr(void);
 ****************************************************************************************
 */
 void sch_prog_push(struct sch_prog_params* params);
+
+#if LLD_TEST_RX_SOTF
+void sch_prog_push_contiu(uint32_t base_cnt,uint16_t fine_cnt ,uint16_t pdl,uint8_t rate);
+#endif
 
 #if BT_EMB_PRESENT
 /**

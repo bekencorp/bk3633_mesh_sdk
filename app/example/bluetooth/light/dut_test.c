@@ -160,6 +160,11 @@ int dut_test_start(int argc, char **argv)
 
 	app_rf_power_init(); //set 0x40
 	app_xtal_cal_init();  // set 0x08 for 7db
+
+    core_peri_clk_freq_set(6, 6);   //Set the CPU default clock to 80M Hz.
+    mcu_default_clk_switch();
+    printf("core_peri_clk_freq_set: 80M \r\n");
+
     return 0;
 }
 

@@ -522,7 +522,6 @@ static int bk3633_ota_tag_check(uint32_t ota_type, uint16_t ver, uint16_t rom_ve
     memset(&hdl_old, 0, sizeof(ota_img_hdr_t));
 	ret_temp = static_partition_read(STATIC_SECTION_OTA, &hdl_old, sizeof(ota_img_hdr_t));
 
-
     printf("ota_tag_check static_partition_read : %d\n", ret_temp);
 
 

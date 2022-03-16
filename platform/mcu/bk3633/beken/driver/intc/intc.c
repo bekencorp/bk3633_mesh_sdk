@@ -323,32 +323,22 @@ void intc_irq(void)
 
 void intc_fiq(void)
 {
-    UINT32 fiq_status;
-    // fiq_status = sddev_control(ICU_DEV_NAME, CMD_GET_INTR_STATUS, 0);
-    fiq_status =  REG_READ(REG_ICU_INT_FLAG);
-    //fiq_status = fiq_status & 0xFFFF0000;
-	if(0 == fiq_status & 0x8001)
-	{
-	    #if (! CFG_USE_STA_PS)
-		INTC_PRT("fiq:dead,%0x%x\r\n", fiq_status);
-        #endif
-	}
+    uint32_t IntStat;
+    UINT32 fiq_status = 0;
 
-	// fiq_status &= 0x8001;
-    // sddev_control(ICU_DEV_NAME, CMD_CLR_INTR_STATUS, &fiq_status);
-    UINT32  reg;
-    reg = REG_READ(REG_ICU_INT_FLAG);
-    reg |= fiq_status; ///write 1 to clear interrupt status
-    REG_WRITE(REG_ICU_INT_FLAG, reg);
-    if(fiq_status & BIT(22))  //BIT
+    IntStat = intc_status_get();
+    if(IntStat & BIT(22))  //BIT
     {
+        fiq_status |= BIT(22); //INT_STATUS_RWDM_bit
         rwip_func.rwip_isr();
     }
     
-    if(fiq_status & BIT(20))  
+    if(IntStat & BIT(20))  
     {
+        fiq_status |= INT_STATUS_RWBLE_bit;
         rwip_func.rwble_isr();
     }
+    intc_status_clear(fiq_status);
 }
 
 void intc_init(void)
