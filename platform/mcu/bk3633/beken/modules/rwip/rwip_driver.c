@@ -124,6 +124,17 @@ struct rwip_prio rwip_priority[RWIP_PRIO_IDX_MAX]={
  ****************************************************************************************
  */
 
+volatile  uint8_t g_dut_flg = 0;
+void rwip_set_dut_mode(uint8_t flg)
+{
+	g_dut_flg = flg;
+}
+
+uint8_t  rwip_get_dut_mode(void)
+{
+	return g_dut_flg;
+}
+
 #if (BLE_EMB_PRESENT || BT_EMB_PRESENT)
 /**
  ****************************************************************************************
@@ -292,6 +303,13 @@ void rwip_timer_10ms_handler(void)
     // Stop timer
     timer_set_timeout(0, NULL);
     #endif // (BLE_EMB_PRESENT || BT_EMB_PRESENT)
+
+#if LLD_TEST_RX_SOTF
+    if(g_dut_flg)
+    {
+        lld_test_timer_cb();
+    }
+#endif
 
     // Mark that 10ms timer is over
     ke_event_set(KE_EVENT_KE_TIMER);
@@ -529,19 +547,6 @@ void rwip_time_set(uint32_t clock)
 #endif // (BT_EMB_PRESENT)
 #endif // (BLE_EMB_PRESENT || BT_EMB_PRESENT)
 
-volatile  uint8_t g_dut_flg = 0;
-void rwip_set_dut_mode(uint8_t flg)
-{
-	g_dut_flg = flg;
-}
-
-uint8_t  rwip_get_dut_mode(void)
-{
-	return g_dut_flg;
-}
-
-
-
 void rwip_driver_init(bool reset)
 {
     #if (BLE_EMB_PRESENT || BT_EMB_PRESENT)
@@ -631,7 +636,7 @@ void rwip_driver_init(bool reset)
         if (rwip_param.get(PARAM_ID_OSC_WAKEUP_TIME, &length, (uint8_t*)&twosc) != PARAM_OK)
         {
             // Set default values : 5 ms
-            twosc = 1500;//SLEEP_OSC_NORMAL_WAKEUP_DELAY;
+            twosc = 1500; //SLEEP_OSC_NORMAL_WAKEUP_DELAY;
         }
 
         // Get TWext from NVDS
