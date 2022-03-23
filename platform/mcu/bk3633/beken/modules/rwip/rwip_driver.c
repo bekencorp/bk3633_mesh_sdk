@@ -307,7 +307,7 @@ void rwip_timer_10ms_handler(void)
 #if LLD_TEST_RX_SOTF
     if(g_dut_flg)
     {
-        lld_test_timer_cb();
+    //    lld_test_timer_cb();
     }
 #endif
 
@@ -636,7 +636,7 @@ void rwip_driver_init(bool reset)
         if (rwip_param.get(PARAM_ID_OSC_WAKEUP_TIME, &length, (uint8_t*)&twosc) != PARAM_OK)
         {
             // Set default values : 5 ms
-            twosc = 1500; //SLEEP_OSC_NORMAL_WAKEUP_DELAY;
+            twosc = 1500;//SLEEP_OSC_NORMAL_WAKEUP_DELAY;
         }
 
         // Get TWext from NVDS
