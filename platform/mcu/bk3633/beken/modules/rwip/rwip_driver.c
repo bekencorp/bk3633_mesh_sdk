@@ -307,7 +307,7 @@ void rwip_timer_10ms_handler(void)
 #if LLD_TEST_RX_SOTF
     if(g_dut_flg)
     {
-    //    lld_test_timer_cb();
+        //lld_test_timer_cb();  //note for abort_timer use mechanism.
     }
 #endif
 
