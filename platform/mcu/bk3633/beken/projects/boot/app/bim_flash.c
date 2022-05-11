@@ -57,6 +57,7 @@ uint32_t get_flash_ID(void)
     return REG_FLASH_RDID_DATA_FLASH ;
 }
 
+#if 0
 uint32_t flash_read_sr( )
 {
     uint16_t temp;
@@ -70,10 +71,38 @@ uint32_t flash_read_sr( )
     while(REG_FLASH_OPERATE_SW & 0x80000000);
 
     temp = (REG_FLASH_SR_DATA_CRC_CNT&0xff);
+
     return temp ;
 }
+#else
+uint32_t flash_read_sr(void)
+{
+	uint32_t temp = 0;
 
-void flash_write_sr( uint8_t bytes,  uint16_t val )
+	while(REG_FLASH_OPERATE_SW & 0x80000000);
+
+	REG_FLASH_OPERATE_SW = ( FLASH_ADDR_FIX
+								| (FLASH_OPCODE_RDSR << BIT_OP_TYPE_SW)
+								| (0x1 							<< BIT_OP_SW));
+
+	while(REG_FLASH_OPERATE_SW & 0x80000000);
+
+	temp = (REG_FLASH_SR_DATA_CRC_CNT&0xff);
+
+	REG_FLASH_OPERATE_SW = (	FLASH_ADDR_FIX
+															| (FLASH_OPCODE_RDSR2 << BIT_OP_TYPE_SW)
+															| (0x1 								 << BIT_OP_SW));
+
+	while(REG_FLASH_OPERATE_SW & 0x80000000);
+
+	temp |= (REG_FLASH_SR_DATA_CRC_CNT&0xff) << 8;
+
+
+	return temp ;
+}
+#endif
+
+void flash_write_sr_temp( uint8_t bytes,  uint16_t val )
 {
 
 	REG_FLASH_CONF &= 0xffff0fff;
@@ -113,6 +142,22 @@ void flash_write_sr( uint8_t bytes,  uint16_t val )
 
 }
 
+
+void flash_write_sr( uint8_t bytes,  uint16_t val )
+{
+	if(flash_read_sr() == val) 
+	{
+		return; 
+	}
+	
+	flash_write_sr_temp(bytes, val);
+
+	while (flash_read_sr() != val)
+	{
+		flash_write_sr_temp(bytes, val);
+	}
+}
+
 void flash_wp_none( void )
 {
 
@@ -137,7 +182,7 @@ void flash_wp_ALL( void )
 			flash_write_sr( 2, 0x0094 );
             break;
         case P25Q40U:
-			flash_write_sr( 2, 0x0010 );
+			flash_write_sr( 2, 0x4000 );
             break;    
         case GD_MD25D40:
         case GD_GD25WD40:    

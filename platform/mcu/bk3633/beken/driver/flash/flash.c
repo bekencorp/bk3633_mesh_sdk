@@ -113,7 +113,7 @@ UINT32 flash_get_id(void)
     GLOBAL_INT_RESTORE();
 	return value ;
 }
-
+#if 0
 static UINT16 flash_read_sr(void)
 {
 
@@ -133,14 +133,59 @@ static UINT16 flash_read_sr(void)
     GLOBAL_INT_RESTORE();
 	return value;
 }
+#else
 
-void flash_write_sr(UINT16 val)
+static UINT16 flash_read_sr(void)
+{
+
+	INT32 value; 
+	UINT32 temp = 0;
+	
+	GLOBAL_INT_DISABLE();
+	while(flash_sw_busy());
+
+ 	value = REG_READ(REG_FLASH_OPERATE_SW);
+	value &= (~SET_OP_TYPE_SW);
+	value |= (FLASH_OPCODE_RDSR << BIT_OP_TYPE_SW) | SET_OP_SW;
+	REG_WRITE(REG_FLASH_OPERATE_SW, value);
+
+	while(flash_sw_busy());
+
+	value = REG_READ(REG_FLASH_SR_DATA_CRC_CNT);
+	value &= MASK_SR_DATA_FLASH;
+	
+	temp |= value & MASK_SR_DATA_FLASH;
+
+
+	value = REG_READ(REG_FLASH_OPERATE_SW);
+	value &= (~SET_OP_TYPE_SW);
+	value |= (FLASH_OPCODE_RDSR2 << BIT_OP_TYPE_SW) | SET_OP_SW;
+	REG_WRITE(REG_FLASH_OPERATE_SW, value);
+
+	while(flash_sw_busy());
+
+	value = REG_READ(REG_FLASH_SR_DATA_CRC_CNT);
+	value &= MASK_SR_DATA_FLASH;
+
+	temp |= (value & MASK_SR_DATA_FLASH) << 8;
+
+	GLOBAL_INT_RESTORE();
+	
+	return temp;
+}
+
+#endif
+
+void flash_write_sr_tmp(UINT16 val)
 {
     UINT32 value;
+
     GLOBAL_INT_DISABLE();
     value = REG_READ(REG_FLASH_CONF);
     value &= (~WRSR_DATA_MASK);
     value |= (val << BIT_WRSR_DATA)|SET_FWREN_FLASH_CPU;
+
+
     REG_WRITE(REG_FLASH_CONF, value);
 
     while(flash_sw_busy());
@@ -170,7 +215,20 @@ void flash_write_sr(UINT16 val)
     while(flash_sw_busy());
     GLOBAL_INT_RESTORE();
 }
+void flash_write_sr(UINT16 val)
+{	
+	if( flash_read_sr() == val)
+	{
+		return;
+	}
+	
+	flash_write_sr_tmp(val);
 
+	while(flash_read_sr() != val)
+	{
+		flash_write_sr_tmp(val);
+	}
+}
 UINT8 flash_get_line_mode(void)
 {
     return flash_current_config->line_mode;

@@ -94,7 +94,7 @@ beken_ota = 1
 
 uart_test_cmd = 1
 dut_test_cmd = 1
-#dut_test_com = 2
+dut_test_com = 2
 hw_timer = 1
 button = 0
 spi_driver = 0
