@@ -73,13 +73,58 @@ uint8_t get_rw_sleep_flag(void)
 }
 
 #include "reg_ipcore.h"
-uint32_t curr_sleep_hs = 0;
+#define LV_SLEEP_TIME_S_DEFAULT  10
+uint32_t curr_sleep_hs = 0; 
 static uint32_t sleep_flag_2 = 0;
 static uint8_t sleep_start_flag = 0;
-#if 1
-void idle_mode(void)
+
+volatile uint32_t lv_sleep_time_s = LV_SLEEP_TIME_S_DEFAULT;
+
+volatile uint8_t g_waitup_by_gpio = 0xFF;
+
+
+// time_s: 1~145,440 (24 hours)
+void set_lv_sleep(uint32_t time_s)
 {
-#if 1
+	lv_sleep_time_s = time_s;
+}
+
+void waitup_by_gpio(void *arg)
+{
+	uint8_t *gpio;
+	gpio = arg;
+	g_waitup_by_gpio = 1;
+}
+
+
+uint8_t  reduce_voltage_sleep(void)
+{
+	uint8_t sleep_type = RWIP_ACTIVE;
+
+	gpio_dev_t gpio;
+	
+	gpio.port = 0x04;
+
+	hal_gpio_enable_irq(&gpio, IRQ_TRIGGER_RISING_EDGE,waitup_by_gpio, &(gpio.port));
+
+	for(int i = 0; i < 1000; i++)
+	{
+		sleep_type = idle_mode();
+		
+		if(sleep_type = RWIP_DEEP_SLEEP)
+		{
+			break;
+		}
+	}
+
+	printf("+++++reduce_voltage_sleep:  sleep_type = %X, waaitup value: %X +++++++++++\n", sleep_type, g_waitup_by_gpio);
+	sleep_type = RWIP_ACTIVE;
+
+	return g_waitup_by_gpio;
+}
+
+uint8_t idle_mode(void)
+{
     MCU_SLEEP_MODE sleep_mode;
     uint32_t slot_h = 0, tick_com;
     uint32_t sleep_hs, wakeup_hs;
@@ -103,30 +148,16 @@ void idle_mode(void)
         return;
     }
 
-    uint32_t time_now_ms = (uint32_t)krhino_sys_time_get();
     GLOBAL_INT_DISABLE();
-
-	extern u8 JX_prov_flag;
-
-	// if(JX_power_on_flag ==0)
-	// {
-	// 	sleep = rwip_func.rwip_sleep(&slot_h, 2000);      //no less than 6 slots. if set to 0, sleep forever
-	// }
-	// else
 	{
-        uint32_t sleep_time = 0;
-        if (time_now_ms > idle_task_sleep_time) {
-            sleep_time = ((time_now_ms - idle_task_sleep_time) > 190 - WORK_TIME_10MS * 10 ) ? (190 - WORK_TIME_10MS * 10) : (190 - (time_now_ms - idle_task_sleep_time) - WORK_TIME_10MS * 10);
-        } else {
-            sleep_time = 190 - WORK_TIME_10MS * 10;
-        }
-        
-        if (sleep_time > 10000) {
-            printf("%s, sleep_time(%d) invalid.\n", __func__, sleep_time);
-            return;
-        }
+        fclk_disable(FCLK_PWM_ID);  //close PWM.
+        sys_module_power_set(CLK_PWR_DEV_PWM1, 0);  //close PWM module power.
+        hal_aon_wdt_stop(); //close AON_WDT.
 
-		sleep = rwip_func.rwip_sleep(&slot_h, ((sleep_time) * 8)/5);      //no less than 6 slots. if set to 0, sleep forever
+        uint32_t sleep_duration = 0;
+
+        sleep_duration = lv_sleep_time_s * 1000 * 1000 / 32;    //rw sleep duration.
+        sleep = rwip_func.rwip_sleep(&slot_h, sleep_duration);
     }
 
     sleep_hs = rwip_func.rwip_time_get().hs;
@@ -136,9 +167,9 @@ void idle_mode(void)
             if (idle_sleep_start) {
                 idle_sleep_start();
             }
-            rf_set_ldo_mode();
-            //fclk_disable(FCLK_PWM_ID);
-            sys_module_power_set(CLK_PWR_DEV_PWM1, 0);
+			g_waitup_by_gpio = 0;
+			
+            // rf_set_ldo_mode();
             cpu_reduce_voltage_sleep();
             //sleep_mode_enable(0);
             cpu_wakeup();
@@ -146,14 +177,20 @@ void idle_mode(void)
             hal_aon_wdt_feed();
 			//sleep_mode_enable(0);
 			break;
-        case RWIP_CPU_SLEEP:
+			
+        case RWIP_CPU_SLEEP:	
+			//printf("++++++ idle ++++++++\r\n");
             //cpu_idle_sleep();
-            //sleep_mode_enable(0);
+            //sleep_mode_enable(0);            
+            hal_aon_wdt_feed();
             WFI();
             break;
+			
         case RWIP_ACTIVE:
             break;
+			
         default:
+			//printf("++++++idle_mode : default++++++++\r\n");
             break;
     }
 
@@ -186,10 +223,12 @@ void idle_mode(void)
             tick_com += 1;
         }
 
-        rf_set_bulk_mode();
+        // rf_set_bulk_mode();
         //fclk_update_tick(tick_com);
-        //fclk_init(FCLK_PWM_ID, RHINO_CONFIG_TICKS_PER_SECOND);
-        sys_module_power_set(CLK_PWR_DEV_PWM1, 1);
+        fclk_init(FCLK_PWM_ID, RHINO_CONFIG_TICKS_PER_SECOND);  //open PWM and init fclk.
+        sys_module_power_set(CLK_PWR_DEV_PWM1, 1);  //open PWM1 module power.
+        hal_aon_wdt_start(0x4ffff); //open AON_WDT.
+    	hal_aon_wdt_idle_sleep();   //start AON_WDT idle sleep.
         //tick_count_update(tick_com);
         GLOBAL_INT_RESTORE();
         tick_list_update(tick_com);
@@ -202,76 +241,4 @@ void idle_mode(void)
         krhino_task_yield();
     }
 
-#endif
 }
-#else
-void idle_mode(void)
-{
-    uint32_t slot_h = 0, tick_com;
-    uint32_t sleep_hs, wakeup_hs;
-
-    if(get_sys_sleep_mode() == MCU_NO_SLEEP)
-    {
-        return;
-    }
-
-    fclk_disable(FCLK_PWM_ID);
-
-    GLOBAL_INT_DISABLE();
-
-    uint8_t sleep ;
-    sleep_hs = rwip_func.rwip_time_get().hs;
-    
-	if(JX_power_on_flag == 0)
-	{
-		sleep = rwip_func.rwip_sleep(&slot_h, 2000);      //no less than 6 slots. if set to 0, sleep forever
-	}
-	else
-	{
-		sleep = rwip_func.rwip_sleep(&slot_h, 200);      //no less than 6 slots. if set to 0, sleep forever
-	}
-
-    os_printf("s %d s_h %d\n", sleep, slot_h);
-
-    switch(sleep)
-    {
-        case RWIP_DEEP_SLEEP:
-            cpu_reduce_voltage_sleep();
-            cpu_wakeup();
-            //sleep_mode_enable(0);
-			break;
-        case RWIP_CPU_SLEEP:
-            cpu_idle_sleep();
-            //sleep_mode_enable(0);
-            break;
-        case RWIP_ACTIVE:
-            break;
-        default:
-            break;
-    }
-	
-    GLOBAL_INT_RESTORE();
-
-    while(get_rw_sleep_flag())
-    {
-        ;
-    }
-
-    GLOBAL_INT_DISABLE();
-
-    wakeup_hs = rwip_func.rwip_time_get().hs;
-
-    tick_com = (wakeup_hs - sleep_hs) * RHINO_CONFIG_TICKS_PER_SECOND * 0.625/2000;
-
-    fclk_update_tick(tick_com);
-    tick_list_update(tick_com);
-#if (RHINO_CONFIG_SCHED_RR > 0)
-    time_slice_update();
-#endif
-    GLOBAL_INT_RESTORE();
-    fclk_init(FCLK_PWM_ID, RHINO_CONFIG_TICKS_PER_SECOND);
-    os_printf("wake-up comp tick %d\r\n",tick_com);
-    // krhino_task_yield();
-}
-#endif
-

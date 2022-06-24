@@ -105,88 +105,47 @@ static void icu_get_sleep_mode(MCU_SLEEP_MODE* mode)
     *mode = mcu_sleep_mode;
 }
 
+
 void cpu_reduce_voltage_sleep()
 {
     uint32_t tmp_reg;
-    uint32_t calc_num = 0;
-    
-  //  uart_printf("sleep\r\n");
-    /**  set flash & cpu core use xtal***/
-    set_flash_clk_xtal16M();
-    //addPMU_Reg0x2 = 0x11;
-    asm volatile ("nop"::);
-    asm volatile ("nop"::);
+    uint8_t delay_nop=0;
+
+    clrf_PMU_Reg0x1_direct_wake_enable;
+
+    setf_SYS_Reg0x1_gotosleep;
+    clrf_SYS_Reg0x1_gotosleep;
+
+    set_PMU_Reg0x14_voltage_ctrl_work_aon(0x06);
+    set_PMU_Reg0x14_voltage_ctrl_work_core(0x06);
+
+    setf_PMU_Reg0x14_sleep_sel;
+    Delay_us(100);
     set_SYS_Reg0x2_core_sel(0x01);
-    //addPMU_Reg0x2 = 0x12;
-    asm volatile ("nop"::);
-    asm volatile ("nop"::);
     set_SYS_Reg0x2_core_div(0x0);
-    //addPMU_Reg0x2 = 0x13;
-    asm volatile ("nop"::);
-    asm volatile ("nop"::);
-    setf_SYS_Reg0x17_enb_busrt_sel;
-    //addPMU_Reg0x2 = 0x14;
-    asm volatile ("nop"::);
-    asm volatile ("nop"::);
+
+    addFLASH_Reg0x0 = 0x34000000;
+
     setf_SYS_Reg0x17_CLK96M_PWD;
-    //addPMU_Reg0x2 = 0x15;
-    asm volatile ("nop"::);
-    asm volatile ("nop"::);
     setf_SYS_Reg0x17_HP_LDO_PWD;
-    //addPMU_Reg0x2 = 0x16;
-    asm volatile ("nop"::);
-    asm volatile ("nop"::);
     setf_SYS_Reg0x17_cb_bias_pwd;
-    //addPMU_Reg0x2 = 0x17;
-    asm volatile ("nop"::);
-    asm volatile ("nop"::);
-    tmp_reg = addSYS_Reg0x17 | 0x08;
-    //addPMU_Reg0x2 = 0x18;
-    asm volatile ("nop"::);
-    asm volatile ("nop"::);
-    system_sleep_status = 1;
-    //addPMU_Reg0x2 = 0x19;
-    asm volatile ("nop"::);
-    asm volatile ("nop"::);
-    set_PMU_Reg0x14_voltage_ctrl_work_aon(0x07);
-    //addPMU_Reg0x2 = 0x20;
-    asm volatile ("nop"::);
-    asm volatile ("nop"::);
-    set_PMU_Reg0x14_voltage_ctrl_work_core(0x07);
-    //addPMU_Reg0x2 = 0x21;
-    asm volatile ("nop"::);
-    asm volatile ("nop"::);
-    /**  set cpu core use 32k***/
+
     set_SYS_Reg0x2_core_sel(0x00);
-    //addPMU_Reg0x2 = 0x22;
-    asm volatile ("nop"::);
-    asm volatile ("nop"::);
+    tmp_reg = addSYS_Reg0x17 | 0x08;
     addSYS_Reg0x17 = tmp_reg;
-    //addPMU_Reg0x2 = 0x23;
-    asm volatile ("nop"::);
-    asm volatile ("nop"::);
-    setf_SYS_Reg0x1_CPU_PWD;  
-    //addPMU_Reg0x2 = 0x24;
-    asm volatile ("nop"::);
-    asm volatile ("nop"::);
-    addSYS_Reg0x17 = 0x80; // open 96M
-   //delay 30us        
-    //Delay_us(30);
-    asm volatile ("nop"::);
-    asm volatile ("nop"::);
-    asm volatile ("nop"::);
-    asm volatile ("nop"::);
-    //addPMU_Reg0x2 = 0x25;
-   // uart_printf("cpuwake\r\n");
-    /**  set cpu core use xtal***/
+
+    setf_SYS_Reg0x1_CPU_PWD;  ////sleep
+
+    delay_nop++;
+    addSYS_Reg0x17 = 0x80;
+
+    delay_nop++;
+    delay_nop++;
+    addPMU_Reg0x14 = 0x6666;
+    delay_nop++;
+    delay_nop++;
+    delay_nop++;
     set_SYS_Reg0x2_core_sel(0x01);
-    //addPMU_Reg0x2 = 0x26;
-    asm volatile ("nop"::);
-    asm volatile ("nop"::);
-    addPMU_Reg0x14=0x7777; // config work & sleep cpu voltage
-    //addPMU_Reg0x2 = 0x27;
-    asm volatile ("nop"::);
-    asm volatile ("nop"::);
 }
 
 void cpu_wakeup(void)

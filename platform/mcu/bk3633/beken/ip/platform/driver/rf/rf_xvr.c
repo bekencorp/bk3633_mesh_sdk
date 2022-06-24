@@ -798,8 +798,8 @@ void rf_init(struct rwip_rf_api *api)
     #endif //CFG_BLE
     
 
-    void  rf_debug_gpio_init(uint8_t GPIO_C_D);
-    rf_debug_gpio_init(1);
+   // void  rf_debug_gpio_init(uint8_t GPIO_C_D);
+   // rf_debug_gpio_init(1);
 }
 
 void rf_set_bulk_mode(void)
