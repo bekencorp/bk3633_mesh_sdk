@@ -13,6 +13,7 @@
 #include "flash_pub.h"
 #include "fake_clock_pub.h"
 #include "BK3633_RegList.h"
+#include "sys_version.h"
 
 #define AOS_START_STACK 300
 
@@ -104,6 +105,14 @@ void sys_start(void)
 
     soc_driver_init();
     printf("soc_driver init ok \r\n\r\n");
+
+    printf("\r\n\r\n/*Version Information**************");
+    printf("\r\n *        release_version:%s", RELEASE_VERSION);
+    printf("\r\n *        release_time:%s", RELEASE_TIME);
+    //printf("\r\n *        full_mac_version:%s", FMALL_VERSION);
+    //printf("\r\n *        mac_lib_version:%s", FMAC_LIB_VERSON);
+    printf("\r\n *        bulid date:%s, time:%s", __DATE__, __TIME__);
+    printf("\r\n *Version Over**********************/\r\n\r\n");
 
     fclk_init(FCLK_PWM_ID, RHINO_CONFIG_TICKS_PER_SECOND);
     hal_flash_secure_sector(FLASH_PROTECT_ALL);

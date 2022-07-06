@@ -610,13 +610,6 @@ void uart1_init(void)
 
     intc_enable(IRQ_UART1);
 
-    os_printf("\r\n\r\n/*Version Information**************");
-    os_printf("\r\n *        release_version:%s", RELEASE_VERSION);
-    os_printf("\r\n *        release_time:%s", RELEASE_TIME);
-    //os_printf("\r\n *        full_mac_version:%s", FMALL_VERSION);
-    //os_printf("\r\n *        mac_lib_version:%s", FMAC_LIB_VERSON);
-    os_printf("\r\n *        bulid date:%s, time:%s", __DATE__, __TIME__);
-    os_printf("\r\n *Version Over**********************/\r\n\r\n");
 }
 
 void uart1_exit(void)

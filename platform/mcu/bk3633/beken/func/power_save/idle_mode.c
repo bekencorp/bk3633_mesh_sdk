@@ -150,7 +150,7 @@ uint8_t idle_mode(void)
 
     GLOBAL_INT_DISABLE();
 	{
-        fclk_disable(FCLK_PWM_ID);  //close PWM1-5 timer.
+        set_SYS_Reg0x3_pwm1_pwd(1);  //close PWM1-5 power.
         sys_module_power_set(CLK_PWR_DEV_PWM1, 0);  //close PWM1 module power.
         hal_aon_wdt_stop(); //close AON_WDT.
 
