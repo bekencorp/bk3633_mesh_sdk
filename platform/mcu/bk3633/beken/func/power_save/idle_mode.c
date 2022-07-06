@@ -150,8 +150,8 @@ uint8_t idle_mode(void)
 
     GLOBAL_INT_DISABLE();
 	{
-        fclk_disable(FCLK_PWM_ID);  //close PWM.
-        sys_module_power_set(CLK_PWR_DEV_PWM1, 0);  //close PWM module power.
+        fclk_disable(FCLK_PWM_ID);  //close PWM1-5 timer.
+        sys_module_power_set(CLK_PWR_DEV_PWM1, 0);  //close PWM1 module power.
         hal_aon_wdt_stop(); //close AON_WDT.
 
         uint32_t sleep_duration = 0;
@@ -173,16 +173,13 @@ uint8_t idle_mode(void)
             cpu_reduce_voltage_sleep();
             //sleep_mode_enable(0);
             cpu_wakeup();
-            //hal_wdg_reload(NULL);
-            hal_aon_wdt_feed();
 			//sleep_mode_enable(0);
 			break;
 			
         case RWIP_CPU_SLEEP:	
 			//printf("++++++ idle ++++++++\r\n");
             //cpu_idle_sleep();
-            //sleep_mode_enable(0);            
-            hal_aon_wdt_feed();
+            //sleep_mode_enable(0);
             WFI();
             break;
 			

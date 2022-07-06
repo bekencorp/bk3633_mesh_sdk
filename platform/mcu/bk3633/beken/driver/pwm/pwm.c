@@ -72,8 +72,7 @@ static void pwm_gpio_configuration(UINT8 chan, UINT8 enable)
 	}
 	else
 	{
-		param = GPIO_CFG_PARAM(param, GMODE_DISABLE);
-    	ret = sddev_control(GPIO_DEV_NAME, CMD_GPIO_CFG, &param);
+    	ret = DRIV_SUCCESS; //if disabled, not do anything.
 	}
     ASSERT(DRIV_SUCCESS == ret);
 }
