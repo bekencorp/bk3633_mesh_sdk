@@ -93,7 +93,7 @@ void waitup_by_gpio(void *arg)
 {
 	uint8_t *gpio;
 	gpio = arg;
-	g_waitup_by_gpio = 1;
+	g_waitup_by_gpio = *gpio;
 }
 
 
@@ -167,7 +167,7 @@ uint8_t idle_mode(void)
             if (idle_sleep_start) {
                 idle_sleep_start();
             }
-			g_waitup_by_gpio = 0;
+			g_waitup_by_gpio = 0xFF;
 			
             // rf_set_ldo_mode();
             cpu_reduce_voltage_sleep();
