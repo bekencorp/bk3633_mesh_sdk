@@ -461,6 +461,10 @@ UINT32 uart_read_fifo_frame(UINT8 uport, KFIFO_PTR rx_ptr)
     {
         UART_READ_BYTE(uport, val);
         rx_count += kfifo_put(rx_ptr, (UINT8 *)&val, 1);
+        if(rx_count >= (rx_ptr->size - 1))
+        {
+            break;
+        }
     }
 
     return rx_count;

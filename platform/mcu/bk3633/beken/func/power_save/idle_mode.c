@@ -107,19 +107,6 @@ uint8_t  reduce_voltage_sleep(void)
 
 	hal_gpio_enable_irq(&gpio, IRQ_TRIGGER_RISING_EDGE,waitup_by_gpio, &(gpio.port));
 
-	for(int i = 0; i < 1000; i++)
-	{
-		sleep_type = idle_mode();
-		
-		if(sleep_type = RWIP_DEEP_SLEEP)
-		{
-			break;
-		}
-	}
-
-	printf("+++++reduce_voltage_sleep:  sleep_type = %X, waaitup value: %X +++++++++++\n", sleep_type, g_waitup_by_gpio);
-	sleep_type = RWIP_ACTIVE;
-
 	return g_waitup_by_gpio;
 }
 
@@ -169,7 +156,7 @@ uint8_t idle_mode(void)
             }
 			g_waitup_by_gpio = 0xFF;
 			
-            // rf_set_ldo_mode();
+            rf_set_ldo_mode();
             cpu_reduce_voltage_sleep();
             //sleep_mode_enable(0);
             cpu_wakeup();
@@ -220,9 +207,9 @@ uint8_t idle_mode(void)
             tick_com += 1;
         }
 
-        // rf_set_bulk_mode();
+        rf_set_bulk_mode();
         //fclk_update_tick(tick_com);
-        fclk_init(FCLK_PWM_ID, RHINO_CONFIG_TICKS_PER_SECOND);  //open PWM and init fclk.
+        // fclk_init(FCLK_PWM_ID, RHINO_CONFIG_TICKS_PER_SECOND);  //open PWM and init fclk.
         sys_module_power_set(CLK_PWR_DEV_PWM1, 1);  //open PWM1 module power.
         hal_aon_wdt_start(0x4ffff); //open AON_WDT.
     	hal_aon_wdt_idle_sleep();   //start AON_WDT idle sleep.

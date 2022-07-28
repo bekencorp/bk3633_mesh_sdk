@@ -1213,7 +1213,7 @@ __ATTR_ARM uint8_t rwip_sleep(int32_t * dur, int32_t max_slots)
          ************************************************************************/
         //sleep_duration -= RWIP_MINIMUM_SLEEP_TIME;
 
-        //sleep_duration = co_min_s(sleep_duration, max_slots*2);
+        sleep_duration = co_min_s(sleep_duration, max_slots*2);
 
         // A timer ISR is not yet handled or will be raised soon
         // note the sleep duration could be negative, that's why it's useful to check if a minimum requirement is ok
@@ -1226,7 +1226,7 @@ __ATTR_ARM uint8_t rwip_sleep(int32_t * dur, int32_t max_slots)
             break;
         }
 
-        //*dur = sleep_duration;
+        *dur = sleep_duration;
         sleep_duration = rwip_slot_2_lpcycles(sleep_duration);
 
         // check if sleep duration is sufficient according to wake-up delay
@@ -1271,9 +1271,7 @@ __ATTR_ARM uint8_t rwip_sleep(int32_t * dur, int32_t max_slots)
         rwble_sleep_enter();
         #endif // (BLE_EMB_PRESENT)
 
-        // sleep_duration = 0;
-        sleep_duration = max_slots - RWIP_MINIMUM_SLEEP_TIME;      //this is used for connected success while in sleep mode.
-        *dur = sleep_duration;
+        sleep_duration = 0;
 
         // Program wake-up time
         ip_deepslwkup_set(sleep_duration);
