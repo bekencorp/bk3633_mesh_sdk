@@ -761,7 +761,7 @@ UINT32 flash_ctrl(UINT32 cmd, void *parm)
 #define SET_WRSR_DATA_1                   0xFFFF   << BIT_WRSR_DATA
 #define SET_CRC_EN_1                      0x1      << BIT_CRC_EN
 
-void set_flash_clk_xtal16M(void)
+inline void set_flash_clk_xtal16M(void)
 {
     GLOBAL_INT_DISABLE();
     //note :>16M don't use la for flash debug

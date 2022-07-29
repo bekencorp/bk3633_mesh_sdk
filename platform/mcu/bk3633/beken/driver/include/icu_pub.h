@@ -16,6 +16,7 @@
 #define _ICU_PUB_H_
 
 #include "driver_pub.h"
+#include "compiler.h"
 
 #define ICU_DEV_NAME                "icu"
 
@@ -146,7 +147,7 @@ extern void icu_init(void);
 extern void icu_exit(void);
 extern UINT32 icu_ctrl(UINT32 cmd, void *param);
 
-void cpu_reduce_voltage_sleep(void);
+__ATTR_APP_CODE void cpu_reduce_voltage_sleep(void);
 void cpu_wakeup(void);
 void cpu_idle_sleep(void);
 uint32_t icu_get_reset_reason(void);
