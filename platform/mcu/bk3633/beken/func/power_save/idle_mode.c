@@ -17,7 +17,7 @@
 #include "rwip.h"
 #include "fake_clock_pub.h"
 #include "idle_mode.h"
-
+#include "reg_ipcore.h"
 
 static uint8_t sleep_flag = 0;
 static uint8_t never_sleep = false;
@@ -72,7 +72,33 @@ uint8_t get_rw_sleep_flag(void)
     return ((rwip_func.rwip_sleep_flag() & (RW_WAKE_UP_ONGOING | RW_BLE_SLEEP_ONGOING)) != 0);
 }
 
-#include "reg_ipcore.h"
+#define INTERNAL_CRYSTAL_OSCILLATOR_32K     1
+uint64_t lv_sleep_period_get(void)
+{
+    uint64_t cal_dur_1 = 0;
+    uint64_t cal_dur_2 = 0;
+    uint64_t cal_dur_3 = 0;
+    uint64_t cal_dur_4 = 0;
+
+    uint64_t sleep_period = ip_deepslstat_get();    //get low power clk numbers.
+
+#if INTERNAL_CRYSTAL_OSCILLATOR_32K
+    cal_dur_1 = (sleep_period * 2 * 1000) >> 5; //calculate for 32 KHz, transform to half_us. 
+    cal_dur_3 = cal_dur_1 / 625;    //calculate for 32 KHz, transform to half_slot.
+#else/* external crystal oscillator 32.768 KHz */
+    cal_dur_1 = (sleep_period * 2 * 1000) >> 5; //calculate for 32.768 KHz, transform to half_us. 
+    cal_dur_2 = (sleep_period * 47) >> 5; //compensate for 32 KHz when use 32.768 KHz.
+    cal_dur_3 = (cal_dur_1 - cal_dur_2)  / 625;  //calculate for 32.768 KHz, transform to half_slot.
+#endif
+
+    cal_dur_4 = cal_dur_1 - (cal_dur_3 * 625);  //convert half_slot.
+    if(cal_dur_4 > (625 >> 1))
+    {
+        cal_dur_3 += 1; //compensate for half_slot in 32 or 32.768 KHz.
+    }
+
+    return cal_dur_3;
+}
 uint32_t curr_sleep_hs = 0;
 static uint32_t sleep_flag_2 = 0;
 static uint8_t sleep_start_flag = 0;
@@ -81,8 +107,8 @@ void idle_mode(void)
 {
 #if 1
     MCU_SLEEP_MODE sleep_mode;
-    uint32_t slot_h = 0, tick_com;
-    uint32_t sleep_hs, wakeup_hs;
+    uint32_t slot_h = 0;
+    uint64_t tick_com = 0;
     uint8_t sleep = 0;
 	
 #ifdef CONFIG_DUT_TEST_CMD
@@ -129,7 +155,6 @@ void idle_mode(void)
 		sleep = rwip_func.rwip_sleep(&slot_h, ((sleep_time) * 8)/5);      //no less than 6 slots. if set to 0, sleep forever
     }
 
-    sleep_hs = rwip_func.rwip_time_get().hs;
     switch(sleep)
     {
         case RWIP_DEEP_SLEEP:
@@ -174,11 +199,10 @@ void idle_mode(void)
         sleep_flag_2 = 0;
         //core_peri_clk_freq_set(1, 1);
         sleep_mode_enable(0);
-        wakeup_hs = rwip_func.rwip_time_get().hs;
 
-        tick_com = (((wakeup_hs - sleep_hs) * RHINO_CONFIG_TICKS_PER_SECOND * 5) >> 4) / 1000;
+        tick_com = (((lv_sleep_period_get()) * RHINO_CONFIG_TICKS_PER_SECOND * 5) >> 4) / 1000;
         
-        curr_sleep_hs += ((wakeup_hs - sleep_hs) % 32);
+        curr_sleep_hs += ((lv_sleep_period_get()) % 32);
         if(curr_sleep_hs >= 32)
         {
             curr_sleep_hs -= 32;

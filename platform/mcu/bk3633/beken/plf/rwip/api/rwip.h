@@ -62,6 +62,12 @@
 #define POS_SYS_REG0X3_RWBT_PWD            17
 #define SET_RWBT_POWER_UP                  SYS_REG0X3_POWER &= ~(1<<POS_SYS_REG0X3_RWBT_PWD)
 
+#define POS_SYS_REG0X3_SADC_PWD            10
+#define SET_SADC_POWER_UP                  SYS_REG0X3_POWER &= ~(1<<POS_SYS_REG0X3_SADC_PWD)     
+#define SET_SADC_POWER_DOWN                SYS_REG0X3_POWER |= (1<<POS_SYS_REG0X3_SADC_PWD)
+
+
+
 /**
  * Inverse an intra-half-slot value (in half-us), from/to following formats:
  *   - A: elapsed time from the previous half-slot (in half-us)

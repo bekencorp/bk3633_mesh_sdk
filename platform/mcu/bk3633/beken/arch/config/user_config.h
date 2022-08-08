@@ -32,7 +32,7 @@
 #define GPIO_DRIVER					1
 #define AUDIO_DRIVER			    1
 #define RTC_DRIVER					0
-#define ADC_DRIVER					0
+#define ADC_DRIVER					1
 #define I2C_DRIVER					0
 #define PWM_DRIVER					1
 #define USB_DRIVER                  0 

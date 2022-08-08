@@ -581,20 +581,20 @@ void user_event(E_GENIE_EVENT event, void *p_arg)
         case GENIE_EVT_REPEAT_RESET:
             erase_reboot_uart_cmd_handler(NULL);
             break;
-#endif
-        default:
+#endif 
+        default:  
             break;
     }
     
     if(next_event != event) {
         genie_event(next_event, p_arg);
     }
-}
+} 
 
 int application_start(int argc, char **argv)
-{
+{ 
     /* genie initilize */
-    genie_init();
+    genie_init(); 
 	
 	app_rf_power_init(); //set 0x40
 	app_xtal_cal_init();  // set 0x08 for 7db
@@ -607,7 +607,7 @@ int application_start(int argc, char **argv)
 
     //aos_loop_run();
 
-    return 0;
+    return 0; 
 }
 
 

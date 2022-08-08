@@ -8,6 +8,32 @@
 #include <hal/soc/soc.h>
 #include "ota_port.h"
 
+enum {
+    GENIE_FLASH_INDEX_START = 0,
+    GFI_MESH_PARA,
+    GFI_MESH_TRITUPLE,
+    GFI_MESH_SADDR,
+    GFI_MESH_SUB,
+    GFI_MESH_SEQ,
+    GFI_MESH_RESET_CNT,
+    GFI_MESH_RESET_FLAG,
+    GFI_MESH_POWERUP,
+    GFI_MESH_HB,
+    GFI_MESH_DEVKEY,
+    GFI_MESH_NETKEY,
+    GFI_MESH_APPKEY,
+    GFI_MESH_PUB_KEY,
+    GFI_MESH_PRIVATE_KEY,
+    GFI_OTA_INDICAT,
+    GFI_OTA_IMAGE_CHANGE,
+    GFI_USERDATA_START,
+    GFI_SWITCH_PARA,
+    GFI_BLE_PARA,
+	GFI_RF_POWER_LEVEL,
+    GFI_XTAL_CAL,
+    GFI_OTA_ERASE_FINISH,
+};
+
 #define KV_HAL_OTA_CRC32  "hal_ota_get_crc32"
 
 typedef struct
@@ -163,23 +189,28 @@ static int bk3633_ota_init(void *something)
 
 	partition_info = hal_flash_get_info(up_sec);
 	printf("\n%s %d ota:%x sec len 0x%x\n", __func__, __LINE__, p->ota_buf, partition_info->partition_length);
+    uint8_t ota_erase = 0;
+	genie_flash_read_userdata(GFI_OTA_ERASE_FINISH, &ota_erase, sizeof(ota_erase));
 
+    printf("**************** %s, ota_erase %d ******************\n", __func__, ota_erase);
     if(_off_set == 0)
     {
-        if (ota_update_in_progress() || ota_is_sys_power_on()) {
-            hal_flash_erase(up_sec, 0 ,partition_info->partition_length);
+        if (ota_update_in_progress() || !ota_erase) {
+            hal_flash_erase(up_sec, 0 , partition_info->partition_length);
+			ota_erase = 1;
+			genie_flash_write_userdata(GFI_OTA_ERASE_FINISH, &ota_erase, sizeof(ota_erase));
 		}
 		memset(&ota_info.ota_tag, 0 , sizeof(ota_info.ota_tag));
-		ota_info.data_para.recv_len =0;
-		ota_info.data_para.page_size =0;
-		ota_info.data_para.page_cnt =0;
+		ota_info.data_para.recv_len = 0;
+		ota_info.data_para.page_size = 0;
+		ota_info.data_para.page_cnt = 0;
         CRC32_Init(&contex);
     }
     else if(_off_set < partition_info->partition_length)
     {
 		p->recv_len = _off_set;
         contex.crc = hal_ota_get_crc32();
-        LOG("--------get crc32 context.crc=%d!--------\n",contex.crc);
+        LOG("--------get crc32 context.crc=%d!--------\n", contex.crc);
     }
 	else
 	{
@@ -189,7 +220,7 @@ static int bk3633_ota_init(void *something)
 
 	if(p->ota_buf == NULL)
 	{
-		p->ota_buf = (uint8_t*)aos_malloc(OTA_PAGE_SIZE);
+		p->ota_buf = (uint8_t *)aos_malloc(OTA_PAGE_SIZE);
 	}
 	else
 	{
@@ -442,6 +473,8 @@ static int bk3633_ota_set_boot(void *something)
     if (termi_type == OTA_TERMI_FINISH && !ret)
     {
         LOG("bk3633 start boot\n");
+		uint8_t ota_erase = 0;
+		genie_flash_write_userdata(GFI_OTA_ERASE_FINISH, &ota_erase, sizeof(ota_erase));
         hal_reboot();
         memset(&ota_info, 0 , sizeof(ota_info));
     }
@@ -454,7 +487,7 @@ static int bk3633_ota_set_boot(void *something)
 
 static int bk3633_ota_tag_get(void *something)
 {
-	ota_img_tag_t* tag_get = (ota_img_tag_t*)something;
+	ota_img_tag_t* tag_get = (ota_img_tag_t *)something;
 	ota_img_hdr_t hdl_old;
 
     memset(&hdl_old, 0, sizeof(ota_img_hdr_t));
@@ -521,6 +554,7 @@ static int bk3633_ota_tag_check(uint32_t ota_type, uint16_t ver, uint16_t rom_ve
 
     memset(&hdl_old, 0, sizeof(ota_img_hdr_t));
 	ret_temp = static_partition_read(STATIC_SECTION_OTA, &hdl_old, sizeof(ota_img_hdr_t));
+
 
     printf("ota_tag_check static_partition_read : %d\n", ret_temp);
 

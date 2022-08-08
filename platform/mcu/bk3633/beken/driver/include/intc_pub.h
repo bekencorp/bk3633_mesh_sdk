@@ -8,7 +8,7 @@
 #define FIQ_BLE                          (20)
 #define FIQ_BTDM                         (22)
 
-
+#define PRI_IRQ_ADC                      (15)
 #define IRQ_AON_RTC                      (12)
 #define IRQ_I2S_PCM                      (11)
 #define IRQ_RTC                          (10)

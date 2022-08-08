@@ -168,7 +168,7 @@ uint32_t bim_select_sec(void)
         {
             if(up_mode == OTA_DUAL_SWITCH)
             {
-                flash_wp_ALL();
+                //flash_wp_ALL();
                 addr_crc = hdr_ota_img.src_adr;
                 return (addr_crc*0x20/0x22);
             }
@@ -191,13 +191,13 @@ uint32_t bim_select_sec(void)
         {
             if(up_mode == OTA_DUAL_SWITCH)
             {
-                flash_wp_ALL();
+                //flash_wp_ALL();
                 addr_crc = hdr_ota_img.dst_adr;
                 return (addr_crc*0x20/0x22);
             }
             else
             {
-                flash_wp_ALL();
+                //flash_wp_ALL();
                 return PARTITION_APP_CPU_ADDR;
             }
         }
