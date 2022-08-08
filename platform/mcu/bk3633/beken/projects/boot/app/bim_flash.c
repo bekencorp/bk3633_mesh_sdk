@@ -154,6 +154,7 @@ void flash_write_sr( uint8_t bytes,  uint16_t val )
 
 	while (flash_read_sr() != val)
 	{
+	    bim_printf("++bim flash write: error repeat  val(%X, %X)\r\n", val, flash_read_sr() );
 		flash_write_sr_temp(bytes, val);
 	}
 }
@@ -167,6 +168,7 @@ void flash_wp_none( void )
 
 void flash_wp_ALL( void )
 {
+
 	switch(flash_mid)
     {
         case MX_FLASH_4M:
@@ -187,7 +189,7 @@ void flash_wp_ALL( void )
         case GD_MD25D40:
         case GD_GD25WD40:    
         default:
-			flash_write_sr( 1, 0x9c );
+			flash_write_sr( 1, 0x1c );
             break;    
     }
 

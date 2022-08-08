@@ -657,16 +657,16 @@ void rf_init(struct rwip_rf_api *api)
         {
             ble_radiopwrupdn0_pack(/*uint8_t syncposition0*/ 0,
                                     /*uint8_t rxpwrup0*/ 	 0x20,
-                                    /*uint8_t txpwrdn0*/ 	 0x07,
-                                    /*uint8_t txpwrup0*/ 	 0x55);
+                                    /*uint8_t txpwrdn0*/ 	 0x00,
+                                    /*uint8_t txpwrup0*/ 	 0x65);
         }
         else
 #endif
         {
             ble_radiopwrupdn0_pack(/*uint8_t syncposition0*/ 0,
-                                    /*uint8_t rxpwrup0*/ 	 0x50,
-                                    /*uint8_t txpwrdn0*/ 	 0x07,
-                                    /*uint8_t txpwrup0*/ 	 0x55);
+                                    /*uint8_t rxpwrup0*/ 	 0x65,
+                                    /*uint8_t txpwrdn0*/ 	 0x00,
+                                    /*uint8_t txpwrup0*/ 	 0x65);
         }
         //UART_PRINTF("BLE_RADIOPWRUPDN0 addr:0x%08x,val:0x%08x\r\n",BLE_RADIOPWRUPDN0_ADDR,ble_radiopwrupdn0_get());
         

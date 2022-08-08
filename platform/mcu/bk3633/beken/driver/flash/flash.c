@@ -216,7 +216,9 @@ void flash_write_sr_tmp(UINT16 val)
     GLOBAL_INT_RESTORE();
 }
 void flash_write_sr(UINT16 val)
-{	
+{		
+
+
 	if( flash_read_sr() == val)
 	{
 		return;
@@ -226,6 +228,8 @@ void flash_write_sr(UINT16 val)
 
 	while(flash_read_sr() != val)
 	{
+	
+		printf("++flash write: error repeat  val(%X, %X)\r\n", val, flash_read_sr());
 		flash_write_sr_tmp(val);
 	}
 }
@@ -542,6 +546,40 @@ void set_flash_clk(unsigned char clk_conf)
     GLOBAL_INT_RESTORE();
 }
 
+static void flash_protection_op_default(PROTECT_TYPE type)
+{
+    GLOBAL_INT_DISABLE();
+    UINT8 bp2, bp1, bp0;
+    if(FLASH_PROTECT_SEC_112 <= type)
+    {
+        bp2 = 1;
+    }
+    else
+    {
+        bp2 = 0;
+    }
+    if(type == FLASH_PROTECT_ALL || type == FLASH_PROTECT_SEC_64
+            || type == FLASH_PROTECT_SEC_120 || type == FLASH_PROTECT_SEC_124)
+    {
+        bp1 = 1;
+    }
+    else
+    {
+        bp1 = 0;
+    }
+    if(type == FLASH_PROTECT_ALL || type == FLASH_PROTECT_SEC_96
+            || type == FLASH_PROTECT_SEC_120 || type == FLASH_PROTECT_SEC_126)
+    {
+        bp0 = 1;
+    }
+    else
+    {
+        bp0 = 0;
+    }
+    flash_write_sr((1 << 6) | (1 << 5) | (bp2 << 4) | (bp1 << 3) | (bp0 << 2));
+    GLOBAL_INT_RESTORE();
+}
+
 static void flash_protection_op_GD_MD25D40(PROTECT_TYPE type)
 {
     GLOBAL_INT_DISABLE();
@@ -575,7 +613,7 @@ static void flash_protection_op_GD_MD25D40(PROTECT_TYPE type)
         bp0 = 0;
     }
 
-    flash_write_sr((1 << 6) | (1 << 5) | (bp2 << 4) | (bp1 << 3) | (bp0 << 2));
+    flash_write_sr((bp2 << 4) | (bp1 << 3) | (bp0 << 2));
     GLOBAL_INT_RESTORE();
 }
 
@@ -672,7 +710,7 @@ static void flash_protection_op(PROTECT_TYPE type)
     }
     else
     {
-        flash_protection_op_GD_MD25D40(type);
+        flash_protection_op_default(type);
     }
 
     return;
@@ -771,6 +809,7 @@ UINT32 flash_ctrl(UINT32 cmd, void *parm)
             break;
 
         case CMD_FLASH_WRITE_SR:
+			check_low_volt_sleep();
             flash_write_sr(((*(unsigned long *)parm) >> 8) & 0x00FFFF);
             break;
 
@@ -800,6 +839,8 @@ UINT32 flash_ctrl(UINT32 cmd, void *parm)
             break;
         case CMD_FLASH_SET_PROTECT:
             type = (*(PROTECT_TYPE *)parm);
+			
+			check_low_volt_sleep();
             flash_protection_op(type);
             break;
         default:
@@ -826,7 +867,7 @@ UINT32 flash_ctrl(UINT32 cmd, void *parm)
 #define SET_WRSR_DATA_1                   0xFFFF   << BIT_WRSR_DATA
 #define SET_CRC_EN_1                      0x1      << BIT_CRC_EN
 
-void set_flash_clk_xtal16M(void)
+inline void set_flash_clk_xtal16M(void)
 {
     GLOBAL_INT_DISABLE();
     //note :>16M don't use la for flash debug

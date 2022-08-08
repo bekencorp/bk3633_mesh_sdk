@@ -12,6 +12,7 @@
 #include "spi_pub.h"
 #include "i2s_pub.h"
 #include "timer_pub.h"
+#include "adc_pub.h"
 #include "aon_wdt_pub.h"
 
 #if CFG_USE_STA_PS
@@ -50,6 +51,7 @@ static DD_INIT_S dd_init_tbl[] =
 #endif
 
     //{I2S_DEV_NAME,          i2s_init,                   i2s_exit},
+	{ADC_DEV_NAME,			adc_init,					adc_exit},
 
 #if CFG_USE_STA_PS
     //{"power_save",       sctrl_sta_ps_init,                NULLPTR},

@@ -259,12 +259,13 @@ void intc_irq(void)
 		irq_status |= INT_STATUS_UART2_bit;
         uart2_isr();
 	}
+	
 #if (ADC_DRIVER)
-    if(IntStat & INT_STATUS_ADC_bit)
-    {
-        irq_status |= INT_STATUS_ADC_bit;
-        adc_isr();
-    }
+		if(IntStat & INT_STATUS_ADC_bit)
+		{
+			irq_status |= INT_STATUS_ADC_bit;
+			adc_isr();
+		}
 #endif
 #if (AON_RTC_DRIVER)
 	if(IntStat & INT_STATUS_AON_RTC_bit)

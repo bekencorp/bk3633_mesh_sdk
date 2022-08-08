@@ -105,7 +105,7 @@ static void icu_get_sleep_mode(MCU_SLEEP_MODE* mode)
     *mode = mcu_sleep_mode;
 }
 
-void cpu_reduce_voltage_sleep()
+__ATTR_APP_CODE void cpu_reduce_voltage_sleep()
 {
     uint32_t tmp_reg;
     uint32_t calc_num = 0;

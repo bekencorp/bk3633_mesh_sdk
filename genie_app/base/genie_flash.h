@@ -33,7 +33,8 @@ enum {
     GFI_SWITCH_PARA,
     GFI_BLE_PARA,
 	GFI_RF_POWER_LEVEL,
-    GFI_XTAL_CAL
+    GFI_XTAL_CAL,
+    GFI_OTA_ERASE_FINISH,
 };
 
 typedef enum

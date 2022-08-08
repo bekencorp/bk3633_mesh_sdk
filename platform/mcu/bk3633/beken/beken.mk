@@ -42,6 +42,7 @@ $(NAME)_INCLUDES += driver/aon_wdt
 $(NAME)_INCLUDES += driver/dma
 $(NAME)_INCLUDES += driver/reg
 $(NAME)_INCLUDES += driver/aon_rtc
+$(NAME)_INCLUDES += driver/adc
 
 $(NAME)_INCLUDES += modules/ke/api
 $(NAME)_INCLUDES += ip/ble/ll/src/llc
@@ -84,6 +85,7 @@ $(NAME)_SOURCES  += driver/uart/uart.c
 $(NAME)_SOURCES  += driver/wdt/wdt.c
 $(NAME)_SOURCES  += driver/aon_wdt/aon_wdt.c
 $(NAME)_SOURCES  += driver/pwm/pwm.c
+$(NAME)_SOURCES  += driver/adc/adc.c
 
 ifeq ($(hw_timer),1)
 $(NAME)_INCLUDES += driver/timer

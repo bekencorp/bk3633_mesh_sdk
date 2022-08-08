@@ -121,21 +121,43 @@ int static_partition_write_addr_head(static_section_t in_section)
     verify.hearder_code = STATIC_PARTITION_HEADER_CODE;
     uint32_t size = 0;
     uint32_t offset = 0;
+    uint32_t hearder_code = 0;
+    uint32_t hearder_code_offset = 0;
+    int ret;
 
-    int ret = static_partition_get_section(in_section, &offset, &size);
-
+    ret = static_partition_get_section(in_section, &hearder_code_offset, &size);
     if(ret)
     {
         printf("%s, L %d\n", __func__, __LINE__);
         return -1;
     }
 
-    ret = hal_flash_write(HAL_PARTITION_STATIC_PARA, &offset, &(verify.hearder_code), sizeof(verify.hearder_code), true);
-
+    ret = hal_flash_read( HAL_PARTITION_STATIC_PARA, &hearder_code_offset, &hearder_code, sizeof(platform_static_header_s));
     if(ret)
     {
         printf("%s, L %d\n", __func__, __LINE__);
         return -1;
+    }
+
+    if(hearder_code == STATIC_PARTITION_HEADER_CODE)
+    {
+        return 0;
+    }
+    else
+    {
+        ret = static_partition_get_section(in_section, &offset, &size);
+        if(ret)
+        {
+            printf("%s, L %d\n", __func__, __LINE__);
+            return -1;
+        }
+
+        ret = hal_flash_write(HAL_PARTITION_STATIC_PARA, &offset, &(verify.hearder_code), sizeof(verify.hearder_code), true);
+        if(ret)
+        {
+            printf("%s, L %d\n", __func__, __LINE__);
+            return -1;
+        }
     }
 
     return 0;
