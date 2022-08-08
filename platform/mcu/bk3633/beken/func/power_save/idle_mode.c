@@ -17,7 +17,7 @@
 #include "rwip.h"
 #include "fake_clock_pub.h"
 #include "idle_mode.h"
-
+#include "reg_ipcore.h"
 
 static uint8_t sleep_flag = 0;
 static uint8_t never_sleep = false;
@@ -72,7 +72,26 @@ uint8_t get_rw_sleep_flag(void)
     return ((rwip_func.rwip_sleep_flag() & (RW_WAKE_UP_ONGOING | RW_BLE_SLEEP_ONGOING)) != 0);
 }
 
-#include "reg_ipcore.h"
+uint64_t lv_sleep_period_get(void)
+{
+    uint64_t cal_dur_1 = 0;
+    uint64_t cal_dur_2 = 0;
+    uint64_t cal_dur_3 = 0;
+
+    uint64_t sleep_period = ip_deepslstat_get();
+
+    cal_dur_1 = (sleep_period * 2000) >> 5;
+    cal_dur_3 = cal_dur_1 / 625;
+
+    cal_dur_2 = cal_dur_1 - (cal_dur_3 * 625);
+    if(cal_dur_2 > (625 >> 1))
+    {
+        cal_dur_3 += 1;
+    }
+
+    return cal_dur_3;
+}
+
 #define LV_SLEEP_TIME_S_DEFAULT  10
 uint32_t curr_sleep_hs = 0; 
 static uint32_t sleep_flag_2 = 0;
@@ -113,7 +132,8 @@ uint8_t  reduce_voltage_sleep(void)
 uint8_t idle_mode(void)
 {
     MCU_SLEEP_MODE sleep_mode;
-    uint32_t slot_h = 0, tick_com;
+    uint32_t slot_h = 0;
+    uint64_t tick_com = 0;
     uint32_t sleep_hs, wakeup_hs;
     uint8_t sleep = 0;
 	
@@ -197,9 +217,9 @@ uint8_t idle_mode(void)
         sleep_mode_enable(0);
         wakeup_hs = rwip_func.rwip_time_get().hs;
 
-        tick_com = (((wakeup_hs - sleep_hs) * RHINO_CONFIG_TICKS_PER_SECOND * 5) >> 4) / 1000;
+        tick_com = (((lv_sleep_period_get()) * RHINO_CONFIG_TICKS_PER_SECOND * 5) >> 4) / 1000;
         
-        curr_sleep_hs += ((wakeup_hs - sleep_hs) % 32);
+        curr_sleep_hs += ((lv_sleep_period_get()) % 32);
         if(curr_sleep_hs >= 32)
         {
             curr_sleep_hs -= 32;
