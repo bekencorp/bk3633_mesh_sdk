@@ -96,7 +96,7 @@ void bt_monitor_new_index(u8_t type, u8_t bus, bt_addr_t *addr,
 
 #else /* !CONFIG_BT_DEBUG_MONITOR */
 
-#define bt_monitor_send(opcode, data, len)
+#define  bt_monitor_send(opcode, data, len)
 #define bt_monitor_new_index(type, bus, addr, name)
 
 #endif

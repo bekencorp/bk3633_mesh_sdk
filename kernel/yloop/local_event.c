@@ -72,7 +72,11 @@ static int input_add_event(int fd, input_event_t *event)
 void event_read_cb(int fd, void *param)
 {
     input_event_t event;
+#ifdef AOS_VFS
     int ret = aos_read(fd, &event, sizeof(event));
+#else
+    int ret = 0;
+#endif //AOS_VFS
     if (ret == sizeof(event)) {
         handle_events(&event);
     }
@@ -81,9 +85,17 @@ void event_read_cb(int fd, void *param)
 int aos_event_service_init(void)
 {
 #ifdef _WIN32
+#ifdef AOS_VFS
     int fd = aos_open("C:\\event.bin", 0);
 #else
+    int fd = 0;
+#endif //AOS_VFS
+#else
+#ifdef AOS_VFS
     int fd = aos_open("/dev/event", 0);
+#else
+    int fd = 0;
+#endif //AOS_VFS
 #endif
 
     if (local_event.fd < 0) {

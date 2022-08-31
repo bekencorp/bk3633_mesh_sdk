@@ -229,7 +229,7 @@ void flash_write_sr(UINT16 val)
 	while(flash_read_sr() != val)
 	{
 	
-		printf("++flash write: error repeat  val(%X, %X)\r\n", val, flash_read_sr());
+		// printf("++flash write: error repeat  val(%X, %X)\r\n", val, flash_read_sr());
 		flash_write_sr_tmp(val);
 	}
 }

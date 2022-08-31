@@ -14,8 +14,11 @@ struct bt_mesh_model_pub g_gen_level_pub = {
 static void _gen_level_prepear_buf(struct bt_mesh_model *model, struct net_buf_simple *msg, bool is_ack)
 {
     S_ELEM_STATE *elem = model->user_data;
+#if CONFIG_MESH_MODEL_TRANS
     u8_t remain_byte = get_remain_byte(is_ack);
-
+#else
+    u8_t remain_byte = 0;
+#endif //CONFIG_MESH_MODEL_TRANS
     BT_DBG("cur_level(0x%04x) tar_level(0x%04x) remain(0x%02x)", (u16_t)elem->state.gen_level[T_CUR], (u16_t)elem->state.gen_level[T_TAR], remain_byte);
 
     //prepear buff
@@ -64,7 +67,9 @@ static u8_t _gen_level_analyze(struct bt_mesh_model *model, u16_t src_addr, stru
         trans = net_buf_simple_pull_u8(buf);
         delay = net_buf_simple_pull_u8(buf);
     } else {
+#if CONFIG_MESH_MODEL_TRANS
         trans = elem->powerup.def_trans;
+#endif //CONFIG_MESH_MODEL_TRANS
         delay = 0;
     }
 
@@ -86,7 +91,7 @@ static u8_t _gen_level_analyze(struct bt_mesh_model *model, u16_t src_addr, stru
     }
     //mesh_state_bound(GENERIC_LEVEL, T_TAR);
 #endif
-
+#if CONFIG_MESH_MODEL_TRANS
     elem->state.gen_level[T_TAR] = level;
     elem->state.trans = trans;
     elem->state.delay = delay;
@@ -98,7 +103,7 @@ static u8_t _gen_level_analyze(struct bt_mesh_model *model, u16_t src_addr, stru
     BT_DBG("level(0x%04x) trans(0x%02x) delay(0x%02x)",
         elem->state.gen_level[T_TAR], elem->state.trans, elem->state.delay);
     BT_DBG("start(%d) end(%d)", (u32_t)elem->state.trans_start_time, (u32_t)elem->state.trans_end_time);
-
+#endif //CONFIG_MESH_MODEL_TRANS
     return MESH_SUCCESS;
 }
 
@@ -191,7 +196,9 @@ static u8_t _gen_delta_analyze(struct bt_mesh_model *model, u16_t src_addr, stru
         trans = net_buf_simple_pull_u8(buf);
         delay = net_buf_simple_pull_u8(buf);
     } else {
+#if CONFIG_MESH_MODEL_TRANS
         trans = elem->powerup.def_trans;
+#endif //CONFIG_MESH_MODEL_TRANS
         delay = 0;
     }
 
@@ -209,7 +216,9 @@ static u8_t _gen_delta_analyze(struct bt_mesh_model *model, u16_t src_addr, stru
 
     target = _format_32to16(target);
     elem->state.gen_level[T_TAR] = (s16_t)target;
+#if CONFIG_MESH_MODEL_TRANS
     elem->state.trans = trans;
+
     elem->state.delay = delay;
     if(elem->state.trans) {
         elem->state.trans_start_time = k_uptime_get() + elem->state.delay*5;
@@ -219,7 +228,7 @@ static u8_t _gen_delta_analyze(struct bt_mesh_model *model, u16_t src_addr, stru
     BT_DBG("delta(0x%04x)(%d) tar_level(0x%04x) trans(0x%02x) delay(0x%02x)",
         delta, delta, elem->state.gen_level[T_TAR], elem->state.trans, elem->state.delay);
     BT_DBG("start(%d) end(%d)", (u32_t)elem->state.trans_start_time, (u32_t)elem->state.trans_end_time);
-
+#endif //CONFIG_MESH_MODEL_TRANS
     return MESH_SUCCESS;
 }
 
@@ -271,7 +280,9 @@ static u8_t _gen_level_move_analyze(struct bt_mesh_model *model, u16_t src_addr,
         trans = net_buf_simple_pull_u8(buf);
         delay = net_buf_simple_pull_u8(buf);
     } else {
+#if CONFIG_MESH_MODEL_TRANS
         trans = elem->powerup.def_trans;
+#endif //CONFIG_MESH_MODEL_TRANS
         delay = 0;
     }
 
@@ -297,6 +308,7 @@ static u8_t _gen_level_move_analyze(struct bt_mesh_model *model, u16_t src_addr,
     } else {
         elem->state.gen_level[T_TAR] = (s16_t)0x8000;
     }
+#if CONFIG_MESH_MODEL_TRANS
     elem->state.trans = trans;
     elem->state.delay = delay;
     if(elem->state.trans) {
@@ -307,7 +319,7 @@ static u8_t _gen_level_move_analyze(struct bt_mesh_model *model, u16_t src_addr,
     BT_DBG("delta_move(0x%04x)(%d) tar_level(0x%04x) trans(0x%02x) delay(0x%02x)",
         delta_move, delta_move, elem->state.gen_level[T_TAR], elem->state.trans, elem->state.delay);
     BT_DBG("start(%d) end(%d)", (u32_t)elem->state.trans_start_time, (u32_t)elem->state.trans_end_time);
-
+#endif //CONFIG_MESH_MODEL_TRANS
     return MESH_SUCCESS;
 }
 

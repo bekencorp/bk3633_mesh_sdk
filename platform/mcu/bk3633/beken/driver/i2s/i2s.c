@@ -147,7 +147,7 @@ static void i2s_set_level(i2s_level_t *p_level)
 
 void i2s_init(void)
 {
-    intc_service_register(IRQ_I2S_PCM, PRI_IRQ_I2S_PCM, i2s_isr);
+    // intc_service_register(IRQ_I2S_PCM, PRI_IRQ_I2S_PCM, i2s_isr);
     sddev_register_dev(I2S_DEV_NAME, &i2s_op);
 }
 

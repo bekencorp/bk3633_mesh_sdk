@@ -88,7 +88,7 @@ void adc_init()
 
 	printf("+++++++++%s+++++\n", __func__);
 	
-	intc_service_register(IRQ_ADC, PRI_IRQ_ADC, adc_isr);
+	// intc_service_register(IRQ_ADC, PRI_IRQ_ADC, adc_isr);
 
     sddev_register_dev(ADC_DEV_NAME, &adc_op);
 	

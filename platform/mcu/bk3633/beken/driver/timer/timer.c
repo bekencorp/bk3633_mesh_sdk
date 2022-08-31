@@ -194,8 +194,8 @@ static void timer_isr(void)
 
 void timer_init(void)
 {
-    intc_service_register(IRQ_TIMER0, PRI_FIQ_TIMER0, timer_isr);
-    intc_service_register(IRQ_TIMER1, PRI_FIQ_TIMER1, timer_isr);
+    //intc_service_register(IRQ_TIMER0, PRI_FIQ_TIMER0, timer_isr);
+    //intc_service_register(IRQ_TIMER1, PRI_FIQ_TIMER1, timer_isr);
 
     sddev_register_dev(TIMER_DEV_NAME, &timer_op);
 

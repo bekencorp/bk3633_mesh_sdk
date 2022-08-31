@@ -266,10 +266,12 @@ static void reset_link(void)
     link.rx.buf = rx_buf;
 #endif
 
+#ifdef CONFIG_BT_MESH_HEALTH_SVR
     /* Disable Attention Timer if it was set */
     if (link.conf_inputs[0]) {
         bt_mesh_attention(NULL, 0);
     }
+#endif //CONFIG_BT_MESH_HEALTH_SVR
 }
 
 void bt_mesh_prov_reset_link(void)
@@ -518,10 +520,11 @@ static void prov_invite(const u8_t *data)
     BT_DBG("Attention Duration: %u seconds", data[0]);
     PROV_D(", 1--->2");
 
+#ifdef CONFIG_BT_MESH_HEALTH_SVR
     if (data[0]) {
         bt_mesh_attention(NULL, data[0]);
     }
-
+#endif //CONFIG_BT_MESH_HEALTH_SVR
     link.conf_inputs[0] = data[0];
 
     prov_buf_init(buf, PROV_CAPABILITIES);
@@ -1162,7 +1165,9 @@ static void close_link(u8_t err, u8_t reason)
 
     /* Disable Attention Timer if it was set */
     if (link.conf_inputs[0]) {
+#ifdef CONFIG_BT_MESH_HEALTH_SVR
         bt_mesh_attention(NULL, 0);
+#endif //CONFIG_BT_MESH_HEALTH_SVR
     }
 }
 
@@ -1554,11 +1559,12 @@ int bt_mesh_pb_gatt_close(bt_mesh_conn_t conn)
         return -ENOTCONN;
     }
 
+#ifdef CONFIG_BT_MESH_HEALTH_SVR
     /* Disable Attention Timer if it was set */
     if (link.conf_inputs[0]) {
         bt_mesh_attention(NULL, 0);
     }
-
+#endif //CONFIG_BT_MESH_HEALTH_SVR
     if (prov->link_close) {
         prov->link_close(BT_MESH_PROV_GATT);
     }

@@ -44,8 +44,11 @@ E_GENIE_FLASH_ERRCODE genie_flash_write_trituple(uint32_t *p_pid, uint8_t *p_mac
     memcpy(data, p_pid, GENIE_SIZE_PID);
     memcpy(data+GENIE_SIZE_PID, p_key, GENIE_SIZE_KEY);
     memcpy(data+GENIE_SIZE_PID+GENIE_SIZE_KEY, p_mac, GENIE_SIZE_MAC);
-
+#if CONFIG_GENIE_FLASH_RELIABLE_OPERATE
     return genie_flash_write_reliable(GFI_MESH_TRITUPLE, data, GENIE_SIZE_TRI_TRUPLE);
+#else
+    return genie_flash_write_userdata(GFI_MESH_TRITUPLE, data, GENIE_SIZE_TRI_TRUPLE);
+#endif //CONFIG_GENIE_FLASH_RELIABLE_OPERATE
 }
 
 E_GENIE_FLASH_ERRCODE genie_flash_read_trituple(uint32_t *p_pid, uint8_t *p_mac,  uint8_t *p_key)

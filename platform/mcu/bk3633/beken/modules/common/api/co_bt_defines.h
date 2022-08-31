@@ -1323,7 +1323,7 @@ enum ble_feature
 #define DRIFT_BT_ACTIVE_MAX             20 // BB:2.2.5
 
 /// MAX LP Clock Jitter allowed by the specification (in us) (Core 4.2 - vol 6, -B - 4.2.2)
-#define BLE_MAX_JITTER              (16)
+#define BLE_MAX_JITTER              (160)
 
 /// Read Stored Link Key HCI:4.7.8
 #define LINK_KEY_BD_ADDR                0x00

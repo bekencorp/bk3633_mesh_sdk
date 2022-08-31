@@ -438,7 +438,11 @@ const struct bt_mesh_model_op g_hsl_setup_srv_op[HSL_SETUP_OPC_NUM] = {
 
 static void _hsl_hue_prepear_buf(struct bt_mesh_model *p_model, struct net_buf_simple *p_msg, bool is_ack)
 {
+#if CONFIG_MESH_MODEL_TRANS
     u8_t remain_byte = get_remain_byte(is_ack);
+#else
+    u8_t remain_byte = 0;
+#endif //CONFIG_MESH_MODEL_TRANS
     S_ELEM_STATE *p_elem = p_model->user_data;
 
     BT_DBG("hue_cur(0x%04x) hue_tar(0x%04x) remain(0x%02x)",
@@ -517,7 +521,7 @@ static u8_t _hsl_hue_analyze(struct bt_mesh_model *p_model,
     {
         model_bind_operation(B_HSL_HUE_ID, B_OPS_END_ID, p_elem);
     }
-
+#if CONFIG_MESH_MODEL_TRANS
     p_elem->state.trans = trans?trans:p_elem->powerup.def_trans;
     p_elem->state.delay = delay;
     if(p_elem->state.trans) {
@@ -526,7 +530,7 @@ static u8_t _hsl_hue_analyze(struct bt_mesh_model *p_model,
 
     BT_DBG("hue(0x%04x) trans(0x%02x) delay(0x%02x)",
             p_elem->state.hsl_hue[T_TAR], p_elem->state.trans, p_elem->state.delay);
-
+#endif //CONFIG_MESH_MODEL_TRANS
     return MESH_SUCCESS;
 }
 
@@ -584,7 +588,11 @@ const struct bt_mesh_model_op g_hsl_hue_srv_op[HSL_HUE_OPC_NUM] = {
 
 static void _hsl_sat_prepear_buf(struct bt_mesh_model *p_model, struct net_buf_simple *p_msg, bool is_ack)
 {
+#if CONFIG_MESH_MODEL_TRANS
     u8_t remain_byte = get_remain_byte(is_ack);
+#else
+    u8_t remain_byte = 0;
+#endif //CONFIG_MESH_MODEL_TRANS
     S_ELEM_STATE *p_elem = p_model->user_data;
 
     BT_DBG("sat_cur(0x%04x) sat_tar(0x%04x) remain(0x%02x)",
@@ -662,7 +670,7 @@ static u8_t _hsl_sat_analyze(struct bt_mesh_model *p_model, u16_t src_addr, stru
     {
         model_bind_operation(B_HSL_SAT_ID, B_OPS_END_ID, p_elem);
     }
-
+#if CONFIG_MESH_MODEL_TRANS
     p_elem->state.trans = trans?trans:p_elem->powerup.def_trans;
     p_elem->state.delay = delay;
     if(p_elem->state.trans) {
@@ -671,7 +679,7 @@ static u8_t _hsl_sat_analyze(struct bt_mesh_model *p_model, u16_t src_addr, stru
 
     BT_DBG("sat(0x%04x) trans(0x%02x) delay(0x%02x)",
             p_elem->state.hsl_sat[T_TAR], p_elem->state.trans, p_elem->state.delay);
-
+#endif //CONFIG_MESH_MODEL_TRANS
     return MESH_SUCCESS;
 }
 

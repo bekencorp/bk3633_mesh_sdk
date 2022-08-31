@@ -405,8 +405,11 @@ const struct bt_mesh_model_op g_ctl_setup_srv_op[CTL_SETUP_OPC_NUM] = {
 static void _ctl_temp_prepear_buf(struct bt_mesh_model *p_model, struct net_buf_simple *p_msg, bool is_ack)
 {
     S_MODEL_STATE *p_state = &((S_ELEM_STATE *)p_model->user_data)->state;
+#if CONFIG_MESH_MODEL_TRANS
     u8_t remain_byte = get_remain_byte(is_ack);
-
+#else
+    u8_t remain_byte = 0;
+#endif //#if CONFIG_MESH_MODEL_TRANS
     BT_DBG("cur_temp(0x%04x) tar_temp(0x%04x) uv(0x%04x) uv(0x%04x) remain(0x%02x)",
             p_state->ctl_temp[T_CUR], p_state->ctl_temp[T_TAR],
             p_state->ctl_UV[T_CUR], p_state->ctl_UV[T_TAR], remain_byte);
@@ -491,7 +494,7 @@ static u8_t _ctl_temp_analyze(struct bt_mesh_model *p_model, u16_t src_addr, str
 
     p_elem->state.ctl_temp[T_TAR] = temp;
     p_elem->state.ctl_UV[T_TAR] = uv;
-
+#ifdef CONFIG_MESH_MODEL_TRANS
     p_elem->state.trans = trans?trans:p_elem->powerup.def_trans;
     p_elem->state.delay = delay;
     if(p_elem->state.trans) {
@@ -501,7 +504,7 @@ static u8_t _ctl_temp_analyze(struct bt_mesh_model *p_model, u16_t src_addr, str
     BT_DBG("temp(0x%04x) uv(0x%04x) trans(0x%02x) delay(0x%02x)",
             p_elem->state.ctl_temp[T_TAR], p_elem->state.ctl_UV[T_TAR],
             p_elem->state.trans, p_elem->state.delay);
-
+#endif //CONFIG_MESH_MODEL_TRANS
     if(p_elem->state.ctl_temp[T_CUR] != p_elem->state.ctl_temp[T_TAR])
     {
         model_bind_operation(B_LIGHT_CTL_TEMP_ID, B_OPS_END_ID, p_elem);
@@ -533,14 +536,14 @@ static void _ctl_temp_transition(struct bt_mesh_model *p_model)
     S_ELEM_STATE *p_elem = NULL;
 
     p_elem = p_model->user_data;
-
+#if CONFIG_MESH_MODEL_TRANS
     BT_DBG("trans %d", get_transition_time(p_elem->state.trans));
     aos_msleep(get_transition_time(p_elem->state.trans));
     BT_DBG("trans end");
 
     p_elem->state.trans = 0;
     p_elem->state.trans_start_time = 0;
-
+#endif //CONFIG_MESH_MODEL_TRANS
     _ctl_temp_done(p_model);
     //mesh_publication(p_model->elem, MESH_PUB_CTL_TEMP);
 }
@@ -551,9 +554,10 @@ static void _ctl_temp_delay(struct bt_mesh_model *p_model)
     S_ELEM_STATE *p_elem = NULL;
 
     p_elem = p_model->user_data;
-
+#if CONFIG_MESH_MODEL_TRANS
     BT_DBG("delay %d", p_elem->state.delay*5);
     aos_msleep(p_elem->state.delay*5);
+
     BT_DBG("delay end");
 
     p_elem->state.delay = 0;
@@ -561,10 +565,10 @@ static void _ctl_temp_delay(struct bt_mesh_model *p_model)
     if(p_elem->state.trans == 0) {
         _ctl_temp_done(p_model);
        // mesh_publication(p_model->elem, MESH_PUB_CTL_TEMP);
-    }
-    else {
+    } else {
         aos_schedule_call(_ctl_temp_transition, p_model);
     }
+#endif // CONFIG_MESH_MODEL_TRANS
 }
 
 static bool _ctl_temp_action(struct bt_mesh_model *p_model)
@@ -572,7 +576,7 @@ static bool _ctl_temp_action(struct bt_mesh_model *p_model)
     S_ELEM_STATE *p_elem = NULL;
 
     p_elem = p_model->user_data;
-
+#if CONFIG_MESH_MODEL_TRANS
     if(p_elem->state.trans || p_elem->state.delay) {
         if(p_elem->state.delay) {
             aos_schedule_call(_ctl_temp_delay, p_model);
@@ -586,6 +590,7 @@ static bool _ctl_temp_action(struct bt_mesh_model *p_model)
         _ctl_temp_done(p_model);
         return 1;
     }
+#endif //CONFIG_MESH_MODEL_TRANS
 }
 
 void ctl_temp_publication(struct bt_mesh_model *p_model)

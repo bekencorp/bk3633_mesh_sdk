@@ -367,7 +367,7 @@ static void spi_init_msten(UINT8 msten)
 void spi_init(void)
 {
     SPI_PRT("%s, %d \r\n", __func__, __LINE__);
-    intc_service_register(IRQ_SPI, PRI_IRQ_SPI, spi_isr);
+    //intc_service_register(IRQ_SPI, PRI_IRQ_SPI, spi_isr);
 
     ddev_register_dev(SPI_DEV_NAME, &spi_op);
 

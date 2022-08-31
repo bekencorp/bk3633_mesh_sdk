@@ -76,8 +76,9 @@ struct k_delayed_work light_state_store_work;
 
 static struct bt_mesh_model root_models[] = {
     BT_MESH_MODEL_CFG_SRV(),
+#ifdef CONFIG_BT_MESH_HEALTH_SVR
     BT_MESH_MODEL_HEALTH_SRV(),
-
+#endif
 #ifdef CONFIG_MESH_MODEL_GEN_ONOFF_SRV
     MESH_MODEL_GEN_ONOFF_SRV(&g_elem_state[0]),
 #endif
@@ -230,11 +231,13 @@ static void _reset_light_para(void)
         g_elem_state[i].state.onoff[T_TAR] = GEN_ONOFF_DEFAULT;
         g_elem_state[i].state.light_ln_actual[T_TAR] = LIGHTNESS_DEFAULT;
         g_elem_state[i].state.ctl_temp[T_TAR] = CTL_TEMP_DEFAULT;
+#if CONFIG_MESH_MODEL_TRANS
         g_elem_state[i].state.trans = 0;
+
         g_elem_state[i].state.delay = 0;
         g_elem_state[i].state.trans_start_time = 0;
         g_elem_state[i].state.trans_end_time = 0;
-
+#endif //CONFIG_MESH_MODEL_TRANS
         g_elem_state[i].powerup.light_ln_last = LIGHTNESS_DEFAULT;
         g_elem_state[i].powerup.ctl_temp_last = CTL_TEMP_DEFAULT;
 
@@ -415,7 +418,6 @@ static void _save_light_state(S_ELEM_STATE *p_elem)
     p_elem->message_index = MM_INDEX_NONE;
 
     k_delayed_work_submit(&light_state_store_work, LIGHT_STATE_STORE_DELAY_TIME);
-
 }
 
 static led_func_ret_e _led_ctrl(S_ELEM_STATE *p_elem)
@@ -485,6 +487,7 @@ static void _led_flash_timer_cb(void *p_timer, void *p_arg)
     }
 }
 
+#ifdef CONFIG_LIGHT_LED_FLASH
 void _led_flash(uint8_t times, uint8_t reset)
 {
     static uint8_t inited = 0;
@@ -535,6 +538,7 @@ void _led_flash(uint8_t times, uint8_t reset)
 
     k_timer_start(&g_flash_para.timer, LED_FLASH_CYCLE);
 }
+#endif //CONFIG_LIGHT_LED_FLASH
 
 static void _user_init(void)
 {
@@ -549,8 +553,10 @@ void user_event(E_GENIE_EVENT event, void *p_arg)
     switch(event) {
         case GENIE_EVT_SW_RESET:
         case GENIE_EVT_HW_RESET_START:
+#if CONFIG_LIGHT_LED_FLASH
             BT_DBG_R("FLASH x5");
             _led_flash(5, 1);
+#endif //CONFIG_LIGHT_LED_FLASH
             break;
         case GENIE_EVT_HW_RESET_DONE:
             _reset_light_para();
@@ -560,10 +566,14 @@ void user_event(E_GENIE_EVENT event, void *p_arg)
             _user_init();
             break;
         case GENIE_EVT_SDK_MESH_PROV_SUCCESS:
+#if CONFIG_LIGHT_LED_FLASH
             BT_DBG_R("FLASH x3");
             _led_flash(3, 0);
+#endif //CONFIG_LIGHT_LED_FLASH
             break;
+#ifdef CONFIG_MESH_MODEL_TRANS
         case GENIE_EVT_SDK_TRANS_CYCLE:
+#endif //CONFIG_MESH_MODEL_TRANS
         case GENIE_EVT_SDK_ACTION_DONE:
         {
             S_ELEM_STATE *p_elem = (S_ELEM_STATE *)p_arg;

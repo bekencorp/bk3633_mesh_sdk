@@ -343,7 +343,7 @@ void ble_handler(void *arg)
     }
 
     //intc_service_register(FIQ_BLE, PRI_FIQ_BLE, rwip_func.rwble_isr);
-	intc_service_register(FIQ_BTDM, 20, rwip_func.rwip_isr);
+	//intc_service_register(FIQ_BTDM, 20, rwip_func.rwip_isr);
     intc_enable(FIQ_BTDM);
     intc_enable(FIQ_BLE);
 	printf("%s \n", __func__);

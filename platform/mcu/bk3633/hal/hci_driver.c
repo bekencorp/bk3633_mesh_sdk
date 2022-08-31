@@ -443,7 +443,7 @@ static int hci_driver_open(void)
 }
 
 
-static struct bt_hci_driver drv = {
+static const struct bt_hci_driver drv = {
     .name   = "bk3633 Controller",
     .bus    = BT_HCI_DRIVER_BUS_VIRTUAL,
     .open   = hci_driver_open,

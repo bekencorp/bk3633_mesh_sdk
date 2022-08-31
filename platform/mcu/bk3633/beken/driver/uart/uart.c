@@ -595,7 +595,7 @@ void uart1_init(void)
 
     ddev_register_dev(UART1_DEV_NAME, &uart1_op);
 
-    intc_service_register(IRQ_UART1, PRI_IRQ_UART1, uart1_isr);
+    //intc_service_register(IRQ_UART1, PRI_IRQ_UART1, uart1_isr);
 
     param = CLK_PWR_DEV_UART1;
     sddev_control(ICU_DEV_NAME, CMD_CLK_PWR_UP, &param);
@@ -855,7 +855,7 @@ void uart2_init(void)
 
     ddev_register_dev(UART2_DEV_NAME, &uart2_op);
 
-    intc_service_register(IRQ_UART2, PRI_IRQ_UART2, uart2_isr);
+    //intc_service_register(IRQ_UART2, PRI_IRQ_UART2, uart2_isr);
 
     param = CLK_PWR_DEV_UART2;
     sddev_control(ICU_DEV_NAME, CMD_CLK_PWR_UP, &param);

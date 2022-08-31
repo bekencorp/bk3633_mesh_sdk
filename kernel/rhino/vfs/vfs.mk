@@ -24,6 +24,6 @@ GLOBAL_DEFINES      += __BSD_VISIBLE
 endif
 
 GLOBAL_INCLUDES     += include
-GLOBAL_DEFINES      += AOS_VFS
+#GLOBAL_DEFINES      += AOS_VFS
 
 $(NAME)_COMPONENTS  += kernel.rhino.vfs.device

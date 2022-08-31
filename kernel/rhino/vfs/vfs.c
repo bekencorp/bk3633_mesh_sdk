@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2015-2017 Alibaba Group Holding Limited
  */
-
+#ifdef AOS_VFS
 #include <aos/aos.h>
 #include <vfs_conf.h>
 #include <vfs_err.h>
@@ -791,4 +791,4 @@ int aos_access(const char *path, int amode)
     krhino_mutex_unlock(&g_vfs_mutex);
     return ret;
 }
-
+#endif //AOS_VFS

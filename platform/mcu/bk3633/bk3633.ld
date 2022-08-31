@@ -125,8 +125,8 @@ SECTIONS
    Typically you set this to be top of your RAM. Note: code never checks, if stack
    grows into heap area!
 */
-	PROVIDE(_stack_unused      = 0x0040FFFC - 0x5F0 - 0x8F0 - 0x8F0 - 0x10); /* 0x10*/
-	PROVIDE(_stack_irq         = 0x0040FFFC - 0x5F0 - 0x8F0 - 0x8F0); /* 0xFF0*/
+	PROVIDE(_stack_unused      = 0x0040FFFC - 0x5F0 - 0x8F0 - 0x10); /* 0x10*/
+	PROVIDE(_stack_irq         = 0x0040FFFC - 0x5F0 - 0x8F0); /* 0xFF0*/
 	PROVIDE(_stack_fiq         = 0x0040FFFC - 0x5F0 - 0x8F0); /* 0x7F0*/
 	PROVIDE(_stack_svc         = 0x0040FFFC - 0x5F0); /* 0x3F0*/
 	PROVIDE(_stack_sys         = 0x0040FFFC - 0x5F0); /* 0x3F0*/

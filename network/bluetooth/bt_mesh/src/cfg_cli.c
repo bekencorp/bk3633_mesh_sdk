@@ -467,7 +467,9 @@ const struct bt_mesh_model_op bt_mesh_cfg_cli_op[] = {
 	{ OP_DEV_COMP_DATA_STATUS,   15,  comp_data_status },
 	{ OP_BEACON_STATUS,          1,   beacon_status },
 	{ OP_DEFAULT_TTL_STATUS,     1,   ttl_status },
+#ifdef CONFIG_BT_MESH_FRIEND
 	{ OP_FRIEND_STATUS,          1,   friend_status },
+#endif //CONFIG_BT_MESH_FRIEND
 	{ OP_GATT_PROXY_STATUS,      1,   gatt_proxy_status },
 	{ OP_RELAY_STATUS,           2,   relay_status },
 	{ OP_NET_KEY_STATUS,         3,   net_key_status },
@@ -1513,6 +1515,7 @@ int bt_mesh_cfg_network_transmit_set(u16_t net_idx, u16_t addr, u8_t transmit, u
 	return cli_wait(&param, OP_NET_TRANSMIT_STATUS);
 }
 
+#ifdef CONFIG_BT_MESH_LOW_POWER
 int bt_mesh_cfg_lpn_timeout_get(u16_t net_idx, u16_t addr, u16_t lpn_addr, u8_t *status)
 {
 	struct net_buf_simple *msg = NET_BUF_SIMPLE(2 + 2 + 4);
@@ -1551,6 +1554,7 @@ int bt_mesh_cfg_lpn_timeout_get(u16_t net_idx, u16_t addr, u16_t lpn_addr, u8_t 
 
 	return cli_wait(&param, OP_LPN_TIMEOUT_STATUS);
 }
+#endif //CONFIG_BT_MESH_LOW_POWER
 
 static int mod_sub(u32_t op, u16_t net_idx, u16_t addr, u16_t elem_addr,
 		   u16_t sub_addr, u16_t mod_id, u16_t cid, u8_t *status)

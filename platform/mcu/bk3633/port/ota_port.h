@@ -17,7 +17,7 @@
 
 typedef struct
 {
-    uint32_t crc_table[256];
+    uint32_t *crc_table;
     uint32_t crc;
 } CRC32_Context;
 

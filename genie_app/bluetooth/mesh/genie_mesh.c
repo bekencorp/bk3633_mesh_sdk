@@ -1145,8 +1145,8 @@ uint8_t get_remain_byte(S_MODEL_STATE *p_state, bool is_ack)
 
     return remain_byte;
 }
-#endif
 
+#endif
 #define RECV_MSG_TID_QUEUE_SIZE 5
 
 #define TMALL_GENIE_UADDR_START 0x0001

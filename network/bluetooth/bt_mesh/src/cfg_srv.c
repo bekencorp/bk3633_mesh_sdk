@@ -1172,6 +1172,7 @@ send_status:
                 status, mod_id);
 }
 
+#ifdef CONFIG_MESH_VIRTUAL_ADDR
 #if CONFIG_BT_MESH_LABEL_COUNT > 0
 static u16_t va_find(u8_t *label_uuid, struct label **free_slot)
 {
@@ -1327,6 +1328,7 @@ send_status:
                 status, mod_id);
 }
 #endif /* CONFIG_BT_MESH_LABEL_COUNT > 0 */
+#endif //CONFIG_MESH_VIRTUAL_ADDR
 
 static void send_mod_sub_status(struct bt_mesh_model *model,
                 struct bt_mesh_msg_ctx *ctx, u8_t status,
@@ -1744,6 +1746,7 @@ send_list:
     }
 }
 
+#ifdef CONFIG_MESH_VIRTUAL_ADDR
 #if CONFIG_BT_MESH_LABEL_COUNT > 0
 static void mod_sub_va_add(struct bt_mesh_model *model,
                struct bt_mesh_msg_ctx *ctx,
@@ -2034,6 +2037,7 @@ send_status:
                 BT_MESH_ADDR_UNASSIGNED, mod_id, vnd);
 }
 #endif /* CONFIG_BT_MESH_LABEL_COUNT > 0 */
+#endif //CONFIG_MESH_VIRTUAL_ADDR
 
 static void send_net_key_status(struct bt_mesh_model *model,
                 struct bt_mesh_msg_ctx *ctx,
@@ -2616,6 +2620,7 @@ static void node_reset(struct bt_mesh_model *model,
 
 }
 
+#ifdef CONFIG_BT_MESH_FRIEND
 static void send_friend_status(struct bt_mesh_model *model,
                    struct bt_mesh_msg_ctx *ctx)
 {
@@ -2685,7 +2690,9 @@ static void friend_set(struct bt_mesh_model *model,
 send_status:
     send_friend_status(model, ctx);
 }
+#endif //CONFIG_BT_MESH_FRIEND
 
+#ifdef CONFIG_BT_MESH_LOW_POWER
 static void lpn_timeout_get(struct bt_mesh_model *model,
                 struct bt_mesh_msg_ctx *ctx,
                 struct net_buf_simple *buf)
@@ -2731,6 +2738,7 @@ send_rsp:
         BT_ERR("Unable to send LPN PollTimeout Status");
     }
 }
+#endif //CONFIG_BT_MESH_LOW_POWER
 
 static void send_krp_status(struct bt_mesh_model *model,
                 struct bt_mesh_msg_ctx *ctx,
@@ -3214,13 +3222,21 @@ const struct bt_mesh_model_op bt_mesh_cfg_srv_op[] = {
     { OP_RELAY_SET,                2,   relay_set },
     { OP_MOD_PUB_GET,              4,   mod_pub_get },
     { OP_MOD_PUB_SET,              11,  mod_pub_set },
+#ifdef CONFIG_MESH_VIRTUAL_ADDR
     { OP_MOD_PUB_VA_SET,           24,  mod_pub_va_set },
+#endif //CONFIG_MESH_VIRTUAL_ADDR
     { OP_MOD_SUB_ADD,              6,   mod_sub_add },
+#ifdef CONFIG_MESH_VIRTUAL_ADDR
     { OP_MOD_SUB_VA_ADD,           20,  mod_sub_va_add },
+#endif //CONFIG_MESH_VIRTUAL_ADDR
     { OP_MOD_SUB_DEL,              6,   mod_sub_del },
+#ifdef CONFIG_MESH_VIRTUAL_ADDR
     { OP_MOD_SUB_VA_DEL,           20,  mod_sub_va_del },
+#endif //CONFIG_MESH_VIRTUAL_ADDR
     { OP_MOD_SUB_OVERWRITE,        6,   mod_sub_overwrite },
+#ifdef CONFIG_MESH_VIRTUAL_ADDR
     { OP_MOD_SUB_VA_OVERWRITE,     20,  mod_sub_va_overwrite },
+#endif //CONFIG_MESH_VIRTUAL_ADDR
     { OP_MOD_SUB_DEL_ALL,          4,   mod_sub_del_all },
     { OP_MOD_SUB_GET,              4,   mod_sub_get },
     { OP_MOD_SUB_GET_VND,          6,   mod_sub_get_vnd },
@@ -3235,9 +3251,13 @@ const struct bt_mesh_model_op bt_mesh_cfg_srv_op[] = {
     { OP_SIG_MOD_APP_GET,          4,   mod_app_get },
     { OP_VND_MOD_APP_GET,          6,   mod_app_get },
     { OP_NODE_RESET,               0,   node_reset },
+#ifdef CONFIG_BT_MESH_FRIEND
     { OP_FRIEND_GET,               0,   friend_get },
     { OP_FRIEND_SET,               1,   friend_set },
+#endif //CONFIG_BT_MESH_FRIEND
+#ifdef CONFIG_BT_MESH_LOW_POWER
     { OP_LPN_TIMEOUT_GET,          2,   lpn_timeout_get },
+#endif //CONFIG_BT_MESH_LOW_POWER
     { OP_KRP_GET,                  2,   krp_get },
     { OP_KRP_SET,                  3,   krp_set },
     { OP_HEARTBEAT_PUB_GET,        0,   heartbeat_pub_get },

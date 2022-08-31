@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2015-2017 Alibaba Group Holding Limited
  */
-
+#ifdef AOS_KV
 #include "kvmgr.h"
 #include "kv_defs.h"
 
@@ -995,3 +995,4 @@ void aos_kv_deinit(void)
     kv_os_sem_del(&(g_kv_mgr.gc_sem));
     kv_os_mutex_del(&(g_kv_mgr.mutex));
 }
+#endif //AOS_KV

@@ -197,7 +197,11 @@ static void _lightness_set_unack(struct bt_mesh_model *p_model,
  * */
 static void _lightness_linear_prepare_buf(struct bt_mesh_model *p_model, struct net_buf_simple *p_msg, bool is_ack)
 {
+#if CONFIG_MESH_MODEL_TRANS
     u8_t remain_byte = get_remain_byte(is_ack);
+#else
+    u8_t remain_byte = 0;
+#endif //CONFIG_MESH_MODEL_TRANS
     S_MODEL_STATE *p_state = &((S_ELEM_STATE *)p_model->user_data)->state;
 
     if (!p_model || !p_model->user_data || !p_msg) return;
@@ -285,7 +289,7 @@ static E_MESH_ERROR_TYPE _lightness_linear_analyze(struct bt_mesh_model *p_model
     {
         model_bind_operation(B_LIGHTNESS_LINEAR_ID, B_OPS_END_ID, p_elem);
     } 
-
+#if CONFIG_MESH_MODEL_TRANS
     p_state->trans = l_trans ? l_trans : p_elem->powerup.def_trans;
     p_state->delay = l_delay;
     if(p_state->trans) {
@@ -294,7 +298,7 @@ static E_MESH_ERROR_TYPE _lightness_linear_analyze(struct bt_mesh_model *p_model
 
     BT_DBG("tar_linear(0x%04x) trans(0x%02x) delay(0x%02x)",
         p_state->light_ln_linear[T_TAR], p_state->trans, p_state->delay);
-
+#endif //CONFIG_MESH_MODEL_TRANS
     return MESH_SUCCESS;
 }
 
