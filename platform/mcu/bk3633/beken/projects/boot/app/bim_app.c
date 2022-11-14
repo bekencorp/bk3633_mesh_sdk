@@ -99,6 +99,7 @@ void reset_register_dump(void)
 void bim_main(void)	
 {
     icu_init();
+    mcu_clk_switch(MCU_CLK_80M);//run in 80M for Initialization optimization
     updata_memset32((uint8 *)0x00400000, 0, 1);
     wdt_disable();
     //uart2_init(1000000);

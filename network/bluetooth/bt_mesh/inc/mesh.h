@@ -24,4 +24,8 @@
 struct bt_mesh_net;
 
 bool bt_mesh_is_provisioned(void);
+#ifdef CONFIG_NETWORK_CHANGE
+bool bt_mesh_is_user_provisioned(void);
+#endif
+
 #endif

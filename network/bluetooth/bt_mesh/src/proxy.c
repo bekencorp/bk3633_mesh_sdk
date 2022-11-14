@@ -1336,7 +1336,12 @@ s32_t bt_mesh_proxy_adv_start(void)
     }
 
 #if defined(CONFIG_BT_MESH_PB_GATT)
-    if (!bt_mesh_is_provisioned() && !bt_prov_active()) {
+#ifdef CONFIG_NETWORK_CHANGE
+    if ((!bt_mesh_is_provisioned() || !bt_mesh_is_user_provisioned()) && !bt_prov_active()) 
+#else
+    if (!bt_mesh_is_provisioned() && !bt_prov_active()) 
+#endif
+	{
         const struct bt_mesh_le_adv_param *param;
 
         if (prov_fast_adv) {
@@ -1489,7 +1494,12 @@ void bt_mesh_proxy_adv_process(void)
     int timeout = 0;
 
 #if defined(CONFIG_BT_MESH_PB_GATT)
-    if (!bt_mesh_is_provisioned() && !bt_prov_active()) {
+#ifdef CONFIG_NETWORK_CHANGE
+	if ((!bt_mesh_is_provisioned() || !bt_mesh_is_user_provisioned())&& !bt_prov_active())
+#else
+    if (!bt_mesh_is_provisioned() && !bt_prov_active()) 
+#endif
+	{
         const struct bt_mesh_le_adv_param *param;
         int intant_id;
 

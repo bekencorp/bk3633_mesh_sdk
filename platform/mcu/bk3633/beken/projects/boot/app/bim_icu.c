@@ -32,3 +32,27 @@ void icu_init(void)
     addSYS_Reg0x17 = 0x82;
 #endif
 }
+void mcu_clk_switch(uint8_t clk)
+{
+    switch(clk)
+    {
+        case MCU_CLK_16M:
+        {   
+            set_SYS_Reg0x2_core_div(0x1);
+            set_SYS_Reg0x2_core_sel(0x01);
+        }break;
+        case MCU_CLK_80M:
+        {   
+            clrf_SYS_Reg0x17_CLK96M_PWD;
+            set_SYS_Reg0x2_core_div(0x1);            
+            set_SYS_Reg0x2_core_sel(0x03);
+        }break;
+        case MCU_CLK_64M:
+        {
+            clrf_SYS_Reg0x17_CLK96M_PWD;           
+            set_SYS_Reg0x2_core_div(0x1);            
+            set_SYS_Reg0x2_core_sel(0x03);
+        }break; 
+        default:break;
+    }
+}

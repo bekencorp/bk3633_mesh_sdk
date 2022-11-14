@@ -96,8 +96,21 @@ typedef enum {
 
 } led_func_ret_e;
 
+#ifdef CONFIG_NETWORK_CHANGE
+typedef struct{	
+uint8_t	 flag;
+uint8_t  light_net_key[16];
+} light_net_key_para;
+#endif
 extern S_MODEL_POWERUP g_powerup[MESH_ELEM_STATE_COUNT];
 extern S_ELEM_STATE g_elem_state[MESH_ELEM_STATE_COUNT];
+
+
+typedef enum {
+    USER_NET_TYPE_DEF = 0,
+	USER_NET_TYPE_APP,
+    USER_NET_TYPE_RC_CONF,
+} user_net_type_e;
 
 
 int led_startup(void);

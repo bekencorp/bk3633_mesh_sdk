@@ -333,28 +333,27 @@ void ble_handler(void *arg)
     {
         // Set the BDADDR
     	rwip_func.rwip_set_bd_address(hdr_arg->public_addr);
-    	printf("set ble bd addr: %02X:%02X:%02X:%02X:%02X:%02X\r\n",
-				hdr_arg->public_addr->addr[5],
-				hdr_arg->public_addr->addr[4],
-				hdr_arg->public_addr->addr[3],
-				hdr_arg->public_addr->addr[2],
-				hdr_arg->public_addr->addr[1],
-				hdr_arg->public_addr->addr[0]);
+    	// printf("set ble bd addr: %02X:%02X:%02X:%02X:%02X:%02X\r\n",
+		// 		hdr_arg->public_addr->addr[5],
+		// 		hdr_arg->public_addr->addr[4],
+		// 		hdr_arg->public_addr->addr[3],
+		// 		hdr_arg->public_addr->addr[2],
+		// 		hdr_arg->public_addr->addr[1],
+		// 		hdr_arg->public_addr->addr[0]);
     }
 
     //intc_service_register(FIQ_BLE, PRI_FIQ_BLE, rwip_func.rwble_isr);
-	intc_service_register(FIQ_BTDM, 20, rwip_func.rwip_isr);
+	//intc_service_register(FIQ_BTDM, 20, rwip_func.rwip_isr);
     intc_enable(FIQ_BTDM);
     intc_enable(FIQ_BLE);
-	printf("%s \n", __func__);
+	// printf("%s \n", __func__);
 
     /*
      ***************************************************************************
      * Main loop
      ***************************************************************************
      */
-	UART_PRINTF("ble driver start!\r\n");
-    printf("ble driver start, EM_BLE_END 0x%x!\r\n", EM_BLE_END);
+    // printf("ble driver start, EM_BLE_END 0x%x!\r\n", EM_BLE_END);//note it for Initialization optimization
     krhino_add_mm_region(g_kmm_head, 
                         (void *)(REG_EM_ET_BASE_ADDR + EM_BLE_END + 1), (size_t)(EM_BT_SIZE -  EM_BLE_END - 4));
 
@@ -400,7 +399,7 @@ void print_exception_addr(unsigned int pc, unsigned int lr, unsigned int sp)
  */
 void soc_system_init(void)
 {
-	os_printf("%s \r\n", __func__);
+	// os_printf("%s \r\n", __func__);
     func_init();
     hal_init();
 }

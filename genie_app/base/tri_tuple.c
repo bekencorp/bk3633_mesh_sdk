@@ -44,8 +44,11 @@ E_GENIE_FLASH_ERRCODE genie_flash_write_trituple(uint32_t *p_pid, uint8_t *p_mac
     memcpy(data, p_pid, GENIE_SIZE_PID);
     memcpy(data+GENIE_SIZE_PID, p_key, GENIE_SIZE_KEY);
     memcpy(data+GENIE_SIZE_PID+GENIE_SIZE_KEY, p_mac, GENIE_SIZE_MAC);
-
+#if CONFIG_GENIE_FLASH_RELIABLE_OPERATE
     return genie_flash_write_reliable(GFI_MESH_TRITUPLE, data, GENIE_SIZE_TRI_TRUPLE);
+#else
+    return genie_flash_write_userdata(GFI_MESH_TRITUPLE, data, GENIE_SIZE_TRI_TRUPLE);
+#endif //CONFIG_GENIE_FLASH_RELIABLE_OPERATE
 }
 
 E_GENIE_FLASH_ERRCODE genie_flash_read_trituple(uint32_t *p_pid, uint8_t *p_mac,  uint8_t *p_key)
@@ -89,8 +92,6 @@ uint8_t *genie_tri_tuple_get_uuid(void)
        memcmp(addr, dummy_addr, sizeof(addr)) != 0)
     {
         memcpy(g_mac, addr, 6);
-        printf("read sec, addr:%02x : %02x: %02x : %02x : %02x: %02x\n",
-           addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
     }
     else
     {
@@ -352,6 +353,22 @@ void genie_tri_tuple_show(void)
     }
     printk("\n" F_END);
 }
+
+#ifdef CONFIG_NETWORK_CHANGE
+uint16 genie_tri_get_addr()
+{   
+    uint16 addr = 0;
+	genie_tri_tuple_show();	
+    addr = (uint16)((g_mac[1] << 8) | (g_mac[0]));
+	addr = addr&0x7fff;
+	if(addr ==0)
+	{
+		addr =1;
+	}
+	printk("addr=%x\n", addr);
+    return addr;
+}
+#endif
 
 #ifdef GENIE_ULTRA_PROV
 #include "mesh_crypto.h"

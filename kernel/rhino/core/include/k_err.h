@@ -91,6 +91,10 @@ extern krhino_err_proc_t g_err_proc;
 
 extern void k_err_proc_debug(kstat_t err, char *file, int line);
 
+#if CONFIG_ERR_PROC_DEBUG
 #define k_err_proc(err) k_err_proc_debug(err, __FILE__, __LINE__)
+#else
+#define k_err_proc(err) //Do nothing if the error process debug macro is disable.
+#endif //CONFIG_ERR_PROC_DEBUG
 
 #endif /* K_ERR_H */

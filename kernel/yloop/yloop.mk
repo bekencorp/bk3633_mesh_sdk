@@ -17,7 +17,7 @@ else ifeq ($(COMPILER),gcc)
 $(NAME)_CFLAGS      += -Wall -Werror
 endif
 
-GLOBAL_DEFINES      += AOS_LOOP
+#GLOBAL_DEFINES      += AOS_LOOP
 GLOBAL_INCLUDES     += include
 
 ifeq ($(COMPILER),armcc)

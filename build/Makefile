@@ -268,7 +268,7 @@ main_app: $(OUTPUT_DIR)/config.mk $(YOS_SDK_PRE_APP_BUILDS) $(MAKEFILES_PATH)/ao
 	$(QUIET)$(ECHO) TOOLCHAIN_PATH=$(TOOLCHAIN_PATH)
 	$(QUIET)$(call MKDIR, $(OUTPUT_DIR)/binary)
 	$(QUIET)$(call MKDIR, $(OUTPUT_DIR)/modules)
-	$(call MKDIR, $(OUTPUT_DIR)/libraries)
+	$(QUIET)$(call MKDIR, $(OUTPUT_DIR)/libraries)
 	$(QUIET)$(call MKDIR, $(OUTPUT_DIR)/resources)
 	$(QUIET)$(PYTHON) $(MAKEFILES_PATH)/scripts/gen_auto_code.py $(OUTPUT_DIR)/config.mk $(AUTO_COMPONENT_DIR)
 	cp "$(SOURCE_ROOT)network/bluetooth/bt_host/bt_common/lib/bt_common.a" "$(OUTPUT_DIR)/libraries/bt_common.a" -f -u 
@@ -281,7 +281,7 @@ main_app: $(OUTPUT_DIR)/config.mk $(MAKEFILES_PATH)/aos_target_build_mbins.mk
 	$(QUIET)$(ECHO) TOOLCHAIN_PATH=$(TOOLCHAIN_PATH)
 	$(QUIET)$(call MKDIR, $(OUTPUT_DIR)/binary)
 	$(QUIET)$(call MKDIR, $(OUTPUT_DIR)/modules)
-	$(call MKDIR, $(OUTPUT_DIR)/libraries)
+	$(QUIET)$(call MKDIR, $(OUTPUT_DIR)/libraries)
 	$(QUIET)$(call MKDIR, $(OUTPUT_DIR)/resources)
 	$(QUIET)$(PYTHON) $(MAKEFILES_PATH)/scripts/gen_auto_code.py $(OUTPUT_DIR)/config.mk $(AUTO_COMPONENT_DIR)
 	cp "$(SOURCE_ROOT)network/bluetooth/bt_host/bt_common/lib/bt_common.a" "$(OUTPUT_DIR)/libraries/bt_common.a" -f -u 

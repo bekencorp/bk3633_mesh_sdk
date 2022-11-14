@@ -3469,16 +3469,16 @@ static bool le_sc_supported(void)
            (bt_dev.supported_commands[34] & 0x04);
 }
 
-int bt_smp_init(void)
-{
-    static struct bt_l2cap_fixed_chan chan = {
+static const struct bt_l2cap_fixed_chan chan = {
         .cid    = BT_L2CAP_CID_SMP,
         .accept = bt_smp_accept,
     };
-    static struct bt_pub_key_cb pub_key_cb = {
+static const struct bt_pub_key_cb pub_key_cb = {
         .func = bt_smp_pkey_ready,
     };
 
+int bt_smp_init(void)
+{
     sc_supported = le_sc_supported();
     if (IS_ENABLED(CONFIG_BT_SMP_SC_ONLY) && !sc_supported) {
         BT_ERR("SC Only Mode selected but LE SC not supported");

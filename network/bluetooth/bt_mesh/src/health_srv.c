@@ -5,7 +5,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-
+#if defined(CONFIG_BT_MESH_HEALTH_SVR)
 #include <zephyr.h>
 #include <string.h>
 #include <errno.h>
@@ -467,3 +467,4 @@ void bt_mesh_attention(struct bt_mesh_model *model, u8_t time)
 		}
 	}
 }
+#endif

@@ -77,19 +77,19 @@ struct reset_register
 void reset_register_dump(void)
 {
     struct reset_register *reg = (struct reset_register *)0x400020;
-    printf("\r\nR0: %x\n", (reg->r0));
-    printf("R1: %x\n", (reg->r1));
-    printf("R2: %x\n", (reg->r2));
-    printf("R3: %x\n", (reg->r3));
-    printf("R4: %x\n", (reg->r4));
-    printf("R5: %x\n", (reg->r5));
-    printf("R6: %x\n", (reg->r6));
-    printf("R7: %x\n", (reg->r7));
-    printf("R8: %x\n", (reg->r8));
-    printf("R9: %x\n", (reg->r9));
-    printf("R10: %x\n", (reg->r10));
-    printf("R11: %x\n", (reg->r11));
-    printf("R12: %x\n", (reg->r12));
+    // printf("\r\nR0: %x\n", (reg->r0));
+    // printf("R1: %x\n", (reg->r1));
+    // printf("R2: %x\n", (reg->r2));
+    // printf("R3: %x\n", (reg->r3));
+    // printf("R4: %x\n", (reg->r4));
+    // printf("R5: %x\n", (reg->r5));
+    // printf("R6: %x\n", (reg->r6));
+    // printf("R7: %x\n", (reg->r7));
+    // printf("R8: %x\n", (reg->r8));
+    // printf("R9: %x\n", (reg->r9));
+    // printf("R10: %x\n", (reg->r10));
+    // printf("R11: %x\n", (reg->r11));
+    // printf("R12: %x\n", (reg->r12));
     printf("R13: %x\n", reg->r13);
     printf("R14(LR): %x\n", (reg->r14));
 }
@@ -97,16 +97,17 @@ static cpu_stack_t aos_app_stack[AOS_START_STACK];
 
 void sys_start(void)
 {
+#ifdef CONFIG_INITIAL_OPTIMIZE
+    icu_80M_init();
+#endif
     reset_register_dump();
-    printf("%s, reset reason 0x%x\r\n", __func__, icu_get_reset_reason());
     aos_init();
-    //printf("aos init ok \r\n\r\n");
+    printf("aos init ok \r\n\r\n");
 
     soc_driver_init();
     printf("soc_driver init ok \r\n\r\n");
 
     fclk_init(FCLK_PWM_ID, RHINO_CONFIG_TICKS_PER_SECOND);
-    hal_flash_secure_sector(FLASH_PROTECT_ALL);
 
     // printf("start sys_init \r\n\r\n");
     // aos_app_task_obj = aos_zalloc(sizeof(ktask_t));

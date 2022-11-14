@@ -1,7 +1,8 @@
 #ifndef _IDLE_MODE_H
 #define _IDLE_MODE_H
 
-#define WORK_TIME_10MS		5
+#define WORK_TIME_MS		50
+#define TOTAL_TIME_MS		200
 
 typedef void (*idle_task_app_hook_t)(void);
 typedef void (*idle_task_app_sleep_start_t)(void);

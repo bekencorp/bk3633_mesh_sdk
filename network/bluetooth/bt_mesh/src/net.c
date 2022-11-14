@@ -472,6 +472,7 @@ int bt_mesh_net_create(u16_t idx, u8_t flags, const u8_t key[16],
     BT_DBG_R("NetKey %s", bt_hex(key, 16));
 
     if (bt_mesh.valid) {
+
         return -EALREADY;
     }
 
@@ -515,6 +516,25 @@ int bt_mesh_net_create(u16_t idx, u8_t flags, const u8_t key[16],
     bt_mesh_net_beacon_update(sub);
 
     return 0;
+}
+
+			   
+u8_t app_key_update_net_id(u16_t app_idx, u16_t net_idx)
+{
+   struct bt_mesh_app_key *key;
+   key = bt_mesh_app_key_find(app_idx);
+   key->net_idx = net_idx;
+}
+
+int bt_mesh_net_key_remove(u16_t idx)
+{
+   struct bt_mesh_subnet *sub;
+   sub = bt_mesh_subnet_get(idx);
+   if (sub)
+   {
+	   sub->net_idx = BT_MESH_KEY_UNUSED;
+   }
+   return 0;
 }
 
 int bt_mesh_net_key_add(u16_t idx, const u8_t key[16])

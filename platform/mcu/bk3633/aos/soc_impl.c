@@ -111,7 +111,10 @@ void krhino_idle_hook(void)
 	UINT32 mcu_ps_tick = 24;
 	UINT32 mcu_miss_tick = 0;
 
-    //idle_mode();
+#ifdef CONFIG_BLE_MESH_REDUCE_VOLTAGE_SLEEP
+    idle_mode();
+#endif
+
 #if (NX_POWERSAVE)
     GLOBAL_INT_DECLARATION();
     CPSR_ALLOC();

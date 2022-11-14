@@ -822,6 +822,8 @@ static E_GENIE_FLASH_ERRCODE genie_flash_init_partition(hal_partition_t in_parti
     return GENIE_FLASH_SUCCESS;
 }
 
+#ifdef CONFIG_GENIE_FLASH_RELIABLE_OPERATE
+
 static uint16_t _genie_flash_get_reliable_size(uint16_t data_size)
 {
     if((data_size & 0x0F) == 0){
@@ -853,7 +855,9 @@ E_GENIE_FLASH_ERRCODE genie_flash_read_reliable(uint16_t index, uint8_t *p_data,
     ret = _genie_flash_read(&cell, p_buff, buff_size);
     BT_DBG("read ret %d", ret);
     if(ret == 0) {
+#ifdef CONFIG_GENIE_FLASH_ENCRYPT
         _genie_flash_decrypt(p_buff, buff_size);
+#endif
         memcpy(p_data, p_buff, data_size);
     }
     k_free(p_buff);
@@ -883,8 +887,9 @@ E_GENIE_FLASH_ERRCODE genie_flash_write_reliable(uint16_t index, uint8_t *p_data
     memset(p_buff, 0, buff_size);
     memcpy(p_buff, p_data, data_size);
     BT_DBG("data:%d buff:%d\n", data_size, buff_size);
+#ifdef CONFIG_GENIE_FLASH_ENCRYPT
     _genie_flash_encrypt(p_buff, buff_size);
-
+#endif
     ret = _genie_flash_write(&cell, p_buff, buff_size);
     k_free(p_buff);
 
@@ -905,6 +910,7 @@ E_GENIE_FLASH_ERRCODE genie_flash_erase_reliable(void)
     BT_DBG("");
     return genie_flash_init_partition(GENIE_FLASH_PARTITION_SYSTEM, GENIE_FLASH_SIZE_SYSTEM_PART);
 }
+#endif //CONFIG_GENIE_FLASH_RELIABLE_OPERATE
 
 E_GENIE_FLASH_ERRCODE genie_flash_read_userdata(uint16_t index, uint8_t *p_buff, uint16_t size)
 {

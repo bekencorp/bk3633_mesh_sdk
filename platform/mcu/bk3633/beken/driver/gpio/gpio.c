@@ -284,7 +284,7 @@ void gpio_int_enable(UINT32 index, UINT32 mode, void (*p_Int_Handler)(unsigned c
         return;
     }
 
-    intc_service_register(IRQ_GPIO, PRI_IRQ_GPIO, gpio_isr);
+    // intc_service_register(IRQ_GPIO, PRI_IRQ_GPIO, gpio_isr);
     gpio_cb_register(p_Int_Handler);
 
     if(mode == GPIO_INT_LEVEL_FALLING || mode == GPIO_INT_LEVEL_LOW)

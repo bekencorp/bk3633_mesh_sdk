@@ -301,8 +301,8 @@ static void pwm_int_handler_clear(UINT8 ucChannel)
 
 void pwm_init(void)
 {
-    intc_service_register(IRQ_PWM0, PRI_FIQ_PWM0, pwm_isr);
-    intc_service_register(IRQ_PWM1, PRI_FIQ_PWM1, pwm_isr);
+    //intc_service_register(IRQ_PWM0, PRI_FIQ_PWM0, pwm_isr);
+    //intc_service_register(IRQ_PWM1, PRI_FIQ_PWM1, pwm_isr);
 
     sddev_register_dev(PWM_DEV_NAME, &pwm_op);
 }

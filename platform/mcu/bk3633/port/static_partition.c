@@ -45,7 +45,6 @@ int static_partition_read(static_section_t in_section, void *out_buf, uint32_t o
 
     hal_flash_read( HAL_PARTITION_STATIC_PARA, &offset, &verify, sizeof(platform_static_header_s));
 
-    LOG("static_partition_read sec %d, offset 0x%x, verify 0x%x\n", in_section, offset, verify);
     if(verify.hearder_code == STATIC_PARTITION_HEADER_CODE)
     {
         ret = hal_flash_read( HAL_PARTITION_STATIC_PARA, &offset, out_buf, out_buf_len);
@@ -53,6 +52,7 @@ int static_partition_read(static_section_t in_section, void *out_buf, uint32_t o
     }
     else
     {
+        LOG("verify.hearder_code failed!! sec %d, offset 0x%x, verify 0x%x\n", in_section, offset, verify);
         return -1;
     }
 

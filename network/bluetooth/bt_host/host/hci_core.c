@@ -2184,6 +2184,9 @@ static void hci_tx_thread(void *p1, void *p2, void *p3)
     };
 #endif
 
+#ifdef CONFIG_INITIAL_OPTIMIZE
+    init_work(NULL);
+#endif
     scheduler_loop(events);
 }
 
@@ -3131,7 +3134,9 @@ int bt_enable(bt_ready_cb_t cb)
 
     ready_cb = cb;
 
+#ifndef CONFIG_INITIAL_OPTIMIZE
     k_work_init(&bt_dev.init, init_work);
+#endif
     k_work_q_start();
 
     BT_DBG("[0]\n");
@@ -3159,7 +3164,9 @@ int bt_enable(bt_ready_cb_t cb)
         return bt_init();
     }
 
+#ifndef CONFIG_INITIAL_OPTIMIZE
     k_work_submit(&bt_dev.init);
+#endif
 
     /* TX thread */
     k_thread_create(&tx_thread_data, "ble tx_thread", tx_thread_stack,

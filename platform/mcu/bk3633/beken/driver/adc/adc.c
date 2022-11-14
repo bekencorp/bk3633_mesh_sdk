@@ -41,8 +41,8 @@ void adc_exit(void)
 
 
 /************************************************************************
-//ADC²Î¿¼µçÑ¹Ä¬ÈÏÎª1.05V
-//È·±£ADCÎÈ¶¨²ÉÑù£¬ADC¿ÚÐèÒª½Ó¸ö10nfµ½µØµÄµçÈÝ
+//ADCï¿½Î¿ï¿½ï¿½ï¿½Ñ¹Ä¬ï¿½ï¿½Îª1.05V
+//È·ï¿½ï¿½ADCï¿½È¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ADCï¿½ï¿½ï¿½ï¿½Òªï¿½Ó¸ï¿½10nfï¿½ï¿½ï¿½ØµÄµï¿½ï¿½ï¿½
 *************************************************************************/
 void adc_hw_init(uint8_t channel,uint8_t mode)
 {
@@ -67,7 +67,7 @@ void adc_hw_init(uint8_t channel,uint8_t mode)
           | (0x01 << POS_SADC_REG0X0_CFG0_INT_CLEAR));
     
     SADC_REG0X0_CFG0=cfg;
-	//REG_APB7_ADC_CFG |= (0x01 << BIT_ADC_EN);//²»ÄÜÏÈÊ¹ÄÜADC£¬²»È»ADC FIFOÂúÊ±Ã»ÓÐ¶Á³öÔÙ´ÎÆô¶¯ADC¾Í²»»áÓÐÖÐ¶Ï
+	//REG_APB7_ADC_CFG |= (0x01 << BIT_ADC_EN);//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¹ï¿½ï¿½ADCï¿½ï¿½ï¿½ï¿½È»ADC FIFOï¿½ï¿½Ê±Ã»ï¿½Ð¶ï¿½ï¿½ï¿½ï¿½Ù´ï¿½ï¿½ï¿½ï¿½ï¿½ADCï¿½Í²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½
 
     SADC_REG0X2_CFG1 = ((1<<POS_SADC_REG0X2_CHANN_EXPAND)|(1<<POS_SADC_REG0X2_STEADY_CTRL));
     SADC_REG0X3_CFG2 = (3<<POS_SADC_REG0X3_STA_CTRL);
@@ -86,9 +86,9 @@ void adc_init()
 	uint8_t channel = 7;
 	uint8_t mode = 1;
 
-	printf("+++++++++%s+++++\n", __func__);
+	// printf("+++++++++%s+++++\n", __func__);
 	
-	intc_service_register(IRQ_ADC, PRI_IRQ_ADC, adc_isr);
+	// intc_service_register(IRQ_ADC, PRI_IRQ_ADC, adc_isr);
 
     sddev_register_dev(ADC_DEV_NAME, &adc_op);
 	
@@ -155,13 +155,13 @@ uint16_t adc_get_value(uint8_t channel,uint8_t mode)
 }
 
 /**************************************************************************
-//×¢ÒâÈ·±£×ª»»ÖµµÄÎÈ¶¨ÐÔ£¬ADC¿ÚÐèÒª¼Ó¸ö10nfµ½µØµÄµçÈÝ
+//×¢ï¿½ï¿½È·ï¿½ï¿½×ªï¿½ï¿½Öµï¿½ï¿½ï¿½È¶ï¿½ï¿½Ô£ï¿½ADCï¿½ï¿½ï¿½ï¿½Òªï¿½Ó¸ï¿½10nfï¿½ï¿½ï¿½ØµÄµï¿½ï¿½ï¿½
 //ADCÐ£×¼
-//Ð£×¼ADCÐèÒª¸øÐ¾Æ¬Ò»¸öÎÈ¶¨µÄ¹©µçÑ¹£¬È»ºóËãADC²Î¿¼µçÑ¹
-//Õâ¸öº¯ÊýÐ£×¼Ä¬ÈÏÊ¹ÓÃ3VµçÔ´¹©µç,ÄÚ²¿·ÖÑ¹ºóÎª0.75V
+//Ð£×¼ADCï¿½ï¿½Òªï¿½ï¿½Ð¾Æ¬Ò»ï¿½ï¿½ï¿½È¶ï¿½ï¿½Ä¹ï¿½ï¿½ï¿½Ñ¹ï¿½ï¿½È»ï¿½ï¿½ï¿½ï¿½ADCï¿½Î¿ï¿½ï¿½ï¿½Ñ¹
+//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð£×¼Ä¬ï¿½ï¿½Ê¹ï¿½ï¿½3Vï¿½ï¿½Ô´ï¿½ï¿½ï¿½ï¿½,ï¿½Ú²ï¿½ï¿½ï¿½Ñ¹ï¿½ï¿½Îª0.75V
 *************************************************************************/
 #define CALIB_COUNT 1
-#define STABL_VALT 75///·ÖÑ¹ºóµÄ0.75VÎÈ¶¨µçÑ¹
+#define STABL_VALT 75///ï¿½ï¿½Ñ¹ï¿½ï¿½ï¿½0.75Vï¿½È¶ï¿½ï¿½ï¿½Ñ¹
 
 
 #define ADC_2200_mV 2280
@@ -216,7 +216,6 @@ void check_low_volt_sleep(void)
     XVR_ANALOG_REG_BAK[7] |= (1<<19);
     addXVR_Reg0x7 = XVR_ANALOG_REG_BAK[7];
 	
-    adc_hw_init(7, 1);
 
     for(i=0;i<CALIB_COUNT;i++)
     {
@@ -224,14 +223,13 @@ void check_low_volt_sleep(void)
     }
     
     referance_voltage= (uint16)((calib_temp * 1000 /CALIB_COUNT) /256 * 1.05 * 4);
-    printf("referance_voltage=%d mV\r\n",referance_voltage);
 
     XVR_ANALOG_REG_BAK[7] &= ~(1<<19);
     addXVR_Reg0x7 = XVR_ANALOG_REG_BAK[7];
 
 	if(referance_voltage < 2100 && referance_voltage != 0)
 	{
-	
+        printf("voltage is lower than 2.1V, referance_voltage=%d mV\r\n",referance_voltage);
 		addSYS_Reg0x3 = 0xfffffff;
 
 		set_PMU_Reg0x4_gotosleep(0x3633);

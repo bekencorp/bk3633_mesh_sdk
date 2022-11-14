@@ -83,6 +83,13 @@ void mesh_seq_add_cmd_handler(char *para);
 void mesh_prim_addr_add_cmd_handler(char *para);
 void mesh_prov_done_cmd_handler(char *para);
 
+#ifdef CONFIG_NETWORK_CHANGE
+
+void mesh_change_net_def(void);
+
+void mesh_change_net_rc(void);
+#endif
+
 
 #ifdef CONFIG_DUT_TEST_CMD
 void rf_fcc_tx_test_cmd_handler(char *para);

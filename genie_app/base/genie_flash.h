@@ -35,6 +35,8 @@ enum {
 	GFI_RF_POWER_LEVEL,
     GFI_XTAL_CAL,
     GFI_OTA_ERASE_FINISH,
+    GFI_OTA_CRC32,
+	GFI_MESH_LIGHT_NETKEY_PARA,
 };
 
 typedef enum

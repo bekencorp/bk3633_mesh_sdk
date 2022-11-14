@@ -85,8 +85,8 @@ static void flash_get_current_flash_config(void)
     if(i == (sizeof(flash_config) / sizeof(flash_config_t) - 1))
     {
         flash_current_config = &flash_config[i];
-		os_printf("flash id : 0x%x\r\n", flash_mid);
-        os_printf("don't config this flash, choose default config\r\n");
+		// os_printf("flash id : 0x%x\r\n", flash_mid); //note it for Initialization optimization
+        // os_printf("don't config this flash, choose default config\r\n");
     }
     // os_printf("code area end addr:0x%X\r\n", &_app_data_flash_end);
 }

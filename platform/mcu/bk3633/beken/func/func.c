@@ -26,7 +26,7 @@
 
 void rom_env_init(struct rom_env_tag *api)
 {
-    os_printf("%s L %d\r\n", __func__, __LINE__);
+    // os_printf("%s L %d\r\n", __func__, __LINE__);
 	memset(&rom_env,0,sizeof(struct rom_env_tag));
 
 	//rom_env.rwip_reset = rwip_reset;
@@ -74,9 +74,9 @@ UINT32 func_init(void)
 	
     //FUNC_PRT("[FUNC]rwnxl_init\r\n");
     //rwnxl_init();
-    os_printf("%s \r\n", __func__);
+    // os_printf("%s \r\n", __func__);
 	rom_env_init(&rom_env);
-    os_printf("%s \r\n", __func__);
+    // os_printf("%s \r\n", __func__);
 #if 0//CFG_UART_DEBUG 
 	#ifndef KEIL_SIMULATOR
     FUNC_PRT("[FUNC]uart_debug_init\r\n");   
@@ -129,7 +129,7 @@ UINT32 func_init(void)
 	key_initialization();
 	#endif
 
-    FUNC_PRT("[FUNC]func_init OVER!!!\r\n\r\n");
+    // FUNC_PRT("[FUNC]func_init OVER!!!\r\n\r\n");
     return 0;
 }
 

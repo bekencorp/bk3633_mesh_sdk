@@ -86,23 +86,39 @@ int _link_r(struct _reent *ptr, const char *old, const char *new)
 
 _off_t _lseek_r(struct _reent *ptr, int fd, _off_t pos, int whence)
 {
+#ifdef AOS_VFS
     return aos_lseek(fd, pos, whence);
+#else
+    return 0;
+#endif //AOS_VFS
 }
 
 int _mkdir_r(struct _reent *ptr, const char *name, int mode)
 {
+#ifdef AOS_VFS
     return aos_mkdir(name);
+#else
+    return 0;
+#endif //AOS_VFS
 }
 
 int _open_r(struct _reent *ptr, const char *file, int flags, int mode)
 {
+#ifdef AOS_VFS
     return aos_open(file, flags);
+#else
+    return 0;
+#endif //AOS_VFS
 }
 
 int _close_r(struct _reent *ptr, int fd)
 {
     if ((fd >= FD_VFS_START) && (fd <= FD_VFS_END)) {
+#ifdef AOS_VFS
         return aos_close(fd);
+#else
+        return 0;
+#endif
 #ifdef POSIX_DEVICE_IO_NEED
 #ifdef WITH_LWIP
     } else if ((fd >= FD_SOCKET_START) && (fd <= FD_EVENT_END)) {
@@ -117,7 +133,11 @@ int _close_r(struct _reent *ptr, int fd)
 _ssize_t _read_r(struct _reent *ptr, int fd, void *buf, size_t nbytes)
 {
     if ((fd >= FD_VFS_START) && (fd <= FD_VFS_END)) {
+#ifdef AOS_VFS
         return aos_read(fd, buf, nbytes);
+#else
+        return 0;
+#endif //AOS_VFS
 #ifdef POSIX_DEVICE_IO_NEED
 #ifdef WITH_LWIP
     } else if ((fd >= FD_SOCKET_START) && (fd <= FD_EVENT_END)) {
@@ -142,7 +162,11 @@ _ssize_t _write_r(struct _reent *ptr, int fd, const void *buf, size_t nbytes)
     uart_stdio.port = 0;
 
     if ((fd >= FD_VFS_START) && (fd <= FD_VFS_END)) {
+#ifdef AOS_VFS
         return aos_write(fd, buf, nbytes);
+#else
+        return 0;
+#endif //AOS_VFS
 #ifdef POSIX_DEVICE_IO_NEED
 #ifdef WITH_LWIP
     } else if ((fd >= FD_SOCKET_START) && (fd <= FD_EVENT_END)) {

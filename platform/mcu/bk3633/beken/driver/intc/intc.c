@@ -36,151 +36,6 @@ extern void do_swi( void );
 
 #include "user_config.h"
 
-ISR_T _isrs[INTC_MAX_COUNT] = {0,};
-static UINT32 isrs_mask = 0;
-static ISR_LIST_T isr_hdr = {{&isr_hdr.isr, &isr_hdr.isr},};
-
-void intc_hdl_entry(UINT32 int_status)
-{
-    UINT32 i;
-    ISR_T *f;
-    UINT32 status;
-    LIST_HEADER_T *n;
-    LIST_HEADER_T *pos;
-
-    status = int_status & isrs_mask;
-    INTC_PRT("intc:%x:%x\r\n", int_status, status);
-
-    #if CFG_USE_STA_PS
-    power_save_dtim_wake(status);
-    #endif
-
-
-    list_for_each_safe(pos, n, &isr_hdr.isr)
-    {
-        f = list_entry(pos, ISR_T, list);
-        i = f->int_num;
-
-        if ((BIT(i) & status))
-        {
-            f->isr_func();
-            status &= ~(BIT(i));
-        }
-
-        if(0 == status)
-        {
-            return;
-        }
-    }
-}
-
-void intc_service_register(UINT8 int_num, UINT8 int_pri, FUNCPTR isr)
-{
-    LIST_HEADER_T *pos, *n;
-    ISR_T *tmp_ptr, *cur_ptr;
-    ISR_T buf_ele;
-
-    GLOBAL_INT_DECLARATION_N();
-
-    buf_ele           = _isrs[int_num];
-    cur_ptr           = &_isrs[int_num];
-    cur_ptr->isr_func = isr;
-    cur_ptr->int_num  = int_num;
-    cur_ptr->pri      = int_pri;
-
-    INTC_PRT("reg_isr:%d:%d:%p\r\n", int_num, int_pri, isr);
-
-    GLOBAL_INT_DISABLE_N();
-    if (list_empty(&isr_hdr.isr))
-    {
-        list_add_head(&cur_ptr->list, &isr_hdr.isr);
-        goto ok;
-    }
-
-    /* Insert the ISR to the function list, this list is sorted by priority number */
-    list_for_each_safe(pos, n, &isr_hdr.isr)
-    {
-        tmp_ptr = list_entry(pos, ISR_T, list);
-
-        if (int_pri < tmp_ptr->pri)
-        {
-            /* add entry at the head of the queue */
-            list_add_tail(&cur_ptr->list, &tmp_ptr->list);
-
-            INTC_PRT("reg_isr_o1\r\n");
-
-            goto ok;
-        }
-        else if (int_pri == tmp_ptr->pri)
-        {
-            INTC_PRT("reg_isr_error\r\n");
-            goto error;
-        }
-    }
-
-    list_add_tail(&cur_ptr->list, &isr_hdr.isr);
-    INTC_PRT("reg_isr_o2\r\n");
-
-ok:
-    isrs_mask |= BIT(int_num);
-    GLOBAL_INT_RESTORE_N();
-
-    return;
-
-
-error:
-    /* something wrong  */
-    _isrs[int_num] = buf_ele;
-    GLOBAL_INT_RESTORE_N();
-
-    return;
-}
-
-void intc_service_change_handler(UINT8 int_num, FUNCPTR isr)
-{
-    LIST_HEADER_T *pos, *n;
-    ISR_T *tmp_ptr, *cur_ptr;
-    ISR_T buf_ele;
-    UINT8 int_pri;
-
-    GLOBAL_INT_DECLARATION();
-
-    buf_ele           = _isrs[int_num];
-    cur_ptr           = &_isrs[int_num];
-    int_pri = cur_ptr->pri;
-
-    if(!cur_ptr->isr_func)
-        return;
-
-    INTC_PRT("reg_isr:%d:%d:%p\r\n", int_num, int_pri, isr);
-
-    GLOBAL_INT_DISABLE();
-    if (list_empty(&isr_hdr.isr))
-    {
-        goto exit;
-    }
-
-    /* Insert the ISR to the function list, this list is sorted by priority number */
-    list_for_each_safe(pos, n, &isr_hdr.isr)
-    {
-        tmp_ptr = list_entry(pos, ISR_T, list);
-
-        if (int_pri == tmp_ptr->pri)
-        {
-            buf_ele.isr_func = isr;
-            break;
-        }
-    }
-
-exit:
-    /* something wrong  */
-    _isrs[int_num] = buf_ele;
-    GLOBAL_INT_RESTORE();
-
-    return;
-}
-
-
 /*
  * FUNCTION DEFINITIONS
  ****************************************************************************************
@@ -318,6 +173,18 @@ void intc_irq(void)
     }
 #endif
 
+    if(IntStat & BIT(22))  //BIT
+    {
+        irq_status |= BIT(22); //INT_STATUS_RWDM_bit
+        rwip_func.rwip_isr();
+    }
+    
+    if(IntStat & BIT(20))  
+    {
+        irq_status |= INT_STATUS_RWBLE_bit;
+        rwip_func.rwble_isr();
+    }
+
 	intc_status_clear(irq_status);
     
 }
@@ -358,9 +225,9 @@ void intc_init(void)
     addSYS_Reg0x10 = 0; // int enable 0:disable 1::enable
     addSYS_Reg0x11 = 0; // priority; 0: irq  1:fiq
 
-    setf_SYS_Reg0x11_int_rwble_pri; // 1:fiq
-    setf_SYS_Reg0x11_int_rwdm_pri; // 1:fiq
-    setf_SYS_Reg0x11_int_rwbt_pri; // 1:fiq
+    // setf_SYS_Reg0x11_int_rwble_pri; // 1:fiq
+    // setf_SYS_Reg0x11_int_rwdm_pri; // 1:fiq
+    // setf_SYS_Reg0x11_int_rwbt_pri; // 1:fiq
     return;
 }
 

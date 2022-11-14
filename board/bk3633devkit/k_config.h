@@ -36,7 +36,7 @@
 #define RHINO_CONFIG_MM_BLK                  1
 #endif
 #ifndef RHINO_CONFIG_MM_DEBUG
-#define RHINO_CONFIG_MM_DEBUG                1
+#define RHINO_CONFIG_MM_DEBUG                0
 #endif
 #ifndef RHINO_CONFIG_MM_TLF
 #define RHINO_CONFIG_MM_TLF                  1
@@ -52,7 +52,7 @@
 #define RHINO_CONFIG_GCC_RETADDR             1
 #endif
 #ifndef RHINO_CONFIG_MM_LEAKCHECK
-#define RHINO_CONFIG_MM_LEAKCHECK            1
+#define RHINO_CONFIG_MM_LEAKCHECK            0
 #endif
 #ifndef RHINO_CONFIG_RINGBUF_VENDOR
 #define RHINO_CONFIG_RINGBUF_VENDOR          0
@@ -67,7 +67,7 @@
 #define RHINO_CONFIG_TASK_SUSPEND            1
 #endif
 #ifndef RHINO_CONFIG_TASK_INFO
-#define RHINO_CONFIG_TASK_INFO               1
+#define RHINO_CONFIG_TASK_INFO               0
 #endif
 #ifndef RHINO_CONFIG_TASK_DEL
 #define RHINO_CONFIG_TASK_DEL                1
@@ -186,12 +186,12 @@
 
 /* kernel hook conf */
 #ifndef RHINO_CONFIG_USER_HOOK
-#define RHINO_CONFIG_USER_HOOK               1
+#define RHINO_CONFIG_USER_HOOK               0
 #endif
 
 /* kernel stats conf */
 #ifndef RHINO_CONFIG_SYSTEM_STATS
-#define RHINO_CONFIG_SYSTEM_STATS            1
+#define RHINO_CONFIG_SYSTEM_STATS            0
 #endif
 #ifndef RHINO_CONFIG_DISABLE_SCHED_STATS
 #define RHINO_CONFIG_DISABLE_SCHED_STATS     0
@@ -223,7 +223,7 @@
 
 /*kernel power save*/
 #ifndef RHINO_CONFIG_CPU_PWR_MGMT
-#define RHINO_CONFIG_CPU_PWR_MGMT            1
+#define RHINO_CONFIG_CPU_PWR_MGMT            0
 #endif
 
 #ifndef CONFIG_ADV_MIN_INTERVAL

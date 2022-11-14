@@ -29,9 +29,11 @@
 #define OP_DEFAULT_TTL_GET                 BT_MESH_MODEL_OP_2(0x80, 0x0c)
 #define OP_DEFAULT_TTL_SET                 BT_MESH_MODEL_OP_2(0x80, 0x0d)
 #define OP_DEFAULT_TTL_STATUS              BT_MESH_MODEL_OP_2(0x80, 0x0e)
+#ifdef CONFIG_BT_MESH_FRIEND
 #define OP_FRIEND_GET                      BT_MESH_MODEL_OP_2(0x80, 0x0f)
 #define OP_FRIEND_SET                      BT_MESH_MODEL_OP_2(0x80, 0x10)
 #define OP_FRIEND_STATUS                   BT_MESH_MODEL_OP_2(0x80, 0x11)
+#endif //CONFIG_BT_MESH_FRIEND
 #define OP_GATT_PROXY_GET                  BT_MESH_MODEL_OP_2(0x80, 0x12)
 #define OP_GATT_PROXY_SET                  BT_MESH_MODEL_OP_2(0x80, 0x13)
 #define OP_GATT_PROXY_STATUS               BT_MESH_MODEL_OP_2(0x80, 0x14)
@@ -59,8 +61,10 @@
 #define OP_MOD_SUB_LIST                    BT_MESH_MODEL_OP_2(0x80, 0x2a)
 #define OP_MOD_SUB_GET_VND                 BT_MESH_MODEL_OP_2(0x80, 0x2b)
 #define OP_MOD_SUB_LIST_VND                BT_MESH_MODEL_OP_2(0x80, 0x2c)
+#ifdef CONFIG_BT_MESH_LOW_POWER
 #define OP_LPN_TIMEOUT_GET                 BT_MESH_MODEL_OP_2(0x80, 0x2d)
 #define OP_LPN_TIMEOUT_STATUS              BT_MESH_MODEL_OP_2(0x80, 0x2e)
+#endif //CONFIG_BT_MESH_LOW_POWER
 #define OP_HEALTH_FAULT_CLEAR              BT_MESH_MODEL_OP_2(0x80, 0x2f)
 #define OP_HEALTH_FAULT_CLEAR_UNREL        BT_MESH_MODEL_OP_2(0x80, 0x30)
 #define OP_HEALTH_FAULT_GET                BT_MESH_MODEL_OP_2(0x80, 0x31)

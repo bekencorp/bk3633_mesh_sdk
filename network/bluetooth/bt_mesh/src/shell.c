@@ -2387,6 +2387,8 @@ static int cmd_mod_pub(int argc, char *argv[])
 		return mod_pub_get(addr, mod_id, cid);
 	}
 }
+
+#ifdef CONFIG_BT_MESH_LOW_POWER
 static int cmd_lpn_timeout_get(int argc, char *argv[])
 {
 	u8_t status;
@@ -2410,6 +2412,7 @@ static int cmd_lpn_timeout_get(int argc, char *argv[])
 	}
 	return 0;
 }
+#endif //CONFIG_BT_MESH_LOW_POWER
 
 static void hb_sub_print(struct bt_mesh_cfg_hb_sub *sub)
 {
@@ -3990,7 +3993,9 @@ static const struct mesh_shell_cmd mesh_commands[] = {
 	{ "node-ident", cmd_node_ident, "<netkey-idx>, [identify state]" },
 	{ "node-reset", cmd_node_reset, "NULL" },
 	{ "net-transmit", cmd_network_transmit, "<transmit count>, <transmit interval steps>" },
+#ifdef CONFIG_BT_MESH_LOW_POWER
 	{ "lpn-timeout-get", cmd_lpn_timeout_get, "<lpn_addr>" },
+#endif //CONFIG_BT_MESH_LOW_POWER
 	{ "key-refresh", cmd_key_refresh, "[KRP Transition]" },
 	{ "beacon-kr", cmd_beacon_kr, "<state>" },
 #endif

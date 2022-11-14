@@ -23,6 +23,9 @@
 
 #include "drv_model_pub.h"
 #include "pwm_pub.h"
+#ifdef CONFIG_INITIAL_OPTIMIZE
+#include "rf.h"
+#endif
 
 enum SYS_CLK_SRC
 {
@@ -80,7 +83,7 @@ static SDD_OPERATIONS icu_op =
 uint8_t system_sleep_status = 0;
 static volatile uint8_t reduce_voltage_set=0;
 
-static void Delay_us(int num)
+static void s_Delay_us(int num) //new naming is used for Initialization optimization.
 {
     volatile int x, y;
     for(y = 0; y < num; y ++ )
@@ -217,9 +220,10 @@ void mcu_default_clk_switch(void)
 }
 void icu_init(void)
 {
-    UINT32 param, reg;
 
     sddev_register_dev(ICU_DEV_NAME, &icu_op);
+#ifndef CONFIG_INITIAL_OPTIMIZE   //close 16M init because we put 80M init first and run all time.
+    UINT32 param, reg;
 
     JTAG_MODE_CLOSE;   ///close JTAG
 
@@ -240,6 +244,7 @@ void icu_init(void)
     icu_set_sleep_mode(MCU_REDUCE_VO_SLEEP);
     icu_clk_sel = ICU_MCU_CLK_SEL_16M;
     set_PMU_Reg0x1_boot_rom_en(0);
+#endif
 }
 
 void icu_exit(void)
@@ -273,6 +278,21 @@ uint8_t core_peri_clk_freq_set(uint8_t core_clk, uint8_t peri_clk)
     stu = clk_freq_check2src_set();
     return stu;
 }
+
+#ifdef CONFIG_INITIAL_OPTIMIZE
+void icu_80M_init(void)
+{
+#if 1   //put the xvr_init first, and than rf_init not need to init it.
+    xvr_reg_initial();
+    xtal_cal_set(RF_XTAL_CAL_DEF);
+    rf_power_set(RF_POWER_LEVE_DEF);
+#endif
+    core_peri_clk_freq_set(6, 6);   //Set the CPU default clock to 80M Hz.
+    mcu_default_clk_switch();
+    printf("core_peri_clk_freq_set: 80M \r\n");
+}
+#endif
+
 void core_clk_freq_src_get(uint8_t *clk_src,uint8_t *clk_freq)
 {
     *clk_src = core_clk_src_default ;
@@ -490,7 +510,7 @@ static uint8_t clk_freq_check2src_set(void)
         default:break;
     }
     clk_src_div_clac();
-    Delay_us(30);
+    s_Delay_us(30);
        
     return stu;  
 }

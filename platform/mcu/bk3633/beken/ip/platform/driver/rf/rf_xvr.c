@@ -576,7 +576,9 @@ void rf_init(struct rwip_rf_api *api)
 		rf_em_init();
       //  xvr_reg_init();		//// ????
 
+#ifndef CONFIG_INITIAL_OPTIMIZE
         xvr_reg_initial();
+#endif
 
 #if(LDO_MODE)
         addPMU_Reg0x11 |= (1<<12);
@@ -813,10 +815,11 @@ void rf_init(struct rwip_rf_api *api)
     rf_debug_gpio_init(1);
 #endif // CONFIG_RF_GPIO_DEBUG
 
+#ifndef CONFIG_INITIAL_OPTIMIZE
 	//set the rf power and xtal defualt  
 	xtal_cal_set(RF_XTAL_CAL_DEF);
 	rf_power_set(RF_POWER_LEVE_DEF);
-
+#endif
 }
 
 void rf_set_bulk_mode(void)
@@ -995,7 +998,7 @@ void kmod_calibration(void)
     addXVR_Reg0x25 |= (1<<16);
     
     ///////////////////////////start end
-    Delay_ms(15);   //the minimum value to delay is 10.
+    Delay_ms(10);   //the minimum value to delay is 10. last value is 15, for Initialization optimization.
     value = addXVR_Reg0x12;
 
     value = ((value >> 16) & 0x1fff);

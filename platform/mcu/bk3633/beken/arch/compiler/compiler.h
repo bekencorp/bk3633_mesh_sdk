@@ -43,7 +43,7 @@
 #define __ATTR_ARM __attribute__((section("BLE_FIQ")))
 
 // define which's app code can run into the cache
-#define __ATTR_APP_CODE __attribute__((section("APP_CODE")))
+#define __ATTR_APP_CODE __attribute__((section(".APP_CODE")))
 
 /// define size of an empty array (used to declare structure with an array size not defined)
 #define __ARRAY_EMPTY

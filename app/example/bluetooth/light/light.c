@@ -17,6 +17,13 @@ uint32_t get_mesh_pbadv_time(void)
 S_ELEM_STATE g_elem_state[MESH_ELEM_STATE_COUNT];
 S_MODEL_POWERUP g_powerup[MESH_ELEM_STATE_COUNT];
 
+#ifdef CONFIG_NETWORK_CHANGE
+u8_t default_net_key[16] = {
+	0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11,
+	0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11,
+};
+#endif
+
 #if CONFIG_BLE_MESH_TIME_SCENE_SERVER
 struct bt_mesh_time_state time_srv_state_0;
 struct bt_mesh_time_srv time_srv_0 = {
@@ -76,8 +83,9 @@ struct k_delayed_work light_state_store_work;
 
 static struct bt_mesh_model root_models[] = {
     BT_MESH_MODEL_CFG_SRV(),
+#ifdef CONFIG_BT_MESH_HEALTH_SVR
     BT_MESH_MODEL_HEALTH_SRV(),
-
+#endif
 #ifdef CONFIG_MESH_MODEL_GEN_ONOFF_SRV
     MESH_MODEL_GEN_ONOFF_SRV(&g_elem_state[0]),
 #endif
@@ -150,6 +158,46 @@ struct bt_mesh_elem elements[] = {
 #if (CONFIG_NET_BUF_DBG_LOG)
 static bool show_count = false;
 #endif //CONFIG_NET_BUF_DBG_LOG
+
+#ifdef CONFIG_NETWORK_CHANGE
+light_net_key_para g_sigfiny_light_netkey_para;
+
+uint8_t defualt_net_2_rc_net(uint8_t p_key[])
+{
+	E_GENIE_FLASH_ERRCODE ret;
+	
+	u16_t addr;
+	
+	g_sigfiny_light_netkey_para.flag =1;
+	memcpy(g_sigfiny_light_netkey_para.light_net_key, p_key, 16);	
+	ret = genie_flash_write_userdata(GFI_MESH_LIGHT_NETKEY_PARA, (uint8_t *)&g_sigfiny_light_netkey_para, sizeof(g_sigfiny_light_netkey_para));
+	if(ret != GENIE_FLASH_SUCCESS)
+	{
+		printf("%s: flash write error!", __func__);
+		return -1;
+	}
+	bt_mesh_net_key_remove(0);
+	bt_mesh_net_key_add(0, g_sigfiny_light_netkey_para.light_net_key);
+	app_key_update_net_id(0, 0);
+
+	addr = bt_mesh_primary_addr();
+	bt_mesh_rc_net_comp(addr, bt_mesh.seq);
+	
+	return 0;
+}
+
+void rt_net_2_default(void)
+{
+	u16_t addr;
+	bt_mesh_net_key_remove(0);
+	bt_mesh_net_key_add(0, default_net_key);
+	app_key_update_net_id(0, 0);
+
+	addr = bt_mesh_primary_addr();
+	bt_mesh_default_net_comp(addr, bt_mesh.seq);
+}
+#endif
+
 static void light_state_store(struct k_work *work)
 {
     uint8_t *p_read = aos_zalloc(sizeof(g_powerup));
@@ -230,11 +278,13 @@ static void _reset_light_para(void)
         g_elem_state[i].state.onoff[T_TAR] = GEN_ONOFF_DEFAULT;
         g_elem_state[i].state.light_ln_actual[T_TAR] = LIGHTNESS_DEFAULT;
         g_elem_state[i].state.ctl_temp[T_TAR] = CTL_TEMP_DEFAULT;
+#if CONFIG_MESH_MODEL_TRANS
         g_elem_state[i].state.trans = 0;
+
         g_elem_state[i].state.delay = 0;
         g_elem_state[i].state.trans_start_time = 0;
         g_elem_state[i].state.trans_end_time = 0;
-
+#endif //CONFIG_MESH_MODEL_TRANS
         g_elem_state[i].powerup.light_ln_last = LIGHTNESS_DEFAULT;
         g_elem_state[i].powerup.ctl_temp_last = CTL_TEMP_DEFAULT;
 
@@ -415,7 +465,6 @@ static void _save_light_state(S_ELEM_STATE *p_elem)
     p_elem->message_index = MM_INDEX_NONE;
 
     k_delayed_work_submit(&light_state_store_work, LIGHT_STATE_STORE_DELAY_TIME);
-
 }
 
 static led_func_ret_e _led_ctrl(S_ELEM_STATE *p_elem)
@@ -485,6 +534,7 @@ static void _led_flash_timer_cb(void *p_timer, void *p_arg)
     }
 }
 
+#ifdef CONFIG_LIGHT_LED_FLASH
 void _led_flash(uint8_t times, uint8_t reset)
 {
     static uint8_t inited = 0;
@@ -535,6 +585,7 @@ void _led_flash(uint8_t times, uint8_t reset)
 
     k_timer_start(&g_flash_para.timer, LED_FLASH_CYCLE);
 }
+#endif //CONFIG_LIGHT_LED_FLASH
 
 static void _user_init(void)
 {
@@ -549,8 +600,10 @@ void user_event(E_GENIE_EVENT event, void *p_arg)
     switch(event) {
         case GENIE_EVT_SW_RESET:
         case GENIE_EVT_HW_RESET_START:
+#if CONFIG_LIGHT_LED_FLASH
             BT_DBG_R("FLASH x5");
             _led_flash(5, 1);
+#endif //CONFIG_LIGHT_LED_FLASH
             break;
         case GENIE_EVT_HW_RESET_DONE:
             _reset_light_para();
@@ -560,10 +613,14 @@ void user_event(E_GENIE_EVENT event, void *p_arg)
             _user_init();
             break;
         case GENIE_EVT_SDK_MESH_PROV_SUCCESS:
+#if CONFIG_LIGHT_LED_FLASH
             BT_DBG_R("FLASH x3");
             _led_flash(3, 0);
+#endif //CONFIG_LIGHT_LED_FLASH
             break;
+#ifdef CONFIG_MESH_MODEL_TRANS
         case GENIE_EVT_SDK_TRANS_CYCLE:
+#endif //CONFIG_MESH_MODEL_TRANS
         case GENIE_EVT_SDK_ACTION_DONE:
         {
             S_ELEM_STATE *p_elem = (S_ELEM_STATE *)p_arg;
@@ -596,12 +653,8 @@ int application_start(int argc, char **argv)
     /* genie initilize */
     genie_init(); 
 	
-	app_rf_power_init(); //set 0x40
-	app_xtal_cal_init();  // set 0x08 for 7db
 
-    led_startup();
 
-    common_module_init();
 
     BT_INFO("BUILD_TIME:%s", __DATE__","__TIME__);
 

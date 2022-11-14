@@ -117,7 +117,9 @@ void erase_reboot_uart_cmd_handler(char *para)
 
     UART_PRINTF("%s \r\n", __func__);
     //genie_flash_erase_userdata();
+#if CONFIG_GENIE_FLASH_RELIABLE_OPERATE
     genie_flash_erase_reliable();
+#endif //CONFIG_GENIE_FLASH_RELIABLE_OPERATE
     genie_flash_delete_seq();
 
     aos_reboot();
@@ -338,7 +340,22 @@ void mesh_prov_done_cmd_handler(char *para)
     genie_appkey_register(cmd_appkey.net_index, cmd_appkey.key_index, cmd_appkey.key, cmd_appkey.flag);
 }
 
+#ifdef CONFIG_NETWORK_CHANGE
 
+void mesh_change_net_def(void)
+{
+	rt_net_2_default();
+	printf("++++cmd: mesh_change_net_def++++\r\n");
+}
+
+void mesh_change_net_rc(void)
+{
+	uint8_t nek_key[16] = {1,2,3,4,5,6,7,8};
+	defualt_net_2_rc_net(nek_key);
+
+	printf("++++cmd: mesh_change_net_rc++++\r\n");
+}
+#endif
 
 #ifdef CONFIG_DUT_TEST_CMD
 void rf_fcc_tx_test_cmd_handler(char *para)

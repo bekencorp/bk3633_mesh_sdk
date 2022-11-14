@@ -32,6 +32,8 @@ enum {
 	GFI_RF_POWER_LEVEL,
     GFI_XTAL_CAL,
     GFI_OTA_ERASE_FINISH,
+    GFI_OTA_CRC32,
+    GFI_MESH_LIGHT_NETKEY_PARA,
 };
 
 #define KV_HAL_OTA_CRC32  "hal_ota_get_crc32"
@@ -634,14 +636,13 @@ struct hal_ota_module_s bk3633_ota_module = {
 
 static uint32_t hal_ota_get_crc32(void)
 {
-    int len = 4;
     uint32_t crc32=0;
-    aos_kv_get(KV_HAL_OTA_CRC32, &crc32, &len);
+    genie_flash_read_userdata(GFI_OTA_CRC32, &crc32, sizeof(crc32));
     return crc32;
 }
 
 static void  hal_ota_save_crc32(uint32_t crc32)
 {
-    aos_kv_set(KV_HAL_OTA_CRC32, &crc32, 4, 1);
+    genie_flash_write_userdata(GFI_OTA_CRC32, &crc32, sizeof(crc32), true);
 }
 

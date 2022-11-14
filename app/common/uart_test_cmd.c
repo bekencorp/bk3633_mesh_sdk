@@ -42,6 +42,14 @@ static const struct uart_command uart_test_cmds[] = {
 	{"mesh_appkey_del",             NULL},
 	{"mesh_netkey_del",             NULL},
 	{"mesh_devkey_del",             NULL},
+#ifdef CONFIG_NETWORK_CHANGE
+
+	{"change_net_def", 				mesh_change_net_def},
+	
+	{"change_net_rc", 				mesh_change_net_rc},
+
+#endif
+
 };
 
 uint8_t ch_str_2_u8(char *p_input_char, uint8_t *p_outup_num)

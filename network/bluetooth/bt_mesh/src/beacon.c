@@ -376,8 +376,13 @@ static void beacon_send(struct k_work *work)
     }
 
     //BT_DBG("");
+#ifdef	CONFIG_NETWORK_CHANGE
 
-    if (bt_mesh_is_provisioned()) {
+	if (bt_mesh_is_provisioned() && bt_mesh_is_user_provisioned()) 
+#else		
+    if (bt_mesh_is_provisioned()) 
+#endif
+	{
         update_beacon_observation();
         secure_beacon_send();
 

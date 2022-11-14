@@ -232,7 +232,7 @@ void cli_service_init(kinit_t *kinit)
 
 int aos_kernel_init(kinit_t *kinit)
 {
-    printf("%s \r\n\r\n", __func__);
+    // printf("%s \r\n\r\n", __func__);
 #ifdef AOS_VFS
     vfs_init();
     vfs_device_init();
