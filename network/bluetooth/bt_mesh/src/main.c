@@ -92,11 +92,11 @@ int bt_mesh_user_provision(const u8_t net_key[16], u16_t net_idx,
 {
     int err;
 
-    printf("ua(%04x)\n", addr);
-    printf("dk %s\n", bt_hex(dev_key, 16));
-    printf("nk %s\n", bt_hex(net_key, 16));
-    printf("net_idx 0x%04x flags 0x%02x iv_index 0x%04x\n",
-           net_idx, flags, iv_index);
+    // printf("ua(%04x)\n", addr);
+    // printf("dk %s\n", bt_hex(dev_key, 16));
+    // printf("nk %s\n", bt_hex(net_key, 16));
+    // printf("net_idx 0x%04x flags 0x%02x iv_index 0x%04x\n",
+    //        net_idx, flags, iv_index);
 
     if (IS_ENABLED(CONFIG_BT_MESH_PB_GATT)) {
         bt_mesh_proxy_prov_disable();

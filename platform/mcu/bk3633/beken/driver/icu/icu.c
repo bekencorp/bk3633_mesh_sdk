@@ -243,8 +243,8 @@ void icu_init(void)
 
     icu_set_sleep_mode(MCU_REDUCE_VO_SLEEP);
     icu_clk_sel = ICU_MCU_CLK_SEL_16M;
-    set_PMU_Reg0x1_boot_rom_en(0);
 #endif
+    set_PMU_Reg0x1_boot_rom_en(0);  //close boot load from rom.
 }
 
 void icu_exit(void)

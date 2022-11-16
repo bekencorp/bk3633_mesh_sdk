@@ -183,7 +183,7 @@ static E_GENIE_EVENT _set_mesh_by_default(void)
 	{
 		memcpy(netkey[0].key, g_sigfiny_light_netkey_para.light_net_key, 16);		
 		bt_mesh_set_user_provisioned(true);
-		LIGHT_DBG("netkey %s\r\n", bt_hex(netkey[0].key, 16));
+		// LIGHT_DBG("netkey %s\r\n", bt_hex(netkey[0].key, 16));
 	}
 	else
 	{
@@ -192,7 +192,7 @@ static E_GENIE_EVENT _set_mesh_by_default(void)
 		netkey[0].ivi = 0;
 		memcpy(netkey[0].key, default_net_key, 16);
 		bt_mesh_set_user_provisioned(false);
-		LIGHT_DBG("netkey %s\r\n", bt_hex(netkey[0].key, 16));
+		// LIGHT_DBG("netkey %s\r\n", bt_hex(netkey[0].key, 16));
 	}
 	addr = genie_tri_get_addr();
 	memset(appkey, 0xFF, CONFIG_BT_MESH_APP_KEY_COUNT*sizeof(mesh_appkey_para_t));
@@ -235,32 +235,7 @@ static E_GENIE_EVENT _set_mesh_by_default(void)
             genie_appkey_register(appkey[j].net_index, appkey[j].key_index, &appkey[j].key[0], 0);
         }
     }
-	#ifdef CONFIG_GENIE_OTA
-    ais_service_register();
-	#endif
-	#ifdef CONFIG_BEKEN_OTA
-    ota_service_register();
-	#endif
-    mesh_hb_para_t hb_para = {.count = 0};
-    genie_flash_read_hb(&hb_para);
-    if(hb_para.count == 0xFF) 
-	{
-        extern u8_t genie_heartbeat_set(mesh_hb_para_t *p_para);
-        genie_heartbeat_set(&hb_para);
-    }
-    if(!genie_reset_get_flag()) 
-	{
-		#ifdef CONFIG_MESH_MODEL_VENDOR_SRV
-        g_indication_flag |= INDICATION_FLAG_POWERON;
-        genie_indicate_start(0, &g_elem_state[0]);
-		#endif
-    } 
-	else 
-    {
-        return GENIE_EVT_HW_RESET_START;
-    }
-	
-    return GENIE_EVT_SDK_MESH_INIT;
+
 }
 #endif
 

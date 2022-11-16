@@ -358,14 +358,14 @@ void genie_tri_tuple_show(void)
 uint16 genie_tri_get_addr()
 {   
     uint16 addr = 0;
-	genie_tri_tuple_show();	
+	// genie_tri_tuple_show();	
     addr = (uint16)((g_mac[1] << 8) | (g_mac[0]));
 	addr = addr&0x7fff;
 	if(addr ==0)
 	{
 		addr =1;
 	}
-	printk("addr=%x\n", addr);
+	// printk("addr=%x\n", addr);
     return addr;
 }
 #endif
