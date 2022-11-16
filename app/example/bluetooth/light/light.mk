@@ -105,7 +105,7 @@ hw_timer = 0
 button = 0
 spi_driver = 0
 deep_sleep = 0
-network_change = 1
+network_change = 0
 
 ifeq ($(uart_test_cmd),1)
 GLOBAL_DEFINES += CONFIG_UART_TEST_CMD
